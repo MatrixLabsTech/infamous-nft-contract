@@ -9,18 +9,19 @@ npm install @white-matrix/infamous-contract-sdk
 # usage
 
 ```
-  const client = new InfamousNFTClientImpl() // 'devnet' or 'testnet'
-  const collectInfo = await client.collectionInfo()
-  console.log(collectInfo) //ccc-log
-  const tokenData = await client.tokenData('Infamous #1')
-  console.log(tokenData) //ccc-log
+const client = new InfamousNFTClientImpl('devnet')
+    const collectInfo = await client.collectionInfo()
+    console.log({ collectInfo }) //ccc-log
 
-  const owned = await client.tokenOwned(
-    '0x90c1d4adb9668bb84aa16666abaf2870f6a7a0f05778e600ace09865994de948'
-  )
-  console.log(owned) //ccc-log
+    const coll = await client.tokenClient.getCollectionData(
+      '0x307bd9d1be75ccd2f7670c5b7564b0cd26b41c1841b455ea6a0ea9eda0e0266f',
+      "Alice's"
+    )
+    console.log({ coll })
 
-  const property = await client.tokenProperty('Infamous #1')
-  console.log(property) //ccc-log
+    const tokenOwned = await client.tokenOwned(
+      '0xc0db5b48fd82d6aaa00bac2570e22e6faccd0e8561b8d0813307b76cb354096f'
+    )
+    console.log(tokenOwned) //ccc-log
 
 ```
