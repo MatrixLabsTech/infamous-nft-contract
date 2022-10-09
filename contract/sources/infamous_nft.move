@@ -155,6 +155,15 @@ module infamous::infamous_nft {
         account::create_account_for_test(receiver_addr);
         mint(receiver, 3);
 
+        
+        let manager_signer = manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        let collection_name = string::utf8(b"InfamouseNFT");
+
+        assert!(token::balance_of(receiver_addr, token::create_token_id_raw(manager_addr, collection_name, string::utf8(b"Infamous #1"), 0)) == 1, 1);
+        assert!(token::balance_of(receiver_addr, token::create_token_id_raw(manager_addr, collection_name, string::utf8(b"Infamous #2"), 0)) == 1, 1);
+        assert!(token::balance_of(receiver_addr, token::create_token_id_raw(manager_addr, collection_name, string::utf8(b"Infamous #3"), 0)) == 1, 1);
+
     }
 
 
