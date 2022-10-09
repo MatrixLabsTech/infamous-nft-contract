@@ -1,0 +1,17 @@
+{
+  "name": "aptos-boilerplate",
+  "version": "1.0.0",
+  "description": "A boilerplate repository to get you started with aptos development",
+  "private": true,
+  "workspaces": [
+    "contract",
+    "sdk",
+    "web-example"
+  ],
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT"
+}

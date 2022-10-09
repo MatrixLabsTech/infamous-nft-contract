@@ -1,0 +1,7 @@
+{
+  "cSpell.words": ["aptos", "bytecode", "craco"],
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "[move]": {
+    "editor.defaultFormatter": "damirka.move-syntax"
+  }
+}

@@ -1,0 +1,14 @@
+[package]
+name = "infamousNFT"
+version = "1.0.0"
+
+[addresses]
+std = "0x1"
+aptos_framework = "0x1"
+aptos_token = "0x3"
+infamous = "_"
+
+[dependencies]
+MoveStdlib = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/move-stdlib/", rev = "main" }
+AptosFramework = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-framework/", rev = "main" }
+AptosToken = { git = "https://github.com/aptos-labs/aptos-core.git", subdir = "aptos-move/framework/aptos-token/", rev = "main" }
