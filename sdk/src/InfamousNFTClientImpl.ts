@@ -1,28 +1,24 @@
 import {InfamousNFTClient, ITransaction} from "./InfamousNFTClient";
 
 import * as Gen from "aptos/dist/generated";
-import {tokenStoreResource, collectionName, collectionResource, deployment} from "./config/development";
+import {tokenStoreResource, collectionName, deployment, IDeployment} from "./config/development";
 import {IManagerAccountCapability} from "./ManagerAccountCapability";
-import {CollectionInfo, Collections, DepositEvent, ITokenDataId, ITokenId, ITokenStore} from "./CollectionInfo";
+import {CollectionInfo, DepositEvent, ICollectionStatusInfo, ITokenId, ITokenStore, TokenData} from "./CollectionInfo";
 import {paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
 import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
-
-export type Network = "testnet" | "devnet";
-export interface IDeployment {
-    moduleAddress: string;
-    creator: string;
-    moduleName: string;
-    manager_cap: string;
-    version: number;
+export enum AptosNetwork {
+    Testnet = "Testnet",
+    Mainnet = "Mainnet",
+    Devnet = "Devnet",
 }
 
 export class InfamousNFTClientImpl implements InfamousNFTClient {
     readClient: AptosClient;
     deployment: IDeployment;
     tokenClient: TokenClient;
-    constructor(network: Network = "devnet") {
-        if (network === "testnet") {
+    constructor(network: AptosNetwork = AptosNetwork.Devnet) {
+        if (network === AptosNetwork.Testnet) {
             this.readClient = new AptosClient(TESTNET_REST_SERVICE);
             this.deployment = deployment.testnet;
             this.tokenClient = new TokenClient(this.readClient);
@@ -36,7 +32,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     mintTransaction(count: string): ITransaction {
         return {
             type: "entry_function_payload",
-            function: `${this.deployment.moduleAddress}::${this.deployment.moduleName}::mint`,
+            function: `${this.deployment.moduleAddress}::${this.deployment.nftModuleName}::mint`,
             arguments: [paramToHex(count, "u64")],
             type_arguments: [],
         };
@@ -49,11 +45,28 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     async collectionInfo(): Promise<CollectionInfo> {
         const managerAddress = await this.getManagerAddress();
         const collectionInfo = await this.tokenClient.getCollectionData(managerAddress, collectionName);
-
         return collectionInfo;
     }
 
-    async tokenOwned(addr: string): Promise<ITokenDataId[]> {
+    async tokenOwned(addr: string): Promise<TokenData[]> {
+        try {
+            return await this.doResolveTokenOwned(addr);
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async tokenPerMinted(addr: string): Promise<number> {
+        try {
+            const stateResource = await this.getCollectionStatusInfo();
+            const collectionStatusInfo = stateResource.data as ICollectionStatusInfo;
+            return await this.tableItem(collectionStatusInfo.per_minted_table.handle, "address", "u64", addr);
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    private async doResolveTokenOwned(addr: string): Promise<TokenData[]> {
         const managerAddress = await this.getManagerAddress();
         const tokenStore = await this.getTokenStoreInfo(addr);
 
@@ -110,8 +123,23 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
                 if (existIndex > -1) tokenIds = tokenIds.filter((_, index) => index !== existIndex);
             }
         });
+        const list: TokenData[] = [];
+        for (const tokenId of tokenIds) {
+            const tokenData = await this.tokenClient.getTokenData(
+                tokenId.token_data_id.creator,
+                tokenId.token_data_id.collection,
+                tokenId.token_data_id.name
+            );
+            list.push(tokenData);
+        }
+        return list;
+    }
 
-        return tokenIds.map((tokenId) => tokenId.token_data_id);
+    private async getCollectionStatusInfo(): Promise<Gen.MoveResource> {
+        return await this.readClient.getAccountResource(
+            this.deployment.creator,
+            `${this.deployment.moduleAddress}::${this.deployment.nftModuleName}::CollectionInfo`
+        );
     }
 
     private async getManagerAddress(): Promise<string> {
@@ -132,7 +160,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     private async getManagerAccountCapability(): Promise<Gen.MoveResource> {
         return await this.readClient.getAccountResource(
             this.deployment.creator,
-            `${this.deployment.moduleAddress}::${this.deployment.manager_cap}::ManagerAccountCapability`
+            `${this.deployment.moduleAddress}::${this.deployment.managerCapModuleName}::ManagerAccountCapability`
         );
     }
 

@@ -1,9 +1,10 @@
 module infamous::stake {
 
-    use std::string::{ String};
+    use std::string::{String};
     use std::error;
     use std::signer;
     use std::vector;
+    // use std::option::{Self, Option};
 
     use aptos_std::table::{Self, Table};
 
@@ -84,8 +85,15 @@ module infamous::stake {
         }
     }
 
-    // public fun get_stakes_time_info(token_id: TokenId) {
-     
+    // public fun get_available_time(token_id: TokenId): Option<u64> {
+    //     let manager_signer = manager_cap::get_manager_signer();
+    //     let manager_addr = signer::address_of(&manager_signer);
+    //     let available_time = option::none();
+    //     // if(exists<TokenStakesData>(manager_addr)) {
+    //     //     let stakes_data = borrow_global<TokenStakesData>(manager_addr);
+
+    //     // }
+    //     available_time
     // }
 
     // public(friend) fun take_times_to_use(token_id: TokenId, seconds: u64)  {

@@ -2,7 +2,7 @@ module infamous::infamous_nft {
 
     use std::signer;
     use std::error;
-    use std::string::{String};
+    use std::string::{Self, String};
     use std::vector;
 
     use aptos_framework::account;
@@ -21,7 +21,7 @@ module infamous::infamous_nft {
 
 
     const PER_MAX: u64 = 10;
-    const MAXIMUM: u64 = 12;
+    const MAXIMUM: u64 = 1000;
 
 
     struct TokenMintedEvent has drop, store {
@@ -85,7 +85,7 @@ module infamous::infamous_nft {
             let name = common::append_num(base_token_name, cur);
             let uri = common::append_num(base_token_uri, cur);
 
-            create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description);
+            create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description, cur);
             emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
         };
 
@@ -115,7 +115,7 @@ module infamous::infamous_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver:&signer, collection_name: String, token_name: String, token_uri: String, description: String) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver:&signer, collection_name: String, token_name: String, token_uri: String, description: String, no: u64,) {
         
         let balance = 1;
         let maximum = 1;
@@ -127,12 +127,10 @@ module infamous::infamous_nft {
         0,
         0,
         vector<bool>[false, false, true, false, true],
-        vector::empty<String>(),
-        vector::empty<vector<u8>>(),
-        vector::empty<String>(),);
+        vector::empty<String>(), vector::empty<vector<u8>>(), vector::empty<String>(),);
 
-        // change the property_version to be 1
-        token::mutate_token_properties(minter, minter_addr, minter_addr, collection_name, token_name, 0, 1, vector::empty<String>(), vector::empty<vector<u8>>(), vector::empty<String>(),);
+        token::mutate_token_properties(minter, minter_addr, minter_addr, collection_name, token_name, 0, 1, 
+        vector<String>[ string::utf8(b"no") ], vector<vector<u8>>[common::num_vu8(no)], vector<String>[ string::utf8(b"integer")],);
 
         let token_id = token::create_token_id_raw(minter_addr, collection_name, token_name, 1);
         token::direct_transfer(minter, receiver, token_id, balance);

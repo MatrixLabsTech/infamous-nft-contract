@@ -53,6 +53,31 @@ module infamous::common {
         string::utf8(v1)
     }
 
+    public fun num_vu8(num: u64): vector<u8>{
+        let v1 = vector::empty();
+        while (num/10 > 0){
+            let rem = num%10;
+            vector::push_back(&mut v1, (rem+48 as u8));
+            num = num/10;
+        };
+        vector::push_back(&mut v1, (num+48 as u8));
+        vector::reverse(&mut v1);
+        v1
+    }
+    
+    public fun vu8_num(value: vector<u8>): u64{
+        let i = 0;
+        let num: u64 = 0;
+        let len = vector::length(&value);
+        while (i < len) {
+            let elem = *vector::borrow<u8>(&value, i);
+            num = num*10 + (elem-48 as u64);
+            i = i + 1;
+        };
+        num
+    }
+
+ 
     
     /// Helper to remove an element from a vector.
     public fun remove_element<E: drop>(v: &mut vector<E>, x: &E) {
@@ -68,5 +93,15 @@ module infamous::common {
         }
     }
 
+    #[test]
+    public fun test_number_vector_convert() { 
+
+        let a: u64 = 236;
+        let vu8 = num_vu8(a);
+        let back = vu8_num(vu8);
+        assert!(a == back, 1)
+
+
+    }
   
 }

@@ -5,6 +5,7 @@ import { Read } from './Read'
 import { Writer } from './Writer'
 
 import { InfamousNFTClientImpl } from '@white-matrix/infamous-contract-sdk'
+import { AptosNetwork } from '@white-matrix/infamous-contract-sdk/dist/InfamousNFTClientImpl'
 
 function App() {
   const [address, setAddress] = React.useState<string>('')
@@ -26,15 +27,9 @@ function App() {
   }, [address])
 
   const _getCollection = async () => {
-    const client = new InfamousNFTClientImpl('devnet')
+    const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
     const collectInfo = await client.collectionInfo()
     console.log({ collectInfo }) //ccc-log
-
-    const coll = await client.tokenClient.getCollectionData(
-      '0x307bd9d1be75ccd2f7670c5b7564b0cd26b41c1841b455ea6a0ea9eda0e0266f',
-      "Alice's"
-    )
-    console.log({ coll })
 
     const tokenOwned = await client.tokenOwned(
       '0xc0db5b48fd82d6aaa00bac2570e22e6faccd0e8561b8d0813307b76cb354096f'

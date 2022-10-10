@@ -1,20 +1,28 @@
 export const collectionResource = `0x3::token::Collections`;
 export const tokenStoreResource = `0x3::token::TokenStore`;
-export const collectionName = "InfamouseNFT";
+export const collectionName = "InfamousNFT";
+
+export interface IDeployment {
+    moduleAddress: string;
+    creator: string;
+    nftModuleName: string;
+    managerCapModuleName: string;
+    version: number;
+}
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0xd871bd97431e673709867a755aeed48c44a88510238385bd26eb2ccc12220160",
-        creator: "0xd871bd97431e673709867a755aeed48c44a88510238385bd26eb2ccc12220160",
-        moduleName: "infamous_nft",
-        manager_cap: "manager_cap",
-        version: 14023455,
+        moduleAddress: "0xd8cf3661a4d4fbd933623933075babf3bbbca109331658e83d040b056986bf9",
+        creator: "0xd8cf3661a4d4fbd933623933075babf3bbbca109331658e83d040b056986bf9",
+        nftModuleName: "infamous_nft",
+        managerCapModuleName: "manager_cap",
+        version: 15783525,
     },
     devnet: {
-        moduleAddress: "0xd871bd97431e673709867a755aeed48c44a88510238385bd26eb2ccc12220160",
-        creator: "0xd871bd97431e673709867a755aeed48c44a88510238385bd26eb2ccc12220160",
-        moduleName: "infamous_nft",
-        manager_cap: "manager_cap",
-        version: 14023455,
+        moduleAddress: "0xd8cf3661a4d4fbd933623933075babf3bbbca109331658e83d040b056986bf9",
+        creator: "0xd8cf3661a4d4fbd933623933075babf3bbbca109331658e83d040b056986bf9",
+        nftModuleName: "infamous_nft",
+        managerCapModuleName: "manager_cap",
+        version: 15783525,
     },
 };

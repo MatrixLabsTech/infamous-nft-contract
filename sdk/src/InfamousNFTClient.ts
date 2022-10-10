@@ -1,4 +1,4 @@
-import {CollectionInfo, ITokenDataId} from "./CollectionInfo";
+import {CollectionInfo, ITokenId, TokenData} from "./CollectionInfo";
 
 export interface ITransaction {
     type: string;
@@ -12,5 +12,7 @@ export interface InfamousNFTClient {
 
     collectionInfo(): Promise<CollectionInfo>;
 
-    tokenOwned(addr: string): Promise<ITokenDataId[]>;
+    tokenOwned(addr: string): Promise<TokenData[]>;
+
+    tokenPerMinted(addr: string): Promise<number>;
 }
