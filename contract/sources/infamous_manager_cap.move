@@ -4,6 +4,7 @@ module infamous::manager_cap {
     use aptos_framework::account::{Self, SignerCapability};
 
     friend infamous::infamous_nft;
+    friend infamous::stake;
 
     const EMANAGER_ACCOUNT_INFO_NOT_PUBLISHED: u64 = 1;
 

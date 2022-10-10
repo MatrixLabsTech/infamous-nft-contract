@@ -4,6 +4,7 @@
   "description": "",
   "scripts": {
     "aptos-init": "aptos init",
+    "faucet":"aptos account fund-with-faucet --account default",
     "compile": "aptos move compile --named-addresses infamous=default",
     "test": "aptos move test --named-addresses infamous=default",
     "aptos-move-publish": "aptos move publish --named-addresses infamous=default",

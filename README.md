@@ -2,7 +2,7 @@
 
 ## Step 1: Install the CLI
 
-[Install the precombiled binary for the Aptos CLI][install_cli].
+Install the precombiled binary for the Aptos CLI [install_cli](https://aptos.dev/cli-tools/aptos-cli-tool/install-aptos-cli).
 
 ## Step 2: Install node dependence
 
@@ -27,7 +27,7 @@ After installing the CLI binary, next step is to create and fund an account on t
 1. Begin by starting a new terminal and run the below command to initialize a new local account:
 
 ```bash
-aptos init
+yarn aptos-init
 ```
 
 The output will be similar to below.
@@ -54,7 +54,7 @@ The account address in the above output: `a345dbfb0c94416589721360f207dcc92ecfe4
 2. Now fund this account by running this command:
 
 ```bash
-aptos account fund-with-faucet --account default
+yarn faucet
 ```
 
 You will see an output similar to the below:
