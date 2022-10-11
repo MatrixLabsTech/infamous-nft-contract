@@ -52,7 +52,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon_feature: String, description: String) acquires CollectionInfo {
+    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon_feature: String, description: String, level: String, meterial: String) acquires CollectionInfo {
         
         let sender_addr = signer::address_of(sender);
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
@@ -128,10 +128,13 @@ module infamous::infamous_weapon_nft {
     }
 
 
-    #[test(user = @infamous, receiver = @0xBB, minter = @0xCC)]
-    public fun airdrop_test(user: &signer, receiver: &signer, minter: &signer) acquires CollectionInfo {
+    #[test(user = @infamous, receiver = @0xBB, minter = @0xCC, framework = @0x1,)]
+    public fun airdrop_test(user: &signer, receiver: &signer, minter: &signer, framework: &signer) acquires CollectionInfo {
 
         use aptos_framework::account;
+        use aptos_framework::timestamp;
+        timestamp::set_time_has_started_for_testing(framework);
+
 
         let user_addr = signer::address_of(user);
         account::create_account_for_test(user_addr);

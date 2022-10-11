@@ -73,7 +73,6 @@ module infamous::infamous_nft {
         // token infos
         let collection_name = infamous_common::infamous_collection_name();
         let base_token_name = infamous_common::infamous_base_token_name();
-        let base_token_uri = infamous_common::infamous_base_token_uri();
         let description = infamous_common::infamous_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -83,7 +82,7 @@ module infamous::infamous_nft {
             i = i + 1;
             let cur = prev_count + i;
             let name = infamous_common::append_num(base_token_name, cur);
-            let uri = infamous_common::append_num(base_token_uri, cur);
+            let uri = infamous_common::infamous_token_uri();
 
             create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description, cur);
             emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
@@ -149,10 +148,12 @@ module infamous::infamous_nft {
     }
 
 
-    #[test(user = @infamous, receiver = @0xBB)]
-    public fun mint_test(user: &signer, receiver: &signer) acquires CollectionInfo {
+    #[test(user = @infamous, receiver = @0xBB, framework = @0x1,)]
+    public fun mint_test(user: &signer, receiver: &signer, framework:&signer) acquires CollectionInfo {
 
         use aptos_framework::account;
+        use aptos_framework::timestamp;
+        timestamp::set_time_has_started_for_testing(framework);
 
         let user_addr = signer::address_of(user);
         account::create_account_for_test(user_addr);

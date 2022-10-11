@@ -23,8 +23,9 @@ module infamous::infamous_backend_open_box {
         sender: &signer,
         creator: address, collection: String, name: String,
         background: String, clothing: String, ear: String, eyes: String, 
-        eyebrow: String, face_accessories: String, hear: String, mouth: String, 
-        neck: String, tatto: String) {
+        eyebrow: String, face_accessories: String, hear: String, mouth: String,  
+        neck: String, tatto: String, gender: String, weapon_name: String, meterial: String, level: String, meterial: String, description: String) { 
+        // @Todo: airdrop & wear weapon
         let sender_addr = signer::address_of(sender);
         
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));

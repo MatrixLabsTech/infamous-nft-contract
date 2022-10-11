@@ -1,7 +1,11 @@
 module infamous::infamous_manager_cap {
 
     use std::error;
+    use std::string;
     use aptos_framework::account::{Self, SignerCapability};
+    use aptos_framework::timestamp;
+
+    use infamous::infamous_common;
 
     friend infamous::infamous_nft;
     friend infamous::infamous_stake;
@@ -16,8 +20,9 @@ module infamous::infamous_manager_cap {
 
 
     fun init_module(source: &signer) {
-        let seed = x"01";
-        let (_, resource_signer_cap) = account::create_resource_account(source, seed);
+        let registry_seed = infamous_common::u128_to_string((timestamp::now_microseconds() as u128));
+        string::append(&mut registry_seed, string::utf8(b"registry_seed"));
+        let (_, resource_signer_cap) = account::create_resource_account(source, *string::bytes(&registry_seed));
         move_to(source, ManagerAccountCapability {
             signer_cap: resource_signer_cap
         });
@@ -37,11 +42,12 @@ module infamous::infamous_manager_cap {
     }
 
 
-    #[test(user = @infamous)]
-    public fun end_to_end(user: &signer) acquires ManagerAccountCapability {
+    #[test(user = @infamous, framework = @0x1, )]
+    public fun end_to_end(user: &signer, framework:&signer) acquires ManagerAccountCapability {
 
         use std::signer;
         use aptos_std::debug;
+        timestamp::set_time_has_started_for_testing(framework);
 
         let user_addr = signer::address_of(user);
         account::create_account_for_test(user_addr);
