@@ -1,4 +1,4 @@
-module infamous::common {
+module infamous::infamous_common {
 
     use std::string::{Self, String};
     use std::vector;
@@ -24,14 +24,35 @@ module infamous::common {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
     }
 
+    public fun infamous_level_key(): String {
+        string::utf8(b"level")
+    }
 
-    public fun infamous_token_name(index: u64): String {
-        append_num(infamous_base_token_name(), index)
+    public fun infamous_weapon_key(): String {
+        string::utf8(b"weapon")
+    }
+
+
+    
+    public fun infamous_weapon_collection_name(): String {
+        string::utf8(b"InfamousWeaponNFT")
+    }
+
+    public fun infamous_weapon_collection_uri(): String {
+        string::utf8(b"https://d39njnv5mk7be5.cloudfront.net/static/infamous_collection_name.png")
+    }
+
+    public fun infamous_weapon_base_token_name(): String {
+        string::utf8(b"InfamousWeaponNFT #")
     }
 
     
-    public fun infamous_token_uri(index: u64): String {
-        append_num(infamous_base_token_uri(), index)
+    public fun infamous_weapon_base_token_uri(): String {
+        string::utf8(b"https://beta.api.infamousnft.xyz/infamousnft/token/")
+    }
+
+    public fun infamous_weapon_description(): String {
+        string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
     }
 
     /// Helper to append number to string
@@ -53,30 +74,6 @@ module infamous::common {
         string::utf8(v1)
     }
 
-    public fun num_vu8(num: u64): vector<u8>{
-        let v1 = vector::empty();
-        while (num/10 > 0){
-            let rem = num%10;
-            vector::push_back(&mut v1, (rem+48 as u8));
-            num = num/10;
-        };
-        vector::push_back(&mut v1, (num+48 as u8));
-        vector::reverse(&mut v1);
-        v1
-    }
-    
-    public fun vu8_num(value: vector<u8>): u64{
-        let i = 0;
-        let num: u64 = 0;
-        let len = vector::length(&value);
-        while (i < len) {
-            let elem = *vector::borrow<u8>(&value, i);
-            num = num*10 + (elem-48 as u64);
-            i = i + 1;
-        };
-        num
-    }
-
  
     
     /// Helper to remove an element from a vector.
@@ -93,15 +90,5 @@ module infamous::common {
         }
     }
 
-    #[test]
-    public fun test_number_vector_convert() { 
-
-        let a: u64 = 236;
-        let vu8 = num_vu8(a);
-        let back = vu8_num(vu8);
-        assert!(a == back, 1)
-
-
-    }
   
 }

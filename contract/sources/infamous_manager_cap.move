@@ -1,10 +1,14 @@
-module infamous::manager_cap {
+module infamous::infamous_manager_cap {
 
     use std::error;
     use aptos_framework::account::{Self, SignerCapability};
 
     friend infamous::infamous_nft;
-    friend infamous::stake;
+    friend infamous::infamous_stake;
+    friend infamous::infamous_upgrade_level;
+    friend infamous::infamous_backend_open_box;
+    friend infamous::infamous_weapon_nft;
+    friend infamous::infamous_weapon_wear;
 
     const EMANAGER_ACCOUNT_INFO_NOT_PUBLISHED: u64 = 1;
 

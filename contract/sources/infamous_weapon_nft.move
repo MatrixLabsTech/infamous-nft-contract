@@ -1,4 +1,4 @@
-module infamous::infamous_nft {
+module infamous::infamous_weapon_nft {
 
     use std::bcs;
     use std::signer;
@@ -14,10 +14,10 @@ module infamous::infamous_nft {
 
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
+    use infamous::infamous_backend_auth;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
-    const EMINT_COUNT_OUT_OF_PER_MAX: u64 = 2;
-    const EMINT_COUNT_OUT_OF_MAX: u64 = 3;
+    const ACCOUNT_MUSTBE_AUTHED: u64 = 2;
 
 
     const PER_MAX: u64 = 10;
@@ -33,74 +33,53 @@ module infamous::infamous_nft {
     // the collection mint infos
     struct CollectionInfo has key {
         counter: u64,
-        per_minted_table: Table<address, u64>,
         token_minted_events: EventHandle<TokenMintedEvent>,
     }
 
 
     fun init_module(source: &signer) {
-        let collection_name = infamous_common::infamous_collection_name();
-        let collection_uri = infamous_common::infamous_collection_uri();
-        let description = infamous_common::infamous_description();
+        let collection_name = infamous_common::infamous_weapon_collection_name();
+        let collection_uri = infamous_common::infamous_weapon_collection_uri();
+        let description = infamous_common::infamous_weapon_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         token::create_collection_script(&manager_signer, collection_name, description, collection_uri, MAXIMUM, vector<bool>[false, true, false]);
 
         move_to(source, CollectionInfo {
             counter: 0, 
-            per_minted_table: table::new(),
             token_minted_events: account::new_event_handle<TokenMintedEvent>(&manager_signer),
         });
 
        
     }
 
-    
-    public entry fun mint(receiver: &signer, count: u64) acquires CollectionInfo {
-        // check per max
-        assert!(count <= PER_MAX, error::out_of_range(EMINT_COUNT_OUT_OF_PER_MAX));
+    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon_feature: String, description: String) acquires CollectionInfo {
+        
+        let sender_addr = signer::address_of(sender);
+        assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
 
-        // check max
+        
         let source_addr = @infamous;
-        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
-        assert!(collection_info.counter + count <= MAXIMUM, error::out_of_range(EMINT_COUNT_OUT_OF_MAX));
-
-        // check minted + count < per max
-        let receiver_addr = signer::address_of(receiver);
-        let used = minted_count(&collection_info.per_minted_table, receiver_addr);
-        assert!(used + count <= PER_MAX, error::out_of_range(EMINT_COUNT_OUT_OF_PER_MAX));
 
         // token infos
-        let collection_name = infamous_common::infamous_collection_name();
-        let base_token_name = infamous_common::infamous_base_token_name();
-        let base_token_uri = infamous_common::infamous_base_token_uri();
-        let description = infamous_common::infamous_description();
+        let collection_name = infamous_common::infamous_weapon_collection_name();
+        let base_token_name = infamous_common::infamous_weapon_base_token_name();
+        let base_token_uri = infamous_common::infamous_weapon_base_token_uri();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
         let prev_count = collection_info.counter;
-        let i = 0;
-        while (i < count) {
-            i = i + 1;
-            let cur = prev_count + i;
-            let name = infamous_common::append_num(base_token_name, cur);
-            let uri = infamous_common::append_num(base_token_uri, cur);
+        let cur = prev_count + 1;
+        let name = infamous_common::append_num(base_token_name, cur);
+        let uri = infamous_common::append_num(base_token_uri, cur);
 
-            create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description, cur);
-            emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
-        };
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon_feature, description);
+        emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
         let counter_ref = &mut collection_info.counter;
-        *counter_ref = prev_count + count;
-        if (!table::contains(&collection_info.per_minted_table, receiver_addr)) {
-            table::add(&mut collection_info.per_minted_table, receiver_addr, count);
-        } else {
-            let table_reciver_ref = table::borrow_mut(&mut collection_info.per_minted_table, receiver_addr);
-            *table_reciver_ref = used + count;
-        };
+        *counter_ref = cur;
     }
 
-    
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
@@ -115,7 +94,7 @@ module infamous::infamous_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver:&signer, collection_name: String, token_name: String, token_uri: String, description: String, no: u64,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon_feature: String, description: String,) {
         
         let balance = 1;
         let maximum = 1;
@@ -127,10 +106,10 @@ module infamous::infamous_nft {
         0,
         0,
         vector<bool>[false, false, true, false, true],
-        vector<String>[ string::utf8(b"no") ], vector<vector<u8>>[bcs::to_bytes<u64>(&no)], vector<String>[ string::utf8(b"u64")],);
+        vector<String>[ string::utf8(b"feature") ], vector<vector<u8>>[bcs::to_bytes<String>(&weapon_feature)], vector<String>[ string::utf8(b"0x1::string::String")],);
 
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);
-        token::direct_transfer(minter, receiver, token_id, balance);
+        token::transfer(minter, token_id, receiver_addr, balance);
     }
 
     fun emit_minted_event(collection_info: &mut CollectionInfo, receiver_addr: address, creator_addr: address, collection_name: String, token_name: String) {
@@ -149,8 +128,8 @@ module infamous::infamous_nft {
     }
 
 
-    #[test(user = @infamous, receiver = @0xBB)]
-    public fun mint_test(user: &signer, receiver: &signer) acquires CollectionInfo {
+    #[test(user = @infamous, receiver = @0xBB, minter = @0xCC)]
+    public fun airdrop_test(user: &signer, receiver: &signer, minter: &signer) acquires CollectionInfo {
 
         use aptos_framework::account;
 
@@ -162,22 +141,26 @@ module infamous::infamous_nft {
 
         let receiver_addr = signer::address_of(receiver);
         account::create_account_for_test(receiver_addr);
-        mint(receiver, 3);
 
-        
+        let minter_addr = signer::address_of(minter);
+        account::create_account_for_test(minter_addr);
+
+
+        infamous_backend_auth::delegate(user, minter_addr);
+
+        token::opt_in_direct_transfer(receiver, true);
+
+
+
+        airdrop(minter, receiver_addr, string::utf8(b"knif"), string::utf8(b"normal knif"));
+
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
-        let collection_name = infamous_common::infamous_collection_name();
+        let collection_name = infamous_common::infamous_weapon_collection_name();
 
-        let base_token_name = infamous_common::infamous_base_token_name();
+        let base_token_name = infamous_common::infamous_weapon_base_token_name();
         let token_index_1_name = infamous_common::append_num(base_token_name, 1);
         assert!(token::balance_of(receiver_addr, resolve_token_id(manager_addr, collection_name, token_index_1_name)) == 1, 1);
-
-        let token_index_2_name = infamous_common::append_num(base_token_name, 2);
-        assert!(token::balance_of(receiver_addr, resolve_token_id(manager_addr, collection_name, token_index_2_name)) == 1, 1);
-
-        let token_index_3_name = infamous_common::append_num(base_token_name, 3);
-        assert!(token::balance_of(receiver_addr, resolve_token_id(manager_addr, collection_name, token_index_3_name)) == 1, 1);
 
     }
 

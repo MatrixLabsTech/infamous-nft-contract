@@ -1,10 +1,9 @@
-module infamous::stake {
+module infamous::infamous_stake {
 
     use std::string::{String};
     use std::error;
     use std::signer;
     use std::vector;
-    // use std::option::{Self, Option};
 
     use aptos_std::table::{Self, Table};
 
@@ -12,20 +11,20 @@ module infamous::stake {
 
     use aptos_token::token::{Self, TokenId};
 
-    use infamous::common;
-    use infamous::manager_cap;
+    use infamous::infamous_common;
+    use infamous::infamous_manager_cap;
     use infamous::infamous_nft;
+
+    friend infamous::infamous_upgrade_level;
 
 
     const TOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
     const ESTAKER_INFO_NOT_PUBLISHED: u64 = 2;
     const ETOKEN_NOT_STAKE: u64 = 3;
     const ETOKEN_ALREADY_STAKED: u64 = 4;
-    const EEXP_NOT_ENOUGH_FOR_ONE_LEVEL: u64 = 5;
-    const ETOKEN_LEVEL_FULL: u64 = 6;
+    const ESTAKE_TIME_NOT_ENOUGH: u64 = 5;
+    
 
-    const FULL_LEVEL: u64 = 5;
-    const EACH_LEVEL_EXP: u64 = 300;
 
     
     struct StakingTime has store, drop {
@@ -36,7 +35,6 @@ module infamous::stake {
     // store in staker account
     struct TokenStakes has key {
         staking: vector<TokenId>,
-        staking_time: Table<TokenId, StakingTime>,
     }
 
 
@@ -44,13 +42,14 @@ module infamous::stake {
     struct TokenStakesData has key {
         staking_tokens: vector<TokenId>,
         staking_token_address: Table<TokenId, address>,
+        staking_time: Table<TokenId, StakingTime>,
     }
 
 
     public entry fun stake_infamous_nft_script(sender: &signer, token_name: String,) acquires TokenStakes, TokenStakesData {
-        let manager_signer = manager_cap::get_manager_signer();
+        let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
-        let collection_name = common::infamous_collection_name();
+        let collection_name = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_name);
 
         let sender_addr = signer::address_of(sender);
@@ -62,9 +61,9 @@ module infamous::stake {
     }
 
     public entry fun unstake_infamous_nft_script(sender: &signer, token_name: String,) acquires TokenStakes, TokenStakesData {
-        let manager_signer = manager_cap::get_manager_signer();
+        let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
-        let collection_name = common::infamous_collection_name();
+        let collection_name = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_name);
 
         let sender_addr = signer::address_of(sender);
@@ -75,7 +74,7 @@ module infamous::stake {
 
 
     public fun get_all_stakes(): vector<TokenId> acquires TokenStakesData  {
-        let manager_signer = manager_cap::get_manager_signer();
+        let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
         if(exists<TokenStakesData>(manager_addr)) {
             let stakes_data = borrow_global<TokenStakesData>(manager_addr);
@@ -85,20 +84,29 @@ module infamous::stake {
         }
     }
 
-    // public fun get_available_time(token_id: TokenId): Option<u64> {
-    //     let manager_signer = manager_cap::get_manager_signer();
-    //     let manager_addr = signer::address_of(&manager_signer);
-    //     let available_time = option::none();
-    //     // if(exists<TokenStakesData>(manager_addr)) {
-    //     //     let stakes_data = borrow_global<TokenStakesData>(manager_addr);
+    public fun get_available_time(token_id: TokenId): u64 acquires TokenStakesData {
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        assert!(exists<TokenStakesData>(manager_addr), error::invalid_argument(ESTAKER_INFO_NOT_PUBLISHED));
+        let staking_time = &borrow_global<TokenStakesData>(manager_addr).staking_time;
+        assert!(table::contains(staking_time, token_id), error::invalid_argument(ETOKEN_NOT_STAKE));
+        let stake_time = table::borrow(staking_time, token_id);
+        let avaliable = timestamp::now_seconds() - stake_time.start - stake_time.stake_time_used;
+        avaliable
+    }
 
-    //     // }
-    //     available_time
-    // }
+    public(friend) fun take_times_to_use(token_id: TokenId, seconds: u64) acquires TokenStakesData {
+        let available_time = get_available_time(token_id);
+        assert!(available_time >= seconds, error::invalid_argument(ESTAKE_TIME_NOT_ENOUGH));
 
-    // public(friend) fun take_times_to_use(token_id: TokenId, seconds: u64)  {
-       
-    // }
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        assert!(exists<TokenStakesData>(manager_addr), error::invalid_argument(ESTAKER_INFO_NOT_PUBLISHED));
+        let staking_time = &mut borrow_global_mut<TokenStakesData>(manager_addr).staking_time;
+        assert!(table::contains(staking_time, token_id), error::invalid_argument(ETOKEN_NOT_STAKE));
+        let stake_time = table::borrow_mut(staking_time, token_id);
+        stake_time.stake_time_used = stake_time.stake_time_used + seconds;
+    }
 
 
     fun remove_token_stakes(sender_addr: address, token_id: TokenId) acquires TokenStakes {
@@ -106,11 +114,8 @@ module infamous::stake {
 
         let stakes = borrow_global_mut<TokenStakes>(sender_addr);
         let staking = &mut stakes.staking;
-        common::remove_element(staking, &token_id);
+        infamous_common::remove_element(staking, &token_id);
 
-        let staking_time = &mut stakes.staking_time;
-        assert!(table::contains(staking_time, token_id), error::not_found(ETOKEN_NOT_STAKE));
-        let _stake_time = table::remove(staking_time, token_id);
     }
 
 
@@ -119,11 +124,15 @@ module infamous::stake {
 
         let stakes_data = borrow_global_mut<TokenStakesData>(manager_addr);
         let staking_tokens = &mut stakes_data.staking_tokens;
-        common::remove_element(staking_tokens, &token_id);
+        infamous_common::remove_element(staking_tokens, &token_id);
 
         let staking_token_address = &mut stakes_data.staking_token_address;
         assert!(table::contains(staking_token_address, token_id), error::not_found(ETOKEN_NOT_STAKE));
         let _address = table::remove(staking_token_address, token_id);
+
+        let staking_time = &mut stakes_data.staking_time;
+        assert!(table::contains(staking_time, token_id), error::not_found(ETOKEN_NOT_STAKE));
+        let _stake_time = table::remove(staking_time, token_id);
     }
 
     fun add_token_stakes(sender: &signer, sender_addr: address, token_id: TokenId) acquires TokenStakes {
@@ -131,14 +140,7 @@ module infamous::stake {
         let stakes = borrow_global_mut<TokenStakes>(sender_addr);
         let staking = &mut stakes.staking;
         assert!(!vector::contains(staking, &token_id), error::already_exists(ETOKEN_ALREADY_STAKED));
-        common::add_element(staking, token_id);
-
-        let staking_time = &mut stakes.staking_time;
-        assert!(!table::contains(staking_time, token_id), error::already_exists(ETOKEN_ALREADY_STAKED));
-        table::add(staking_time, token_id, StakingTime{
-                 start: timestamp::now_seconds(),
-                 stake_time_used: 0,
-             });
+        infamous_common::add_element(staking, token_id);
     }
 
     fun add_token_stakes_data(manager: &signer, manager_addr: address, staker_addr:address, token_id: TokenId) acquires TokenStakesData {
@@ -146,11 +148,18 @@ module infamous::stake {
         let stakes_data = borrow_global_mut<TokenStakesData>(manager_addr);
         let staking_tokens = &mut stakes_data.staking_tokens;
         assert!(!vector::contains(staking_tokens, &token_id), error::already_exists(ETOKEN_ALREADY_STAKED));
-        common::add_element(staking_tokens, token_id);
+        infamous_common::add_element(staking_tokens, token_id);
 
         let staking_token_address = &mut stakes_data.staking_token_address;
         assert!(!table::contains(staking_token_address, token_id), error::already_exists(ETOKEN_ALREADY_STAKED));
         table::add(staking_token_address, token_id, staker_addr);
+
+        let staking_time = &mut stakes_data.staking_time;
+        assert!(!table::contains(staking_time, token_id), error::already_exists(ETOKEN_ALREADY_STAKED));
+        table::add(staking_time, token_id, StakingTime{
+                 start: timestamp::now_seconds(),
+                 stake_time_used: 0,
+             });
     }
 
 
@@ -162,7 +171,6 @@ module infamous::stake {
                 account,
                 TokenStakes {
                     staking: vector::empty<TokenId>(),
-                    staking_time: table::new<TokenId, StakingTime>(),
                 }
             );
         }
@@ -176,6 +184,7 @@ module infamous::stake {
                 TokenStakesData {
                     staking_tokens: vector::empty<TokenId>(),
                     staking_token_address: table::new<TokenId, address>(),
+                    staking_time: table::new<TokenId, StakingTime>(),
                 }
             );
         }
@@ -196,7 +205,7 @@ module infamous::stake {
         let user_addr = signer::address_of(user);
         account::create_account_for_test(user_addr);
         
-        manager_cap::initialize(user);
+        infamous_manager_cap::initialize(user);
         infamous_nft::initialize(user);
 
         let receiver_addr = signer::address_of(receiver);
@@ -204,22 +213,30 @@ module infamous::stake {
         infamous_nft::mint(receiver, 3);
 
         
-        let manager_signer = manager_cap::get_manager_signer();
+        let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
-        let collection_name = common::infamous_collection_name();
-        let token_index_1_name = common::infamous_token_name(1);
-        assert!(token::balance_of(receiver_addr, infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name)) == 1, 1);
+        let collection_name = infamous_common::infamous_collection_name();
+        let base_token_name = infamous_common::infamous_base_token_name();
+        let token_index_1_name = infamous_common::append_num(base_token_name, 1);
+
+        let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name);
+        assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
 
 
         stake_infamous_nft_script(receiver, token_index_1_name);
 
-        let stakes = get_all_stakes();
+        let time = get_available_time(token_id);
+        debug::print<u64>(&time);
 
-        debug::print<vector<TokenId>>(&stakes);
+        timestamp::fast_forward_seconds(1000);
+        let time1 = get_available_time(token_id);
+        debug::print<u64>(&time1);
 
-        debug::print<u64>(&timestamp::now_seconds());
-        timestamp::fast_forward_seconds(5);
-        debug::print<u64>(&timestamp::now_seconds());
+
+        take_times_to_use(token_id, 33);
+        let time2 = get_available_time(token_id);
+        debug::print<u64>(&time2);
+
 
         
         unstake_infamous_nft_script(receiver, token_index_1_name);
