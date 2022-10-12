@@ -1,4 +1,4 @@
-import {CollectionInfo, ITokenId, TokenData} from "./CollectionInfo";
+import {CollectionInfo, IStakingTime, ITokenId, TokenData} from "./CollectionInfo";
 
 export interface ITransaction {
     type: string;
@@ -11,6 +11,7 @@ export interface InfamousNFTClient {
     // package mint trans
     mintTransaction(count: string): ITransaction;
     stakeTransaction(tokenName: string): ITransaction;
+    unstakeTransaction(tokenName: string): ITransaction;
     wearWeaponTransaction(tokenName: string, weaponName: string): ITransaction;
 
     // infamous collection info
@@ -25,7 +26,7 @@ export interface InfamousNFTClient {
 
     tokenStaked(addr: string): Promise<ITokenId[]>;
 
-    tokenStakeData(tokenId: ITokenId): Promise<TokenData | undefined>;
+    tokenStakeData(tokenId: ITokenId): Promise<IStakingTime | undefined>;
 
     tokenPerMinted(addr: string): Promise<number>;
 }

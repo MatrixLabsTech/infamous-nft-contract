@@ -4,7 +4,10 @@ import React from 'react'
 import { Accordion, Breadcrumb, Button, Form, Spinner } from 'react-bootstrap'
 import {
   client,
-  dynamicTokenModuleName,
+  infamousBackendOpenBox,
+  infamousNft,
+  infamousStake,
+  infamousUpgradeLevel,
   metadataModuleName,
   moduleAddress,
 } from '../const'
@@ -70,7 +73,10 @@ export function Writer(props: WriterProps) {
           const moduleName = m.abi?.name || ''
           return (
             moduleName === metadataModuleName ||
-            moduleName === dynamicTokenModuleName
+            moduleName === infamousNft ||
+            moduleName === infamousStake ||
+            moduleName === infamousUpgradeLevel ||
+            moduleName === infamousBackendOpenBox
           )
         })
       )

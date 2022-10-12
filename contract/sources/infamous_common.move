@@ -13,7 +13,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_collection_uri(): String {
-        string::utf8(b"https://d39njnv5mk7be5.cloudfront.net/static/infamous_collection_name.png")
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/collection.png")
     }
 
     public fun infamous_base_token_name(): String {
@@ -22,11 +22,11 @@ module infamous::infamous_common {
 
     
     public fun infamous_token_uri(): String {
-        string::utf8(b"https://d39njnv5mk7be5.cloudfront.net/static/box.png")
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/box.png")
     }
 
     public fun infamous_base_token_uri(): String {
-        string::utf8(b"https://d39njnv5mk7be5.cloudfront.net/static/")
+        string::utf8(b"https://media.nft.infamousnft.xyz/test/")
     }
 
     public fun infamous_description(): String {
@@ -50,7 +50,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_collection_uri(): String {
-        string::utf8(b"https://d39njnv5mk7be5.cloudfront.net/static/infamous_collection_name.png")
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/weapon-collection.png")
     }
 
     public fun infamous_weapon_base_token_name(): String {
@@ -59,7 +59,7 @@ module infamous::infamous_common {
 
     
     public fun infamous_weapon_base_token_uri(): String {
-        string::utf8(b"https://beta.api.infamousnft.xyz/infamousnft/token/")
+        string::utf8(b"https://media.nft.infamousnft.xyz/media/weapon/")
     }
 
     public fun infamous_weapon_description(): String {
@@ -137,23 +137,30 @@ module infamous::infamous_common {
 
     fun u4_hex_string_u8(input: u8): u8 {
         if (input<=9) (48 + input) // 0 - 9 => ASCII 48 to 57
-        else (55 + input) //10 - 15 => ASCII 65 to 70
+        else (87 + input) //10 - 15 => ASCII 65 to 70
     }
 
     public fun string_hash_string(value: String): String {
         let bytes = bcs::to_bytes<String>(&value);
         vector::remove(&mut bytes, 0); // has a 67 before,,,? dont known why
         let hashed = hash::sha3_256(bytes);
-        debug::print<vector<u8>>(&hashed);
-        address_string(from_bcs::to_address(hashed))
+        let addr = from_bcs::to_address(hashed);
+        address_string(addr)
     }
 
 
     #[test()]
     public fun hash_test() {
-        let before_str = string::utf8(b"Blue-dungaress-hoop earings-eyes closed-Straight eyebrows-band-aid-");
+        let before_str = string::utf8(b"bluedungareeshoop earringsstraightband-aidwhitehighchokerfox maskdangermaledanger");
         let hashed_string = string_hash_string(before_str);
         debug::print<String>(&hashed_string);
+
+        
+        let aaaaa_str = string::utf8(b"4d3bc41147ef330656ac4a24ee8819e693baf250b3fdde22e19031f1c70201e1");
+        
+        debug::print<u64>(&9999999);
+        debug::print<String>(&aaaaa_str);
+        debug::print<u64>(&9999999);
     }
   
 }

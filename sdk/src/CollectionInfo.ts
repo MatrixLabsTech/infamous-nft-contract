@@ -224,6 +224,11 @@ export interface CollectionInfo {
     uri: string;
 }
 
+export interface PropertyItem {
+    key: string;
+    value: string;
+}
+
 export interface TokenData {
     // Unique name within this creators account for this Token's collection
     collection: string;
@@ -232,9 +237,30 @@ export interface TokenData {
     // The name of this Token
     name: string;
     // Optional maximum number of this type of Token.
-    maximum?: number;
+    maximum?: string;
     // Total number of this type of Token
-    supply: number;
+    supply: string;
     /// URL for additional information / media
+    uri: string;
+    properties: PropertyItem[];
+}
+
+export interface IStakingTime {
+    start: string;
+    stake_time_used: string;
+}
+
+export interface ITokenData {
+    default_properties: {map: {data: Property[]}};
+    description: string;
+    largest_property_version: string;
+    maximum: string;
+    name: string;
+    royalty: {
+        payee_address: string;
+        royalty_points_denominator: string;
+        royalty_points_numerator: string;
+    };
+    supply: string;
     uri: string;
 }

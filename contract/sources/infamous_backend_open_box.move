@@ -5,6 +5,8 @@ module infamous::infamous_backend_open_box {
      use std::string::{Self, String, utf8};
      use std::error;
 
+     use aptos_std::debug;
+
      
      use aptos_token::token;
      use aptos_token::property_map::{Self, PropertyMap};
@@ -67,42 +69,13 @@ module infamous::infamous_backend_open_box {
         let weapon_token_name = infamous_weapon_nft::airdrop(sender, manager_addr, weapon, material, level);
         infamous_weapon_wear::wear_weapon(&manager_signer, name, weapon_token_name);
 
-        update_token_uri_with_properties(manager_addr, name);
      }
 
 
-     public fun update_token_uri_with_properties(owner_addr: address, name: String) {
-      
-        let creator = infamous_manager_cap::get_manager_signer();
-        let creator_addr = signer::address_of(&creator);
-        let collection_name = infamous_common::infamous_collection_name();
-        let token_id = infamous_nft::resolve_token_id(creator_addr, collection_name, name);
-        let properties = token::get_property_map(owner_addr, token_id);
-        let properties_string = utf8(b"");
-        append_property(properties_string, properties, utf8(b"background"));
-        append_property(properties_string, properties, utf8(b"clothing"));
-        append_property(properties_string, properties, utf8(b"ear"));
-        append_property(properties_string, properties, utf8(b"eyes"));
-        append_property(properties_string, properties, utf8(b"eyebrow"));
-        append_property(properties_string, properties, utf8(b"accessories"));
-        append_property(properties_string, properties, utf8(b"hear"));
-        append_property(properties_string, properties, utf8(b"mouth"));
-        append_property(properties_string, properties, utf8(b"neck"));
-        append_property(properties_string, properties, utf8(b"tatto"));
-        append_property(properties_string, properties, utf8(b"gender"));
-        append_property(properties_string, properties, utf8(b"weapon"));
-        let hash_string = infamous_common::string_hash_string(properties_string);
-        let base_uri = infamous_common::infamous_base_token_uri();
-        string::append(&mut base_uri, hash_string);
 
-        let token_data_id = token::create_token_data_id(creator_addr, collection_name, name);
-        token::mutate_tokendata_uri(&creator, token_data_id, base_uri);
-
-     }
-
-     fun append_property(properties_string: String, properties: PropertyMap, property_key: String) {
+     fun append_property(properties_string: &mut String, properties: PropertyMap, property_key: String) {
         if(property_map::contains_key(&properties, &property_key)) {
-            string::append(&mut properties_string, property_map::read_string(&properties, &property_key));
+            string::append(properties_string, property_map::read_string(&properties, &property_key));
         };
      }
 
@@ -117,7 +90,6 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_weapon_nft;
         use infamous::infamous_upgrade_level;
-        use aptos_std::debug;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -151,7 +123,7 @@ module infamous::infamous_backend_open_box {
         let time1 = infamous_stake::get_available_time(token_id);
         debug::print<u64>(&time1);
 
-        infamous_upgrade_level::upgrade(manager_addr, collection_name, token_index_1_name);
+        infamous_upgrade_level::upgrade(token_index_1_name);
         let after = infamous_upgrade_level::get_token_level(manager_addr, token_id);
         debug::print<u64>(&222222);
         debug::print<u64>(&after);
@@ -171,6 +143,7 @@ module infamous::infamous_backend_open_box {
         let tatto = utf8(b"danger");
         let gender = utf8(b"male");
         let weapon = utf8(b"danger");
+
         let material = utf8(b"ssss");
         let level = utf8(b"3");
 

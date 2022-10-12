@@ -5,8 +5,8 @@ import { useEffect, useState } from 'react'
 import { Button, ListGroup, Spinner } from 'react-bootstrap'
 import {
   client,
-  dynamicManagerModuleName,
-  dynamicTokenModuleName,
+  infamousManagerCap,
+  infamousNft,
   moduleAddress,
 } from '../const'
 
@@ -20,7 +20,7 @@ interface ReadProps {
 }
 function noop() {}
 
-const resourceMinterInfo = `${moduleAddress}::${dynamicManagerModuleName}::ManagerAccountCapability`
+const resourceMinterInfo = `${moduleAddress}::${infamousManagerCap}::ManagerAccountCapability`
 
 export function Read(props: ReadProps) {
   const { className, address } = props

@@ -23,15 +23,18 @@ module infamous::infamous_upgrade_level {
 
 
 
-    public entry fun upgrade(creator: address, collection: String, name: String) {
+    public entry fun upgrade(name: String) {
+
+        let collection = infamous_common::infamous_collection_name();
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let creator = signer::address_of(&manager_signer);
+
         let token_id = infamous_nft::resolve_token_id(creator, collection, name);
         let available_time = infamous_stake::get_available_time(token_id);
         assert!(available_time >= EACH_LEVEL_EXP, error::invalid_argument(EXP_NOT_ENOUGH_TO_UPGRADE));
 
         
-        let manager_signer = infamous_manager_cap::get_manager_signer();
-        let manager_addr = signer::address_of(&manager_signer);
-        let cur_level = get_token_level(manager_addr, token_id);
+        let cur_level = get_token_level(creator, token_id);
         assert!(cur_level < FULL_LEVEL, error::invalid_argument(TOKEN_IS_FULL_LEVEL));
 
         let available_level = available_time / EACH_LEVEL_EXP;
@@ -113,11 +116,16 @@ module infamous::infamous_upgrade_level {
         let time1 = infamous_stake::get_available_time(token_id);
         debug::print<u64>(&time1);
 
-        upgrade(manager_addr, collection_name, token_index_1_name);
+        upgrade(token_index_1_name);
         let after = get_token_level(manager_addr, token_id);
-        debug::print<u64>(&11111111111);
         debug::print<u64>(&after);
-        debug::print<u64>(&11111111111);
+
+        
+        timestamp::fast_forward_seconds(200);
+        upgrade(token_index_1_name);
+        let after1 = get_token_level(manager_addr, token_id);
+        debug::print<u64>(&after1);
+        debug::print<u64>(&111111111111);
 
     }
 

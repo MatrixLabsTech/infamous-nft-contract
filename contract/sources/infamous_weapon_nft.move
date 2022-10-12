@@ -3,7 +3,7 @@ module infamous::infamous_weapon_nft {
     use std::bcs;
     use std::signer;
     use std::error;
-    use std::string::{Self, String};
+    use std::string::{Self, String, utf8};
 
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
@@ -65,13 +65,15 @@ module infamous::infamous_weapon_nft {
         // token infos
         let collection_name = infamous_common::infamous_weapon_collection_name();
         let base_token_name = infamous_common::infamous_weapon_base_token_name();
-        let base_token_uri = infamous_common::infamous_weapon_base_token_uri();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
         let prev_count = collection_info.counter;
         let cur = prev_count + 1;
         let name = infamous_common::append_num(base_token_name, cur);
-        let uri = infamous_common::append_num(base_token_uri, cur);
+        let base_uri = infamous_common::infamous_weapon_base_token_uri();
+        let uri = copy base_uri;
+        string::append(&mut uri, weapon);
+        string::append(&mut uri, utf8(b".png"));
 
         create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, meterial, level,);
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
@@ -109,9 +111,9 @@ module infamous::infamous_weapon_nft {
         0,
         0,
         vector<bool>[false, true, false, false, true],
-        vector<String>[ string::utf8(b"weapon"), string::utf8(b"meterial"), string::utf8(b"level") ], 
+        vector<String>[ utf8(b"weapon"), utf8(b"meterial"), utf8(b"level") ], 
         vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&meterial), bcs::to_bytes<String>(&level)], 
-        vector<String>[ string::utf8(b"0x1::string::String"), string::utf8(b"0x1::string::String"), string::utf8(b"0x1::string::String")],);
+        vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],);
 
         if(receiver_addr != minter_addr) {
             let token_id = resolve_token_id(minter_addr, collection_name, token_name);
@@ -162,7 +164,7 @@ module infamous::infamous_weapon_nft {
 
 
 
-        airdrop(minter, receiver_addr, string::utf8(b"knif"), string::utf8(b"normal knif"), string::utf8(b"3"));
+        airdrop(minter, receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);

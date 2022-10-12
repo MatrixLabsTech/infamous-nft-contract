@@ -4,7 +4,7 @@ module infamous::infamous_weapon_wear {
     use std::bcs;
     use std::error;
     use std::signer;
-    use std::string::{Self, String};
+    use std::string::{Self, String, utf8};
     use std::option::{Self, Option};
 
 
@@ -13,7 +13,7 @@ module infamous::infamous_weapon_wear {
     use aptos_framework::event::{Self, EventHandle};
 
     use aptos_token::token::{Self, TokenId};
-    use aptos_token::property_map;
+     use aptos_token::property_map::{Self, PropertyMap};
 
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
@@ -74,14 +74,53 @@ module infamous::infamous_weapon_wear {
             token::direct_transfer(sender, &manager_signer, weapon_token_id, 1);
         };
 
+        update_token_uri_with_properties(sender_addr, token_name);
+
         initialize_wear_weapon_event(&manager_signer);
-        emit_minted_event(manager_addr, sender_addr, token_id, weapon_token_id);
+        emit_wear_event(manager_addr, sender_addr, token_id, weapon_token_id);
         
     }
 
 
+     public fun update_token_uri_with_properties(owner_addr: address, name: String) {
+      
+        let creator = infamous_manager_cap::get_manager_signer();
+        let creator_addr = signer::address_of(&creator);
+        let collection_name = infamous_common::infamous_collection_name();
+        let token_id = infamous_nft::resolve_token_id(creator_addr, collection_name, name);
+        let properties = token::get_property_map(owner_addr, token_id);
+        let properties_string = utf8(b"");
+        append_property(&mut properties_string, properties, utf8(b"background"));
+        append_property(&mut properties_string, properties, utf8(b"clothing"));
+        append_property(&mut properties_string, properties, utf8(b"ear"));
+        append_property(&mut properties_string, properties, utf8(b"eyes"));
+        append_property(&mut properties_string, properties, utf8(b"eyebrow"));
+        append_property(&mut properties_string, properties, utf8(b"accessories"));
+        append_property(&mut properties_string, properties, utf8(b"hear"));
+        append_property(&mut properties_string, properties, utf8(b"mouth"));
+        append_property(&mut properties_string, properties, utf8(b"neck"));
+        append_property(&mut properties_string, properties, utf8(b"tatto"));
+        append_property(&mut properties_string, properties, utf8(b"gender"));
+        append_property(&mut properties_string, properties, utf8(b"weapon"));
+        let hash_string = infamous_common::string_hash_string(properties_string);
+        let base_uri = infamous_common::infamous_base_token_uri();
+        string::append(&mut base_uri, hash_string);
+        string::append(&mut base_uri, utf8(b".png"));
+
+        let token_data_id = token::create_token_data_id(creator_addr, collection_name, name);
+        token::mutate_tokendata_uri(&creator, token_data_id, base_uri);
+
+     }
+
+     
+
+     fun append_property(properties_string: &mut String, properties: PropertyMap, property_key: String) {
+        if(property_map::contains_key(&properties, &property_key)) {
+            string::append(properties_string, property_map::read_string(&properties, &property_key));
+        };
+     }
     
-    fun emit_minted_event(account: address, owner: address, token_id: TokenId, weapon_token_id: TokenId) acquires TokenWearWeapon {
+    fun emit_wear_event(account: address, owner: address, token_id: TokenId, weapon_token_id: TokenId) acquires TokenWearWeapon {
         
         let token_wear_weapon_info = borrow_global_mut<TokenWearWeapon>(account);
         event::emit_event<WeaponWearEvent>(
@@ -140,7 +179,7 @@ module infamous::infamous_weapon_wear {
 
         let keys = vector<String>[infamous_common::infamous_weapon_key(), infamous_common::infamous_weapon_token_name_key()];
         let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&weapon_token_name)];
-        let types = vector<String>[string::utf8(b"0x1::string::String"), string::utf8(b"0x1::string::String")];
+        let types = vector<String>[utf8(b"0x1::string::String"), utf8(b"0x1::string::String")];
         token::mutate_tokendata_property(&manager_signer,
         token_data_id,
         keys, values, types
