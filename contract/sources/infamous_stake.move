@@ -14,6 +14,7 @@ module infamous::infamous_stake {
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
     use infamous::infamous_nft;
+    use infamous::infamous_backend_auth;
 
     friend infamous::infamous_upgrade_level;
 
@@ -23,6 +24,9 @@ module infamous::infamous_stake {
     const ETOKEN_NOT_STAKE: u64 = 3;
     const ETOKEN_ALREADY_STAKED: u64 = 4;
     const ESTAKE_TIME_NOT_ENOUGH: u64 = 5;
+    const ACCOUNT_MUSTBE_AUTHED: u64 =6;
+    const TOKEN_NOT_STAKED_BY_THIS_ACCOUNT: u64 =6;
+    
     
 
 
@@ -52,6 +56,9 @@ module infamous::infamous_stake {
         let collection_name = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_name);
 
+        token::opt_in_direct_transfer(sender, true);
+        
+
         let sender_addr = signer::address_of(sender);
         assert!(token::balance_of(sender_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_SENDER));
         token::direct_transfer(sender, &manager_signer, token_id, 1);
@@ -66,10 +73,33 @@ module infamous::infamous_stake {
         let collection_name = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_name);
 
+        let staking_token_address = &borrow_global<TokenStakesData>(manager_addr).staking_token_address;
+        let staker_addr = *table::borrow(staking_token_address, token_id);
         let sender_addr = signer::address_of(sender);
-        remove_token_stakes(sender_addr, token_id);
+        assert!(staker_addr == sender_addr, error::unauthenticated(TOKEN_NOT_STAKED_BY_THIS_ACCOUNT));
+
+        remove_token_stakes(staker_addr, token_id);
         remove_token_stakes_data(manager_addr, token_id);
         token::direct_transfer(&manager_signer, sender, token_id, 1);
+    }
+
+    public entry fun unstake_infamous_nft_admin(sender: &signer, token_name: String,) acquires TokenStakes, TokenStakesData {
+        
+        let sender_addr = signer::address_of(sender);
+        assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
+
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        let collection_name = infamous_common::infamous_collection_name();
+        let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_name);
+
+        let staking_token_address = &borrow_global<TokenStakesData>(manager_addr).staking_token_address;
+        let staker_addr = *table::borrow(staking_token_address, token_id);
+
+        remove_token_stakes(staker_addr, token_id);
+        remove_token_stakes_data(manager_addr, token_id);
+        
+        token::transfer(&manager_signer, token_id, staker_addr, 1);
     }
 
 

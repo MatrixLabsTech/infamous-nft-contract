@@ -18,10 +18,10 @@ module infamous::infamous_weapon_nft {
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
     const ACCOUNT_MUSTBE_AUTHED: u64 = 2;
+    const ACCOUNT_MUSTBE_MANAGER: u64 = 3;
 
 
-    const PER_MAX: u64 = 10;
-    const MAXIMUM: u64 = 1000;
+    const MAXIMUM: u64 = 10000;
 
 
     struct TokenMintedEvent has drop, store {
@@ -52,7 +52,8 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon_feature: String, description: String, level: String, meterial: String) acquires CollectionInfo {
+
+    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon: String, meterial: String, level: String,): String acquires CollectionInfo {
         
         let sender_addr = signer::address_of(sender);
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
@@ -72,12 +73,13 @@ module infamous::infamous_weapon_nft {
         let name = infamous_common::append_num(base_token_name, cur);
         let uri = infamous_common::append_num(base_token_uri, cur);
 
-        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon_feature, description);
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, meterial, level,);
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
         let counter_ref = &mut collection_info.counter;
         *counter_ref = cur;
+        name
     }
 
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
@@ -94,22 +96,27 @@ module infamous::infamous_weapon_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon_feature: String, description: String,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, meterial: String, level: String,) {
         
         let balance = 1;
         let maximum = 1;
         let minter_addr = signer::address_of(minter);
+        let description = infamous_common::infamous_weapon_description();
         token::create_token_script(minter, collection_name, token_name, description, balance,
         maximum,
         token_uri,
         minter_addr,
         0,
         0,
-        vector<bool>[false, false, true, false, true],
-        vector<String>[ string::utf8(b"feature") ], vector<vector<u8>>[bcs::to_bytes<String>(&weapon_feature)], vector<String>[ string::utf8(b"0x1::string::String")],);
+        vector<bool>[false, true, false, false, true],
+        vector<String>[ string::utf8(b"weapon"), string::utf8(b"meterial"), string::utf8(b"level") ], 
+        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&meterial), bcs::to_bytes<String>(&level)], 
+        vector<String>[ string::utf8(b"0x1::string::String"), string::utf8(b"0x1::string::String"), string::utf8(b"0x1::string::String")],);
 
-        let token_id = resolve_token_id(minter_addr, collection_name, token_name);
-        token::transfer(minter, token_id, receiver_addr, balance);
+        if(receiver_addr != minter_addr) {
+            let token_id = resolve_token_id(minter_addr, collection_name, token_name);
+            token::transfer(minter, token_id, receiver_addr, balance);
+        }
     }
 
     fun emit_minted_event(collection_info: &mut CollectionInfo, receiver_addr: address, creator_addr: address, collection_name: String, token_name: String) {
@@ -155,7 +162,7 @@ module infamous::infamous_weapon_nft {
 
 
 
-        airdrop(minter, receiver_addr, string::utf8(b"knif"), string::utf8(b"normal knif"));
+        airdrop(minter, receiver_addr, string::utf8(b"knif"), string::utf8(b"normal knif"), string::utf8(b"3"));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);

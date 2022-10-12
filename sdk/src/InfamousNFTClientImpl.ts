@@ -32,16 +32,30 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     mintTransaction(count: string): ITransaction {
         return {
             type: "entry_function_payload",
-            function: `${this.deployment.moduleAddress}::${this.deployment.nftModuleName}::mint`,
+            function: `${this.deployment.moduleAddress}::${this.deployment.infamousNft}::mint`,
             arguments: [paramToHex(count, "u64")],
             type_arguments: [],
         };
     }
 
-    /**
-     *
-     * @returns collection info
-     */
+    stakeTransaction(tokenName: string): ITransaction {
+        return {
+            type: "entry_function_payload",
+            function: `${this.deployment.moduleAddress}::${this.deployment.infamousStake}::stake_infamous_nft_script`,
+            arguments: [paramToHex(tokenName, "0x1::string::String")],
+            type_arguments: [],
+        };
+    }
+
+    wearWeaponTransaction(tokenName: string, weaponName: string): ITransaction {
+        return {
+            type: "entry_function_payload",
+            function: `${this.deployment.moduleAddress}::${this.deployment.infamousWeaponWear}::wear_weapon`,
+            arguments: [paramToHex(tokenName, "0x1::string::String"), paramToHex(weaponName, "0x1::string::String")],
+            type_arguments: [],
+        };
+    }
+
     async collectionInfo(): Promise<CollectionInfo> {
         const managerAddress = await this.getManagerAddress();
         const collectionInfo = await this.tokenClient.getCollectionData(managerAddress, collectionName);
@@ -50,10 +64,47 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async tokenOwned(addr: string): Promise<TokenData[]> {
         try {
+            const tokenIds = await this.doResolveTokenOwned(addr);
+            const list: TokenData[] = [];
+            for (const tokenId of tokenIds) {
+                const tokenData = await this.tokenClient.getTokenData(
+                    tokenId.token_data_id.creator,
+                    tokenId.token_data_id.collection,
+                    tokenId.token_data_id.name
+                );
+                list.push(tokenData);
+            }
+            return list;
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async tokenIdsOwned(addr: string): Promise<ITokenId[]> {
+        try {
             return await this.doResolveTokenOwned(addr);
         } catch (e) {
             return [];
         }
+    }
+
+    async tokenData(tokenId: ITokenId): Promise<TokenData | undefined> {
+        try {
+            return await this.doGetTokenData(tokenId);
+        } catch (e) {}
+    }
+
+    async tokenStaked(addr: string): Promise<ITokenId[]> {
+        try {
+            const stakes = await this.getTokenStakes(addr);
+            return stakes.data as ITokenId[];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async tokenStakeData(tokenId: ITokenId): Promise<TokenData | undefined> {
+        throw new Error("Method not implemented.");
     }
 
     async tokenPerMinted(addr: string): Promise<number> {
@@ -66,7 +117,16 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         }
     }
 
-    private async doResolveTokenOwned(addr: string): Promise<TokenData[]> {
+    private async doGetTokenData(tokenId: ITokenId): Promise<TokenData> {
+        const tokenData = await this.tokenClient.getTokenData(
+            tokenId.token_data_id.creator,
+            tokenId.token_data_id.collection,
+            tokenId.token_data_id.name
+        );
+        return tokenData;
+    }
+
+    private async doResolveTokenOwned(addr: string): Promise<ITokenId[]> {
         const managerAddress = await this.getManagerAddress();
         const tokenStore = await this.getTokenStoreInfo(addr);
 
@@ -123,22 +183,13 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
                 if (existIndex > -1) tokenIds = tokenIds.filter((_, index) => index !== existIndex);
             }
         });
-        const list: TokenData[] = [];
-        for (const tokenId of tokenIds) {
-            const tokenData = await this.tokenClient.getTokenData(
-                tokenId.token_data_id.creator,
-                tokenId.token_data_id.collection,
-                tokenId.token_data_id.name
-            );
-            list.push(tokenData);
-        }
-        return list;
+        return tokenIds;
     }
 
     private async getCollectionStatusInfo(): Promise<Gen.MoveResource> {
         return await this.readClient.getAccountResource(
-            this.deployment.creator,
-            `${this.deployment.moduleAddress}::${this.deployment.nftModuleName}::CollectionInfo`
+            this.deployment.moduleAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousNft}::CollectionInfo`
         );
     }
 
@@ -159,8 +210,8 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     private async getManagerAccountCapability(): Promise<Gen.MoveResource> {
         return await this.readClient.getAccountResource(
-            this.deployment.creator,
-            `${this.deployment.moduleAddress}::${this.deployment.managerCapModuleName}::ManagerAccountCapability`
+            this.deployment.moduleAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousManagerCap}::ManagerAccountCapability`
         );
     }
 

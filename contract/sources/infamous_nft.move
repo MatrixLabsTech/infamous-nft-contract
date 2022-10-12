@@ -125,7 +125,7 @@ module infamous::infamous_nft {
         minter_addr,
         0,
         0,
-        vector<bool>[false, false, true, false, true],
+        vector<bool>[false, true, false, false, true],
         vector<String>[ string::utf8(b"no") ], vector<vector<u8>>[bcs::to_bytes<u64>(&no)], vector<String>[ string::utf8(b"u64")],);
 
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);

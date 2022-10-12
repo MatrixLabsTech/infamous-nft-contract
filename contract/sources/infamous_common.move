@@ -25,6 +25,10 @@ module infamous::infamous_common {
         string::utf8(b"https://d39njnv5mk7be5.cloudfront.net/static/box.png")
     }
 
+    public fun infamous_base_token_uri(): String {
+        string::utf8(b"https://d39njnv5mk7be5.cloudfront.net/static/")
+    }
+
     public fun infamous_description(): String {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
     }
@@ -37,8 +41,10 @@ module infamous::infamous_common {
         string::utf8(b"weapon")
     }
 
+    public fun infamous_weapon_token_name_key(): String {
+        string::utf8(b"weapon_token_name")
+    }
 
-    
     public fun infamous_weapon_collection_name(): String {
         string::utf8(b"InfamousWeaponNFT")
     }
@@ -48,7 +54,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_base_token_name(): String {
-        string::utf8(b"InfamousWeaponNFT #")
+        string::utf8(b"NFMS #")
     }
 
     
@@ -66,6 +72,7 @@ module infamous::infamous_common {
         string::append(&mut str, u64_string(num));
         str
     }
+
 
     public fun u64_string(value: u64): String{
         if (value == 0) {
@@ -133,7 +140,7 @@ module infamous::infamous_common {
         else (55 + input) //10 - 15 => ASCII 65 to 70
     }
 
-    fun string_hash_string(value: String): String {
+    public fun string_hash_string(value: String): String {
         let bytes = bcs::to_bytes<String>(&value);
         vector::remove(&mut bytes, 0); // has a 67 before,,,? dont known why
         let hashed = hash::sha3_256(bytes);
@@ -147,7 +154,6 @@ module infamous::infamous_common {
         let before_str = string::utf8(b"Blue-dungaress-hoop earings-eyes closed-Straight eyebrows-band-aid-");
         let hashed_string = string_hash_string(before_str);
         debug::print<String>(&hashed_string);
-        debug::print<vector<u8>>(&after);
     }
   
 }

@@ -8,11 +8,24 @@ export interface ITransaction {
 }
 
 export interface InfamousNFTClient {
+    // package mint trans
     mintTransaction(count: string): ITransaction;
+    stakeTransaction(tokenName: string): ITransaction;
+    wearWeaponTransaction(tokenName: string, weaponName: string): ITransaction;
 
+    // infamous collection info
     collectionInfo(): Promise<CollectionInfo>;
 
+    // token owned
     tokenOwned(addr: string): Promise<TokenData[]>;
+
+    tokenIdsOwned(addr: string): Promise<ITokenId[]>;
+
+    tokenData(tokenId: ITokenId): Promise<TokenData | undefined>;
+
+    tokenStaked(addr: string): Promise<ITokenId[]>;
+
+    tokenStakeData(tokenId: ITokenId): Promise<TokenData | undefined>;
 
     tokenPerMinted(addr: string): Promise<number>;
 }

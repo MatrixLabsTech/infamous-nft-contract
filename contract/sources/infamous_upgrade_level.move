@@ -76,6 +76,7 @@ module infamous::infamous_upgrade_level {
         use aptos_framework::account; 
         use aptos_framework::timestamp;
         use infamous::infamous_nft;
+        use aptos_std::debug;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -90,9 +91,33 @@ module infamous::infamous_upgrade_level {
         account::create_account_for_test(receiver_addr);
         infamous_nft::mint(receiver, 3);
 
+        
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        let collection_name = infamous_common::infamous_collection_name();
+        let base_token_name = infamous_common::infamous_base_token_name();
+        let token_index_1_name = infamous_common::append_num(base_token_name, 1);
+
+        let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name);
+        assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
 
 
+        infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
 
+        
+
+        let time = infamous_stake::get_available_time(token_id);
+        debug::print<u64>(&time);
+
+        timestamp::fast_forward_seconds(1000);
+        let time1 = infamous_stake::get_available_time(token_id);
+        debug::print<u64>(&time1);
+
+        upgrade(manager_addr, collection_name, token_index_1_name);
+        let after = get_token_level(manager_addr, token_id);
+        debug::print<u64>(&11111111111);
+        debug::print<u64>(&after);
+        debug::print<u64>(&11111111111);
 
     }
 

@@ -24,6 +24,7 @@ module infamous::infamous_weapon_wear {
     const TOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
     const WEAPON_NOT_OWNED_BY_SENDER: u64 = 2;
     const OLD_WEAPON_MISSED: u64 = 3;
+    const WEAPON_DONT_HAVE_WEAPON_PROPERTY: u64 = 4;
     
     
     struct WeaponWearEvent has drop, store {
@@ -41,7 +42,7 @@ module infamous::infamous_weapon_wear {
     }
 
 
-    public entry fun wear_weapon(sender: &signer, token_name: String, weapon_name: String)  acquires TokenWearWeapon {
+    public entry fun wear_weapon(sender: &signer, token_name: String, weapon_name: String) acquires TokenWearWeapon {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
 
@@ -56,18 +57,22 @@ module infamous::infamous_weapon_wear {
         assert!(token::balance_of(sender_addr, weapon_token_id) == 1, error::invalid_argument(WEAPON_NOT_OWNED_BY_SENDER));
 
 
-        let weapon = get_token_weapon(sender_addr, token_id);
-        if (option::is_some(&weapon)) {
-            let old_weapon_name = option::extract(&mut weapon);
+        let weapon_token_name = get_token__weapon_token_name_property(sender_addr, token_id);
+        if (option::is_some(&weapon_token_name)) {
+            let old_weapon_name = option::extract(&mut weapon_token_name);
             let old_weapon_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, old_weapon_name);
             assert!(token::balance_of(manager_addr, old_weapon_token_id) == 1, error::invalid_state(OLD_WEAPON_MISSED));
             // transfer back old weapon
-            token::direct_transfer(&manager_signer, sender, old_weapon_token_id, 1);
+            if(manager_addr != sender_addr){
+                token::direct_transfer(&manager_signer, sender, old_weapon_token_id, 1);
+            };
         };
         // change token weapon property
-        update_weapon(token_id, weapon_name);
+        update_token_weapon(token_id, sender_addr, weapon_token_id, weapon_name);
         // lock weapon
-        token::direct_transfer(sender, &manager_signer, weapon_token_id, 1);
+        if(manager_addr != sender_addr){
+            token::direct_transfer(sender, &manager_signer, weapon_token_id, 1);
+        };
 
         initialize_wear_weapon_event(&manager_signer);
         emit_minted_event(manager_addr, sender_addr, token_id, weapon_token_id);
@@ -104,28 +109,38 @@ module infamous::infamous_weapon_wear {
     }
 
 
-
-    
-    public fun get_token_weapon(owner: address, token_id: TokenId): Option<String> { 
+    public fun get_token__weapon_token_name_property(owner: address, token_id: TokenId): Option<String> { 
         let properties = token::get_property_map(owner, token_id);
-        let weapon_key = &infamous_common::infamous_weapon_key();
+        let weapon_token_name_key = &infamous_common::infamous_weapon_token_name_key();
         let cur_weapon = option::none();
-        if(property_map::contains_key(&properties, weapon_key)) {
-            cur_weapon = option::some(property_map::read_string(&properties, weapon_key));
+        if(property_map::contains_key(&properties, weapon_token_name_key)) {
+            cur_weapon = option::some(property_map::read_string(&properties, weapon_token_name_key));
         };
         cur_weapon
     }
 
     
+    public fun get_weapon__weapon_property(owner: address, weapon_token_id: TokenId): String { 
+        let properties = token::get_property_map(owner, weapon_token_id);
+        let weapon_key = &infamous_common::infamous_weapon_key();
+        assert!(property_map::contains_key(&properties, weapon_key), error::invalid_state(WEAPON_DONT_HAVE_WEAPON_PROPERTY));
+        property_map::read_string(&properties, weapon_key)
+    }
 
-    fun update_weapon(token_id: TokenId, weapon_name: String) {
+
+    
+
+    fun update_token_weapon(token_id: TokenId, owner_addr: address, weapon_token_id: TokenId, weapon_token_name: String) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
         let token_data_id = token::create_token_data_id(creator, collection, name);
 
-        let keys = vector<String>[infamous_common::infamous_weapon_key()];
-        let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon_name)];
-        let types = vector<String>[string::utf8(b"0x1::string::String")];
+        // get weapon weapon
+        let weapon = get_weapon__weapon_property(owner_addr, weapon_token_id);
+
+        let keys = vector<String>[infamous_common::infamous_weapon_key(), infamous_common::infamous_weapon_token_name_key()];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&weapon_token_name)];
+        let types = vector<String>[string::utf8(b"0x1::string::String"), string::utf8(b"0x1::string::String")];
         token::mutate_tokendata_property(&manager_signer,
         token_data_id,
         keys, values, types
