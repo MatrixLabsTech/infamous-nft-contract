@@ -23,7 +23,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
     const ACCOUNT_MUSTBE_AUTHED: u64 = 4;
 
 
-    public entry fun airdrop(sender: &signer, token_name: String, receiver_addr: address, weapon: String, meterial: String, level: String, ) {
+    public entry fun airdrop(sender: &signer, token_name: String, receiver_addr: address, weapon: String, meterial: String ) {
         let sender_addr = signer::address_of(sender);
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
 
@@ -33,6 +33,8 @@ module infamous::infamous_backend_token_weapon_airdrop {
         let collection_name = infamous_common::infamous_collection_name();
         let creator = manager_addr;
         let token_id = infamous_weapon_nft::resolve_token_id(creator, collection_name, token_name);
+
+        let weapon_level = utf8(b"4");
 
         
         let option_stake_addr = infamous_stake::token_stake_address(token_id);
@@ -49,7 +51,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(manager_addr, token_id), error::invalid_argument(TOKEN_AIRDROPED));
 
-            infamous_weapon_nft::airdrop(receiver_addr, weapon, meterial, level);
+            infamous_weapon_nft::airdrop(receiver_addr, weapon, meterial, weapon_level);
             update_token_airdroped(token_id);
         } else {
             // 1. check the receiver is the owner
@@ -58,7 +60,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(receiver_addr, token_id), error::invalid_argument(TOKEN_AIRDROPED));
 
-            infamous_weapon_nft::airdrop(receiver_addr, weapon, meterial, level);
+            infamous_weapon_nft::airdrop(receiver_addr, weapon, meterial, weapon_level);
             update_token_airdroped(token_id);
         }
 

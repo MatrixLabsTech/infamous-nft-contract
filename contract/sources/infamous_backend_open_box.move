@@ -34,7 +34,7 @@ module infamous::infamous_backend_open_box {
         background: String, clothing: String, ear: String, eyes: String, 
         eyebrow: String, accessories: String, hear: String, mouth: String,  
         neck: String, tatto: String, gender: String, 
-        weapon: String, material: String, level: String) {
+        weapon: String, material: String) {
               
         let sender_addr = signer::address_of(sender);
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
@@ -50,6 +50,8 @@ module infamous::infamous_backend_open_box {
         // check under stake
         let option_stake_addr = infamous_stake::token_stake_address(token_id);
 
+        let weapon_level = utf8(b"3");
+
         if(option::is_some(&option_stake_addr)) {
             // check owner
             assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_argument(TOKEN_STAKED_MISSED));
@@ -60,7 +62,7 @@ module infamous::infamous_backend_open_box {
             let token_level = infamous_upgrade_level::get_token_level(manager_addr, token_id);
             assert!(token_level >= OPEN_LEVEL, error::invalid_argument(LEVEL_MUST_GREATER_THAN_THREE));
 
-            let weapon_token_name = infamous_weapon_nft::airdrop(manager_addr, weapon, material, level);
+            let weapon_token_name = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
             let token_data_id = token::create_token_data_id(creator, collection, name);
             mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyes, eyebrow, accessories, hear, mouth, neck, tatto, gender, weapon, weapon_token_name);
             infamous_nft::update_token_uri_with_properties(manager_addr, name);
@@ -74,7 +76,7 @@ module infamous::infamous_backend_open_box {
             let token_level = infamous_upgrade_level::get_token_level(owner_addr, token_id);
             assert!(token_level >= OPEN_LEVEL, error::invalid_argument(LEVEL_MUST_GREATER_THAN_THREE));
 
-            let weapon_token_name = infamous_weapon_nft::airdrop(manager_addr, weapon, material, level);
+            let weapon_token_name = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
             let token_data_id = token::create_token_data_id(creator, collection, name);
             mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyes, eyebrow, accessories, hear, mouth, neck, tatto, gender, weapon, weapon_token_name);
             infamous_nft::update_token_uri_with_properties(owner_addr, name);
@@ -188,7 +190,6 @@ module infamous::infamous_backend_open_box {
         let weapon = utf8(b"danger");
 
         let material = utf8(b"ssss");
-        let level = utf8(b"3");
 
          open_box(user, 
          receiver_addr,
@@ -196,7 +197,7 @@ module infamous::infamous_backend_open_box {
          background, clothing, ear, eyes,
          eyebrow, accessories, hear, mouth,
          neck, tatto, gender,
-         weapon, material, level
+         weapon, material
          );
 
 
@@ -268,7 +269,6 @@ module infamous::infamous_backend_open_box {
         let weapon = utf8(b"danger");
 
         let material = utf8(b"ssss");
-        let level = utf8(b"3");
 
          open_box(user, 
          receiver_addr,
@@ -276,7 +276,7 @@ module infamous::infamous_backend_open_box {
          background, clothing, ear, eyes,
          eyebrow, accessories, hear, mouth,
          neck, tatto, gender,
-         weapon, material, level
+         weapon, material
          );
 
 

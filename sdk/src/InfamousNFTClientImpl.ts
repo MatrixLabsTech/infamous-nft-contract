@@ -24,6 +24,7 @@ import {decodeString, decodeU64, paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
 import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
 import {ITokenStakes, ITokenStakesData} from "./StakingInfo";
+import {IWearWeaponInfo, WearWeaponEvent, WearWeaponHistoryItem} from "./WearWeaponInfo";
 export enum AptosNetwork {
     Testnet = "Testnet",
     Mainnet = "Mainnet",
@@ -176,6 +177,33 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         } catch (e) {
             return 0;
         }
+    }
+
+    async wearWeaponHistory(tokenId?: ITokenId): Promise<WearWeaponHistoryItem[]> {
+        try {
+            const tokenWearWeapon = (await this.getTokenWearWeapon()).data as IWearWeaponInfo;
+
+            const wearEvents = await this.readClient.getEventsByCreationNumber(
+                tokenWearWeapon.weapon_wear_events.guid.id.addr,
+                tokenWearWeapon.weapon_wear_events.guid.id.creation_num
+            );
+            const list = wearEvents.map((e) => e.data as WearWeaponHistoryItem);
+            if (tokenId) {
+                return list.filter((l) => l.token_id.token_data_id.name === tokenId.token_data_id.name);
+            } else {
+                return list;
+            }
+        } catch (e) {
+            return [];
+        }
+    }
+
+    private async getTokenWearWeapon(): Promise<Gen.MoveResource> {
+        const managerAddress = await this.getManagerAddress();
+        return await this.readClient.getAccountResource(
+            managerAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousWeaponWear}::TokenWearWeapon`
+        );
     }
 
     private async getTokenStakes(addr: string): Promise<Gen.MoveResource> {

@@ -31,13 +31,16 @@ function App() {
     const collectInfo = await client.collectionInfo()
     console.log({ collectInfo }) //ccc-log
 
-    const tokenStaked = await client.tokenStaked(
-      '0x0629ff667db2f4f337abfa47ec88f2e5a1c98beb14c1e870a14785666a6d80c6'
-    )
-    console.log(tokenStaked) //ccc-log
+    const history = await client.wearWeaponHistory()
+    console.log(history)
 
-    const tokenData = await client.tokenData(tokenStaked[0])
-    console.log(tokenData)
+    // const tokenStaked = await client.tokenStaked(
+    //   '0x0629ff667db2f4f337abfa47ec88f2e5a1c98beb14c1e870a14785666a6d80c6'
+    // )
+    // console.log(tokenStaked) //ccc-log
+
+    // const tokenData = await client.tokenData(tokenStaked[0])
+    // console.log(tokenData)
 
     // const property = await client.tokenProperty('Infamous #1')
     // console.log(property) //ccc-log

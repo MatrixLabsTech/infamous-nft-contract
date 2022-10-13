@@ -1,4 +1,5 @@
 import {CollectionInfo, IStakingTime, ITokenId, TokenData} from "./CollectionInfo";
+import {WearWeaponEvent, WearWeaponHistoryItem} from "./WearWeaponInfo";
 
 export interface ITransaction {
     type: string;
@@ -28,6 +29,8 @@ export interface InfamousNFTClient {
     weaponIdsOwned(addr: string): Promise<ITokenId[]>;
 
     weaponData(weaponTokenName: string): Promise<TokenData | undefined>;
+
+    wearWeaponHistory(tokenId?: ITokenId): Promise<WearWeaponHistoryItem[]>;
 
     tokenStaked(addr: string): Promise<ITokenId[]>;
 

@@ -26,6 +26,7 @@ export const deployment = {
         infamousStake: "infamous_stake",
         infamousUpgradeLevel: "infamous_upgrade_level",
         infamousBackendOpenBox: "infamous_backend_open_box",
+        infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
     },
     devnet: {
         moduleAddress: "0xde308110012f3098c97e0ebba46199e38b2909b7ea72d07c1841b6ae8add0274",
@@ -38,5 +39,6 @@ export const deployment = {
         infamousStake: "infamous_stake",
         infamousUpgradeLevel: "infamous_upgrade_level",
         infamousBackendOpenBox: "infamous_backend_open_box",
+        infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
     },
 };

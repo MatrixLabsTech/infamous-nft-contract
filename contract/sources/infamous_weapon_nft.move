@@ -138,6 +138,8 @@ module infamous::infamous_weapon_nft {
 
         use aptos_framework::account;
         use aptos_framework::timestamp;
+        use infamous::infamous_backend_auth;
+        
         timestamp::set_time_has_started_for_testing(framework);
 
 

@@ -31,10 +31,10 @@ module infamous::infamous_weapon_wear {
     
     
     struct WeaponWearEvent has drop, store {
-        owner: address,
+        operator: address,
         token_id: TokenId,
         weapon_token_id: TokenId,
-        start_time: u64,
+        time: u64,
     }
 
 
@@ -141,10 +141,10 @@ module infamous::infamous_weapon_wear {
         event::emit_event<WeaponWearEvent>(
             &mut token_wear_weapon_info.weapon_wear_events,
             WeaponWearEvent {
-                owner,
+                operator: owner,
                 token_id,
                 weapon_token_id,
-                start_time: timestamp::now_seconds(),
+                time: timestamp::now_seconds(),
             });
     }
 
