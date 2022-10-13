@@ -10,6 +10,7 @@ export const infamousUpgradeLevel = deployment.devnet.infamousUpgradeLevel
 export const infamousBackendOpenBox = deployment.devnet.infamousBackendOpenBox
 export const infamousBackendAuth = deployment.devnet.infamousBackendAuth
 export const infamousWeaponNft = deployment.devnet.infamousWeaponNft
+export const infamousWeaponWear = deployment.devnet.infamousWeaponWear
 
 export const metadataModuleName = 'metadata'
 export const tokenModuleName = 'token'

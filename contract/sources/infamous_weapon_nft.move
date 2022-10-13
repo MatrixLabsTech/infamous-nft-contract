@@ -2,7 +2,6 @@ module infamous::infamous_weapon_nft {
 
     use std::bcs;
     use std::signer;
-    use std::error;
     use std::string::{Self, String, utf8};
 
     use aptos_framework::account;
@@ -14,7 +13,9 @@ module infamous::infamous_weapon_nft {
 
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
-    use infamous::infamous_backend_auth;
+
+    friend infamous::infamous_backend_token_weapon_airdrop;
+    friend infamous::infamous_backend_open_box;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
     const ACCOUNT_MUSTBE_AUTHED: u64 = 2;
@@ -52,17 +53,8 @@ module infamous::infamous_weapon_nft {
        
     }
 
+    public(friend) fun airdrop(receiver_addr: address, weapon: String, meterial: String, level: String,): String acquires CollectionInfo {
 
-    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon: String, meterial: String, level: String,) acquires CollectionInfo {
-        do_airdrop(sender, receiver_addr, weapon, meterial, level);
-    }
-
-    public fun do_airdrop(sender: &signer, receiver_addr: address, weapon: String, meterial: String, level: String,): String acquires CollectionInfo {
-        
-        let sender_addr = signer::address_of(sender);
-        assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
-
-        
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
 
@@ -168,7 +160,7 @@ module infamous::infamous_weapon_nft {
 
 
 
-        airdrop(minter, receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
+        airdrop(receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -179,7 +171,7 @@ module infamous::infamous_weapon_nft {
         assert!(token::balance_of(receiver_addr, resolve_token_id(manager_addr, collection_name, token_index_1_name)) == 1, 1);
 
         
-        airdrop(minter, receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
+        airdrop(receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
 
     }
 

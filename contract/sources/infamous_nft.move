@@ -3,13 +3,14 @@ module infamous::infamous_nft {
     use std::bcs;
     use std::signer;
     use std::error;
-    use std::string::{Self, String};
+    use std::string::{Self, String, utf8 };
 
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
 
     use aptos_std::table::{Self, Table};
 
+    use aptos_token::property_map::{Self, PropertyMap};
     use aptos_token::token::{Self, TokenId};
 
     use infamous::infamous_common;
@@ -104,6 +105,47 @@ module infamous::infamous_nft {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
 
+  
+
+    
+
+     public fun update_token_uri_with_properties(owner_addr: address, name: String) {
+      
+        let creator = infamous_manager_cap::get_manager_signer();
+        let creator_addr = signer::address_of(&creator);
+        let collection_name = infamous_common::infamous_collection_name();
+        let token_id = resolve_token_id(creator_addr, collection_name, name);
+        let properties = token::get_property_map(owner_addr, token_id);
+        let properties_string = utf8(b"");
+        append_property(&mut properties_string, properties, utf8(b"background"));
+        append_property(&mut properties_string, properties, utf8(b"clothing"));
+        append_property(&mut properties_string, properties, utf8(b"ear"));
+        append_property(&mut properties_string, properties, utf8(b"eyes"));
+        append_property(&mut properties_string, properties, utf8(b"eyebrow"));
+        append_property(&mut properties_string, properties, utf8(b"accessories"));
+        append_property(&mut properties_string, properties, utf8(b"hear"));
+        append_property(&mut properties_string, properties, utf8(b"mouth"));
+        append_property(&mut properties_string, properties, utf8(b"neck"));
+        append_property(&mut properties_string, properties, utf8(b"tatto"));
+        append_property(&mut properties_string, properties, utf8(b"gender"));
+        append_property(&mut properties_string, properties, utf8(b"weapon"));
+        let hash_string = infamous_common::string_hash_string(properties_string);
+        let base_uri = infamous_common::infamous_base_token_uri();
+        string::append(&mut base_uri, hash_string);
+        string::append(&mut base_uri, utf8(b".png"));
+
+        let token_data_id = token::create_token_data_id(creator_addr, collection_name, name);
+        token::mutate_tokendata_uri(&creator, token_data_id, base_uri);
+
+     }
+
+     
+     fun append_property(properties_string: &mut String, properties: PropertyMap, property_key: String) {
+        if(property_map::contains_key(&properties, &property_key)) {
+            string::append(properties_string, property_map::read_string(&properties, &property_key));
+        };
+     }
+
 
     fun minted_count(table_info: &Table<address, u64>, owner: address): u64 {
         if (table::contains(table_info, owner)) {
@@ -126,7 +168,7 @@ module infamous::infamous_nft {
         0,
         0,
         vector<bool>[false, true, false, false, true],
-        vector<String>[ string::utf8(b"no") ], vector<vector<u8>>[bcs::to_bytes<u64>(&no)], vector<String>[ string::utf8(b"u64")],);
+        vector<String>[ utf8(b"no") ], vector<vector<u8>>[bcs::to_bytes<u64>(&no)], vector<String>[ utf8(b"u64")],);
 
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);
         token::direct_transfer(minter, receiver, token_id, balance);

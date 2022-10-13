@@ -45,7 +45,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_collection_name(): String {
-        string::utf8(b"InfamousWeaponNFT")
+        string::utf8(b"InfamousEquipmentNFT")
     }
 
     public fun infamous_weapon_collection_uri(): String {
@@ -53,7 +53,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_base_token_name(): String {
-        string::utf8(b"NFMS #")
+        string::utf8(b"Equipment #")
     }
 
     

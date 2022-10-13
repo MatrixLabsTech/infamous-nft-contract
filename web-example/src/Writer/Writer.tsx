@@ -10,6 +10,7 @@ import {
   infamousStake,
   infamousUpgradeLevel,
   infamousWeaponNft,
+  infamousWeaponWear,
   metadataModuleName,
   moduleAddress,
 } from '../const'
@@ -80,7 +81,8 @@ export function Writer(props: WriterProps) {
             moduleName === infamousUpgradeLevel ||
             moduleName === infamousBackendOpenBox ||
             moduleName === infamousBackendAuth ||
-            moduleName === infamousWeaponNft
+            moduleName === infamousWeaponNft ||
+            moduleName === infamousWeaponWear
           )
         })
       )

@@ -8,6 +8,10 @@ module infamous::infamous_upgrade_level {
     use aptos_token::token::{Self, TokenId};
     use aptos_token::property_map;
 
+    use aptos_framework::account;
+    use aptos_framework::event::{Self, EventHandle};
+    use aptos_framework::timestamp;
+
     
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
@@ -22,9 +26,18 @@ module infamous::infamous_upgrade_level {
     const EACH_LEVEL_EXP: u64 = 300;
 
 
+    struct TokenUpgradeEvent has drop, store {
+        token_id: TokenId,
+        upgrade_time: u64,
+        level: u64,
+    }
+    
+    struct UpgradeInfo has key {
+        token_upgrade_events: EventHandle<TokenUpgradeEvent>,
+    }
 
-    public entry fun upgrade(name: String) {
-
+    // upgrade when under stake
+    public entry fun upgrade(name: String) acquires UpgradeInfo {
         let collection = infamous_common::infamous_collection_name();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let creator = signer::address_of(&manager_signer);
@@ -46,7 +59,14 @@ module infamous::infamous_upgrade_level {
 
         update_level(token_id, new_level);
         infamous_stake::take_times_to_use(token_id, need_exp);
+
+        emit_upgrade_event(token_id, new_level);
     }
+
+
+
+
+
 
 
     public fun get_token_level(owner: address, token_id: TokenId): u64 { 
@@ -73,11 +93,30 @@ module infamous::infamous_upgrade_level {
     }
 
     
+    fun emit_upgrade_event(token_id: TokenId, level: u64) acquires UpgradeInfo {
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        if(!exists<UpgradeInfo>(manager_addr)) {
+            move_to(&manager_signer, UpgradeInfo {
+                token_upgrade_events: account::new_event_handle<TokenUpgradeEvent>(&manager_signer),
+            });
+        };
+        let upgrade_info = borrow_global_mut<UpgradeInfo>(manager_addr);
+        event::emit_event<TokenUpgradeEvent>(
+            &mut upgrade_info.token_upgrade_events,
+            TokenUpgradeEvent {
+                token_id,
+                upgrade_time: timestamp::now_seconds(),
+                level,
+            });
+    }
+
+
+    
     #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
-    public fun upgrade_test(user: &signer, receiver: &signer, framework: &signer) { 
+    public fun upgrade_test(user: &signer, receiver: &signer, framework: &signer) acquires UpgradeInfo { 
 
         use aptos_framework::account; 
-        use aptos_framework::timestamp;
         use infamous::infamous_nft;
         use aptos_std::debug;
 

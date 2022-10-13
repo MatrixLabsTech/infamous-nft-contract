@@ -4,6 +4,7 @@ module infamous::infamous_stake {
     use std::error;
     use std::signer;
     use std::vector;
+    use std::option::{Self, Option};
 
     use aptos_std::table::{Self, Table};
 
@@ -112,6 +113,18 @@ module infamous::infamous_stake {
         } else {
             vector<TokenId>[]
         }
+    }
+
+    public fun token_stake_address(token_id: TokenId): Option<address> acquires TokenStakesData {
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        assert!(exists<TokenStakesData>(manager_addr), error::invalid_argument(ESTAKER_INFO_NOT_PUBLISHED));
+        let staking_token_address = &borrow_global<TokenStakesData>(manager_addr).staking_token_address;
+        let staker_addr = option::none();
+        if(table::contains(staking_token_address, token_id)) {
+            staker_addr = option::some(*table::borrow(staking_token_address, token_id));
+        };
+        staker_addr
     }
 
     public fun get_available_time(token_id: TokenId): u64 acquires TokenStakesData {
