@@ -31,10 +31,13 @@ function App() {
     const collectInfo = await client.collectionInfo()
     console.log({ collectInfo }) //ccc-log
 
-    const tokenOwned = await client.tokenOwned(
-      '0xc0db5b48fd82d6aaa00bac2570e22e6faccd0e8561b8d0813307b76cb354096f'
+    const tokenStaked = await client.tokenStaked(
+      '0x0629ff667db2f4f337abfa47ec88f2e5a1c98beb14c1e870a14785666a6d80c6'
     )
-    console.log(tokenOwned) //ccc-log
+    console.log(tokenStaked) //ccc-log
+
+    const tokenData = await client.tokenData(tokenStaked[0])
+    console.log(tokenData)
 
     // const property = await client.tokenProperty('Infamous #1')
     // console.log(property) //ccc-log

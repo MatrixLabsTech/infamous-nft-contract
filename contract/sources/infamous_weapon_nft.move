@@ -53,7 +53,11 @@ module infamous::infamous_weapon_nft {
     }
 
 
-    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon: String, meterial: String, level: String,): String acquires CollectionInfo {
+    public entry fun airdrop(sender: &signer, receiver_addr: address, weapon: String, meterial: String, level: String,) acquires CollectionInfo {
+        do_airdrop(sender, receiver_addr, weapon, meterial, level);
+    }
+
+    public fun do_airdrop(sender: &signer, receiver_addr: address, weapon: String, meterial: String, level: String,): String acquires CollectionInfo {
         
         let sender_addr = signer::address_of(sender);
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
@@ -173,6 +177,9 @@ module infamous::infamous_weapon_nft {
         let base_token_name = infamous_common::infamous_weapon_base_token_name();
         let token_index_1_name = infamous_common::append_num(base_token_name, 1);
         assert!(token::balance_of(receiver_addr, resolve_token_id(manager_addr, collection_name, token_index_1_name)) == 1, 1);
+
+        
+        airdrop(minter, receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
 
     }
 

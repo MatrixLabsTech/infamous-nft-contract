@@ -1,6 +1,7 @@
 export const collectionResource = `0x3::token::Collections`;
 export const tokenStoreResource = `0x3::token::TokenStore`;
-export const collectionName = "InfamousNFT";
+export const infamousCollectionName = "InfamousNFT";
+export const weaponCollectionName = "InfamousWeaponNFT";
 
 export interface IDeployment {
     moduleAddress: string;
@@ -16,7 +17,7 @@ export interface IDeployment {
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0x77f881b75f0ef9913873986b2d3f38bd8d2981654f314f57207fccd859f2b68e",
+        moduleAddress: "0x5228bff9b6561aaee0668df4df14156b7c12a38b98ef22fb5cc13032274c2d5d",
         infamousBackendAuth: "infamous_backend_auth",
         infamousManagerCap: "infamous_manager_cap",
         infamousWeaponNft: "infamous_weapon_nft",
@@ -27,7 +28,7 @@ export const deployment = {
         infamousBackendOpenBox: "infamous_backend_open_box",
     },
     devnet: {
-        moduleAddress: "0x77f881b75f0ef9913873986b2d3f38bd8d2981654f314f57207fccd859f2b68e",
+        moduleAddress: "0x5228bff9b6561aaee0668df4df14156b7c12a38b98ef22fb5cc13032274c2d5d",
         infamousCommon: "infamous_common",
         infamousBackendAuth: "infamous_backend_auth",
         infamousManagerCap: "infamous_manager_cap",

@@ -1,7 +1,13 @@
 import {InfamousNFTClient, ITransaction} from "./InfamousNFTClient";
 
 import * as Gen from "aptos/dist/generated";
-import {tokenStoreResource, collectionName, deployment, IDeployment} from "./config/development";
+import {
+    tokenStoreResource,
+    deployment,
+    IDeployment,
+    infamousCollectionName,
+    weaponCollectionName,
+} from "./config/development";
 import {IManagerAccountCapability} from "./ManagerAccountCapability";
 import {
     CollectionInfo,
@@ -14,11 +20,10 @@ import {
     PropertyItem,
     TokenData,
 } from "./CollectionInfo";
-import {decodeU64, paramToHex} from "./utils/param";
+import {decodeString, decodeU64, paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
 import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
 import {ITokenStakes, ITokenStakesData} from "./StakingInfo";
-import {Deserializer} from "aptos/dist/transaction_builder/bcs/deserializer";
 export enum AptosNetwork {
     Testnet = "Testnet",
     Mainnet = "Mainnet",
@@ -68,6 +73,15 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         };
     }
 
+    upgradeTransaction(tokenName: string): ITransaction {
+        return {
+            type: "entry_function_payload",
+            function: `${this.deployment.moduleAddress}::${this.deployment.infamousUpgradeLevel}::upgrade`,
+            arguments: [paramToHex(tokenName, "0x1::string::String")],
+            type_arguments: [],
+        };
+    }
+
     wearWeaponTransaction(tokenName: string, weaponName: string): ITransaction {
         return {
             type: "entry_function_payload",
@@ -79,13 +93,13 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async collectionInfo(): Promise<CollectionInfo> {
         const managerAddress = await this.getManagerAddress();
-        const collectionInfo = await this.tokenClient.getCollectionData(managerAddress, collectionName);
+        const collectionInfo = await this.tokenClient.getCollectionData(managerAddress, infamousCollectionName);
         return collectionInfo;
     }
 
     async tokenOwned(addr: string): Promise<TokenData[]> {
         try {
-            const tokenIds = await this.doResolveTokenOwned(addr);
+            const tokenIds = await this.doResolveTokenOwned(addr, infamousCollectionName);
             const list: TokenData[] = [];
             for (const tokenId of tokenIds) {
                 const tokenData = await this.tokenData(tokenId);
@@ -99,7 +113,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async tokenIdsOwned(addr: string): Promise<ITokenId[]> {
         try {
-            return await this.doResolveTokenOwned(addr);
+            return await this.doResolveTokenOwned(addr, infamousCollectionName);
         } catch (e) {
             return [];
         }
@@ -109,6 +123,28 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         try {
             return await this.doGetTokenData(tokenId);
         } catch (e) {}
+    }
+
+    async weaponIdsOwned(addr: string): Promise<ITokenId[]> {
+        try {
+            return await this.doResolveTokenOwned(addr, weaponCollectionName);
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async weaponData(weaponTokenName: string): Promise<TokenData | undefined> {
+        const managerAddress = await this.getManagerAddress();
+        const tokenId: ITokenId = {
+            property_version: "0",
+            token_data_id: {
+                collection: weaponCollectionName,
+                creator: managerAddress,
+                name: weaponTokenName,
+            },
+        };
+
+        return await this.tokenData(tokenId);
     }
 
     async tokenStaked(addr: string): Promise<ITokenId[]> {
@@ -188,7 +224,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         };
     }
 
-    private async doResolveTokenOwned(addr: string): Promise<ITokenId[]> {
+    private async doResolveTokenOwned(addr: string, collectionName: string): Promise<ITokenId[]> {
         const managerAddress = await this.getManagerAddress();
         const tokenStore = await this.getTokenStoreInfo(addr);
 
@@ -291,6 +327,9 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 export function decodeValue(value: string, type: string): string {
     if (type === "u64") {
         return decodeU64(value).toString();
+    }
+    if (type === "0x1::string::String") {
+        return decodeString(value);
     }
     return value;
 }

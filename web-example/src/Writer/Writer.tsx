@@ -4,10 +4,12 @@ import React from 'react'
 import { Accordion, Breadcrumb, Button, Form, Spinner } from 'react-bootstrap'
 import {
   client,
+  infamousBackendAuth,
   infamousBackendOpenBox,
   infamousNft,
   infamousStake,
   infamousUpgradeLevel,
+  infamousWeaponNft,
   metadataModuleName,
   moduleAddress,
 } from '../const'
@@ -76,7 +78,9 @@ export function Writer(props: WriterProps) {
             moduleName === infamousNft ||
             moduleName === infamousStake ||
             moduleName === infamousUpgradeLevel ||
-            moduleName === infamousBackendOpenBox
+            moduleName === infamousBackendOpenBox ||
+            moduleName === infamousBackendAuth ||
+            moduleName === infamousWeaponNft
           )
         })
       )

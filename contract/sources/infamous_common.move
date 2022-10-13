@@ -3,7 +3,6 @@ module infamous::infamous_common {
     use std::string::{Self, String};
     use std::vector;
     use std::bcs;
-    use std::debug;
     use aptos_std::from_bcs;
     use std::hash;
 
@@ -142,7 +141,7 @@ module infamous::infamous_common {
 
     public fun string_hash_string(value: String): String {
         let bytes = bcs::to_bytes<String>(&value);
-        vector::remove(&mut bytes, 0); // has a 67 before,,,? dont known why
+        vector::remove(&mut bytes, 0); // has a length before
         let hashed = hash::sha3_256(bytes);
         let addr = from_bcs::to_address(hashed);
         address_string(addr)
@@ -151,6 +150,10 @@ module infamous::infamous_common {
 
     #[test()]
     public fun hash_test() {
+
+        
+        use std::debug;
+        
         let before_str = string::utf8(b"bluedungareeshoop earringsstraightband-aidwhitehighchokerfox maskdangermaledanger");
         let hashed_string = string_hash_string(before_str);
         debug::print<String>(&hashed_string);

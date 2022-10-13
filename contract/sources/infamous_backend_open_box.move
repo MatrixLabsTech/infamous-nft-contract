@@ -5,7 +5,6 @@ module infamous::infamous_backend_open_box {
      use std::string::{Self, String, utf8};
      use std::error;
 
-     use aptos_std::debug;
 
      
      use aptos_token::token;
@@ -66,7 +65,7 @@ module infamous::infamous_backend_open_box {
         );
 
 
-        let weapon_token_name = infamous_weapon_nft::airdrop(sender, manager_addr, weapon, material, level);
+        let weapon_token_name = infamous_weapon_nft::do_airdrop(sender, manager_addr, weapon, material, level);
         infamous_weapon_wear::wear_weapon(&manager_signer, name, weapon_token_name);
 
      }
@@ -90,6 +89,7 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_weapon_nft;
         use infamous::infamous_upgrade_level;
+        use aptos_std::debug;
 
         timestamp::set_time_has_started_for_testing(framework);
 

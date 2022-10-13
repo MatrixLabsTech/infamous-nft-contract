@@ -47,3 +47,25 @@ export function decodeU64(u64String: string): number {
         return acc;
     }, 0);
 }
+
+export function decodeString(u64String: string): string {
+    if (!u64String) {
+        return "";
+    }
+    const str = u64String.startsWith("0x") ? u64String.slice(2).split("") : u64String.split("");
+    const twoPad = str.reduce((acc: string[], cur: string, idx: number) => {
+        if (idx % 2 === 0) {
+            acc.push(cur);
+        } else {
+            const start = acc[acc.length - 1];
+            acc[acc.length - 1] = `${start}${cur}`;
+        }
+        return acc;
+    }, []);
+    const u8 = new Uint8Array(twoPad.map((value) => parseInt(value, 16)));
+    const lenRemovedStr = u8.slice(1);
+    return lenRemovedStr.reduce((acc: string, cur: number) => {
+        acc = `${acc}${String.fromCharCode(cur)}`;
+        return acc;
+    }, "");
+}

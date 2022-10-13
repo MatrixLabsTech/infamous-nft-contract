@@ -12,6 +12,7 @@ export interface InfamousNFTClient {
     mintTransaction(count: string): ITransaction;
     stakeTransaction(tokenName: string): ITransaction;
     unstakeTransaction(tokenName: string): ITransaction;
+    upgradeTransaction(tokenName: string): ITransaction;
     wearWeaponTransaction(tokenName: string, weaponName: string): ITransaction;
 
     // infamous collection info
@@ -23,6 +24,10 @@ export interface InfamousNFTClient {
     tokenIdsOwned(addr: string): Promise<ITokenId[]>;
 
     tokenData(tokenId: ITokenId): Promise<TokenData | undefined>;
+
+    weaponIdsOwned(addr: string): Promise<ITokenId[]>;
+
+    weaponData(weaponTokenName: string): Promise<TokenData | undefined>;
 
     tokenStaked(addr: string): Promise<ITokenId[]>;
 
