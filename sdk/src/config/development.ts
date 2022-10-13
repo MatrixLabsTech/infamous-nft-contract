@@ -17,7 +17,7 @@ export interface IDeployment {
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0xde308110012f3098c97e0ebba46199e38b2909b7ea72d07c1841b6ae8add0274",
+        moduleAddress: "0x0a76b8e3a846682fe6da566e5879a1d06d4c9d41cdf6db21dba46b5852e9e5e9",
         infamousBackendAuth: "infamous_backend_auth",
         infamousManagerCap: "infamous_manager_cap",
         infamousWeaponNft: "infamous_weapon_nft",
@@ -29,7 +29,7 @@ export const deployment = {
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
     },
     devnet: {
-        moduleAddress: "0xde308110012f3098c97e0ebba46199e38b2909b7ea72d07c1841b6ae8add0274",
+        moduleAddress: "0x0a76b8e3a846682fe6da566e5879a1d06d4c9d41cdf6db21dba46b5852e9e5e9",
         infamousCommon: "infamous_common",
         infamousBackendAuth: "infamous_backend_auth",
         infamousManagerCap: "infamous_manager_cap",
