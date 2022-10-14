@@ -1,3 +1,4 @@
+import { AptosNetwork } from '@white-matrix/infamous-contract-sdk/dist/InfamousNFTClientImpl'
 import cn from 'classnames'
 import { useCallback, useState } from 'react'
 import { Button, Form, Spinner } from 'react-bootstrap'
@@ -27,7 +28,9 @@ export function TokenStoreHandle(props: TokenStoreHandleProps) {
         const formData = new FormData(e.target)
         const formProps = Object.fromEntries(formData)
 
+        let network = await (window as any).aptos.network()
         const token = await getToken(
+          network,
           tokensHandle,
           formProps.creator as string,
           formProps.collection as string,
@@ -89,6 +92,7 @@ export function TokenStoreHandle(props: TokenStoreHandleProps) {
 }
 
 async function getToken(
+  network: AptosNetwork,
   handle: string,
   creator: string,
   collection_name: string,
@@ -107,6 +111,7 @@ async function getToken(
   }
 
   const token = await tableItem(
+    network,
     handle,
     '0x3::token::TokenId',
     '0x3::token::Token',

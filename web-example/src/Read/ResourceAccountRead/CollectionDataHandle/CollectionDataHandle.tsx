@@ -126,7 +126,9 @@ async function getCollectionData(
   handle: string,
   collection_name: string
 ): Promise<any> {
+  let network = await (window as any).aptos.network()
   const collectionData = await tableItem(
+    network,
     handle,
     '0x1::string::String',
     '0x3::token::CollectionData',
@@ -147,7 +149,9 @@ async function getTokenData(
     name: token_name,
   }
 
+  let network = await (window as any).aptos.network()
   const token = await tableItem(
+    network,
     handle,
     '0x3::token::TokenDataId',
     '0x3::token::TokenData',

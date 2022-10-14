@@ -1,18 +1,32 @@
 import { deployment } from '@white-matrix/infamous-contract-sdk'
+import { AptosNetwork } from '@white-matrix/infamous-contract-sdk/dist/InfamousNFTClientImpl'
 import { AptosClient } from 'aptos'
 
-export const client = new AptosClient('https://fullnode.devnet.aptoslabs.com')
-export const moduleAddress = deployment.devnet.moduleAddress
-export const infamousNft = deployment.devnet.infamousNft
-export const infamousStake = deployment.devnet.infamousStake
-export const infamousManagerCap = deployment.devnet.infamousManagerCap
-export const infamousUpgradeLevel = deployment.devnet.infamousUpgradeLevel
-export const infamousBackendOpenBox = deployment.devnet.infamousBackendOpenBox
-export const infamousBackendAuth = deployment.devnet.infamousBackendAuth
-export const infamousWeaponNft = deployment.devnet.infamousWeaponNft
-export const infamousWeaponWear = deployment.devnet.infamousWeaponWear
+export const testClient = new AptosClient(
+  'https://fullnode.testnet.aptoslabs.com'
+)
+export const devClient = new AptosClient(
+  'https://fullnode.devnet.aptoslabs.com'
+)
+export const moduleAddress = deployment.testnet.moduleAddress
+export const infamousNft = deployment.testnet.infamousNft
+export const infamousStake = deployment.testnet.infamousStake
+export const infamousManagerCap = deployment.testnet.infamousManagerCap
+export const infamousUpgradeLevel = deployment.testnet.infamousUpgradeLevel
+export const infamousBackendOpenBox = deployment.testnet.infamousBackendOpenBox
+export const infamousBackendAuth = deployment.testnet.infamousBackendAuth
+export const infamousWeaponNft = deployment.testnet.infamousWeaponNft
+export const infamousWeaponWear = deployment.testnet.infamousWeaponWear
 export const infamousBackendTokenWeaponAirdrop =
-  deployment.devnet.infamousBackendTokenWeaponAirdrop
+  deployment.testnet.infamousBackendTokenWeaponAirdrop
+
+export function getClient(network: AptosNetwork) {
+  if (network === AptosNetwork.Devnet) {
+    return devClient
+  } else {
+    return testClient
+  }
+}
 
 export const metadataModuleName = 'metadata'
 export const tokenModuleName = 'token'

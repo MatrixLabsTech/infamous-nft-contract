@@ -3,12 +3,7 @@ import cn from 'classnames'
 import React, { useCallback } from 'react'
 import { useEffect, useState } from 'react'
 import { Button, ListGroup, Spinner } from 'react-bootstrap'
-import {
-  client,
-  infamousManagerCap,
-  infamousNft,
-  moduleAddress,
-} from '../const'
+import { getClient, infamousManagerCap, moduleAddress } from '../const'
 
 import styles from './Read.module.less'
 import { ResourceAccountRead } from './ResourceAccountRead'
@@ -28,19 +23,21 @@ export function Read(props: ReadProps) {
   const [resources, setResources] = React.useState<Types.MoveResource[]>([])
 
   const [loading, setLoading] = useState(false)
-  const fetchResource = useCallback(() => {
+  const fetchResource = useCallback(async () => {
     setLoading(true)
-    client.getAccountResources(moduleAddress).then((resources) => {
-      console.log(resources)
-
-      setLoading(false)
-      setResources(
-        resources.filter(
-          (r) =>
-            r.type === resourceMinterInfo || r.type === '0x3::token::TokenStore'
+    let network = await (window as any).aptos.network()
+    getClient(network)
+      .getAccountResources(moduleAddress)
+      .then((resources: Types.MoveResource[]) => {
+        setLoading(false)
+        setResources(
+          resources.filter(
+            (r) =>
+              r.type === resourceMinterInfo ||
+              r.type === '0x3::token::TokenStore'
+          )
         )
-      )
-    })
+      })
   }, [])
 
   console.log(resources)

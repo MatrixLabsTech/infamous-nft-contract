@@ -1,6 +1,8 @@
-import { client } from '../const'
+import { AptosNetwork } from '@white-matrix/infamous-contract-sdk/dist/InfamousNFTClientImpl'
+import { getClient } from '../const'
 
 export async function tableItem(
+  network: AptosNetwork,
   handle: string,
   keyType: string,
   valueType: string,
@@ -11,5 +13,5 @@ export async function tableItem(
     value_type: valueType,
     key,
   }
-  return client.getTableItem(handle, getTokenTableItemRequest)
+  return getClient(network).getTableItem(handle, getTokenTableItemRequest)
 }

@@ -1,9 +1,9 @@
 import { Types } from 'aptos'
 import cn from 'classnames'
-import React, { useState } from 'react'
+import React, { useCallback, useState } from 'react'
 import { useEffect } from 'react'
 import { Accordion, Modal, ModalProps, Spinner } from 'react-bootstrap'
-import { client } from '../../const'
+import { getClient } from '../../const'
 import { CollectionDataHandle } from './CollectionDataHandle'
 
 import styles from './ResourceAccountRead.module.less'
@@ -21,10 +21,13 @@ export function ResourceAccountRead(props: ResourceAccountReadProps) {
 
   const [loading, setLoading] = useState(false)
   const [resources, setResources] = React.useState<Types.MoveResource[]>([])
-  useEffect(() => {
-    if (resourceAddress) {
-      setLoading(true)
-      client.getAccountResources(resourceAddress).then((resources) => {
+
+  const getResources = useCallback(async (resourceAddress: string) => {
+    let network = await window.aptos.network()
+    setLoading(true)
+    getClient(network)
+      .getAccountResources(resourceAddress)
+      .then((resources) => {
         setLoading(false)
         setResources(
           resources.filter(
@@ -33,8 +36,13 @@ export function ResourceAccountRead(props: ResourceAccountReadProps) {
           )
         )
       })
+  }, [])
+
+  useEffect(() => {
+    if (resourceAddress) {
+      getResources(resourceAddress)
     }
-  }, [resourceAddress, show])
+  }, [getResources, resourceAddress, show])
 
   return (
     <div className={cn(styles.ResourceAccountRead, className)}>

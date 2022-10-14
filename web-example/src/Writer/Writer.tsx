@@ -1,16 +1,15 @@
 import { Types } from 'aptos'
 import cn from 'classnames'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { Accordion, Breadcrumb, Button, Form, Spinner } from 'react-bootstrap'
 import {
-  client,
+  getClient,
   infamousBackendAuth,
   infamousBackendOpenBox,
   infamousBackendTokenWeaponAirdrop,
   infamousNft,
   infamousStake,
   infamousUpgradeLevel,
-  infamousWeaponNft,
   infamousWeaponWear,
   metadataModuleName,
   moduleAddress,
@@ -69,26 +68,33 @@ export function Writer(props: WriterProps) {
 
   // Check for the module; show publish instructions if not present.
   const [modules, setModules] = React.useState<Types.MoveModuleBytecode[]>([])
-  React.useEffect(() => {
-    client.getAccountModules(moduleAddress).then((modules) => {
-      console.log(modules) //ccc-log
-      setModules(
-        modules.filter((m) => {
-          const moduleName = m.abi?.name || ''
-          return (
-            moduleName === metadataModuleName ||
-            moduleName === infamousNft ||
-            moduleName === infamousStake ||
-            moduleName === infamousUpgradeLevel ||
-            moduleName === infamousBackendOpenBox ||
-            moduleName === infamousBackendAuth ||
-            moduleName === infamousBackendTokenWeaponAirdrop ||
-            moduleName === infamousWeaponWear
-          )
-        })
-      )
-    })
+
+  const getModules = useCallback(async () => {
+    let network = await window.aptos.network()
+    getClient(network)
+      .getAccountModules(moduleAddress)
+      .then((modules) => {
+        console.log(modules) //ccc-log
+        setModules(
+          modules.filter((m) => {
+            const moduleName = m.abi?.name || ''
+            return (
+              moduleName === metadataModuleName ||
+              moduleName === infamousNft ||
+              moduleName === infamousStake ||
+              moduleName === infamousUpgradeLevel ||
+              moduleName === infamousBackendOpenBox ||
+              moduleName === infamousBackendAuth ||
+              moduleName === infamousBackendTokenWeaponAirdrop ||
+              moduleName === infamousWeaponWear
+            )
+          })
+        )
+      })
   }, [])
+  React.useEffect(() => {
+    getModules()
+  }, [getModules])
 
   const [isSaving, setIsSaving] = React.useState<ILoadingMap>({})
   const [handleInfo, setHandleInfo] = React.useState<IResourceMap>({})
