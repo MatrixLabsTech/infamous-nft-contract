@@ -78,7 +78,10 @@ module infamous::infamous_weapon_wear {
             let staked_addr = option::extract(&mut option_stake_addr);
             assert!(sender_addr == staked_addr, error::invalid_argument(TOKEN_NOT_OWNED_BY_SENDER));
 
+
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
+            
+            update_token_weapon(token_id, manager_addr, new_weapon_token_id);
 
             
             // update properties
@@ -94,6 +97,10 @@ module infamous::infamous_weapon_wear {
             assert!(revealed, error::invalid_argument(TOKEN_NOT_REVEALED));
 
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
+
+            
+            update_token_weapon(token_id, manager_addr, new_weapon_token_id);
+
 
             // update properties
             infamous_nft::update_token_uri_with_properties(sender_addr, token_name);
@@ -179,13 +186,16 @@ module infamous::infamous_weapon_wear {
 
     
 
-    fun update_token_weapon(token_id: TokenId, owner_addr: address, weapon_token_id: TokenId, weapon_token_name: String) {
+    fun update_token_weapon(token_id: TokenId, weapon_owner_addr: address, weapon_token_id: TokenId) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
         let token_data_id = token::create_token_data_id(creator, collection, name);
 
+        
+
         // get weapon weapon
-        let weapon = get_weapon__weapon_property(owner_addr, weapon_token_id);
+        let weapon = get_weapon__weapon_property(weapon_owner_addr, weapon_token_id);
+        let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
 
         let keys = vector<String>[infamous_common::infamous_weapon_key(), infamous_common::infamous_weapon_token_name_key()];
         let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&weapon_token_name)];
@@ -203,6 +213,111 @@ module infamous::infamous_weapon_wear {
         let weapon_key = &infamous_common::infamous_weapon_key();
         assert!(property_map::contains_key(&properties, weapon_key), error::invalid_state(WEAPON_DONT_HAVE_WEAPON_PROPERTY));
         property_map::read_string(&properties, weapon_key)
+    }
+
+    
+       
+    #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
+    public fun wear_weapon_test(user: &signer, receiver: &signer, framework: &signer) acquires TokenWearWeapon { 
+
+        use aptos_framework::account; 
+        use aptos_framework::timestamp;
+        use infamous::infamous_stake;
+        use infamous::infamous_nft;
+        use infamous::infamous_weapon_nft;
+        use infamous::infamous_upgrade_level;
+        use infamous::infamous_backend_open_box;
+        use infamous::infamous_backend_token_weapon_airdrop;
+
+        use aptos_std::debug;
+
+        timestamp::set_time_has_started_for_testing(framework);
+
+
+        let user_addr = signer::address_of(user);
+        account::create_account_for_test(user_addr);
+        
+        infamous_manager_cap::initialize(user);
+        infamous_nft::initialize(user);
+        infamous_weapon_nft::initialize(user);
+
+        let receiver_addr = signer::address_of(receiver);
+        account::create_account_for_test(receiver_addr);
+        infamous_nft::mint(receiver, 3);
+
+        
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        let collection_name = infamous_common::infamous_collection_name();
+        let base_token_name = infamous_common::infamous_base_token_name();
+        let token_index_1_name = infamous_common::append_num(base_token_name, 1);
+
+        let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name);
+        assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
+        infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
+
+        let time = infamous_stake::get_available_time(token_id);
+        debug::print<u64>(&time);
+
+        timestamp::fast_forward_seconds(2000);
+        let time1 = infamous_stake::get_available_time(token_id);
+        debug::print<u64>(&time1);
+
+        infamous_upgrade_level::upgrade(token_index_1_name);
+        
+
+        
+        // infamous_stake::unstake_infamous_nft_script(receiver, token_index_1_name);-
+
+
+
+        let background = utf8(b"blue");
+        let clothing = utf8(b"dungarees");
+        let ear = utf8(b"hoop earrings");
+        let eyes = utf8(b"straight");
+        let eyebrow = utf8(b"band-aid");
+        let accessories = utf8(b"white");
+        let hear = utf8(b"high");
+        let mouth = utf8(b"choker");
+        let neck = utf8(b"fox mask");
+        let tatto = utf8(b"danger");
+        let gender = utf8(b"male");
+        let weapon = utf8(b"danger");
+
+        let material = utf8(b"ssss");
+
+        infamous_backend_open_box::open_box(user, 
+         receiver_addr,
+         token_index_1_name,
+         background, clothing, ear, eyes,
+         eyebrow, accessories, hear, mouth,
+         neck, tatto, gender,
+         weapon, material
+         );
+
+         
+        let weapon_token_1_name = utf8(b"Equipment #1");
+        // let weapon_l3_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
+
+        infamous_backend_token_weapon_airdrop::airdrop_level_four(user, token_index_1_name, receiver_addr, utf8(b"knif"), utf8(b"normal knif"));
+
+        let weapon_token_2_name = utf8(b"Equipment #2");
+        // let weapon_l4_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
+
+        infamous_backend_token_weapon_airdrop::airdrop_level_five(user, token_index_1_name, receiver_addr, utf8(b"AK-47"), utf8(b"normal AK-47"));
+
+        let weapon_token_3_name = utf8(b"Equipment #3");
+        // let weapon_l5_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
+
+         wear_weapon(receiver, token_index_1_name, weapon_token_2_name);
+         wear_weapon(receiver, token_index_1_name, weapon_token_1_name);
+         wear_weapon(receiver, token_index_1_name, weapon_token_3_name);
+         wear_weapon(receiver, token_index_1_name, weapon_token_1_name);
+
+         
+        // let weapon_collection_name = infamous_common::infamous_weapon_collection_name();
+
+
     }
 
     

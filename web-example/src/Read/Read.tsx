@@ -23,7 +23,7 @@ function noop() {}
 const resourceMinterInfo = `${moduleAddress}::${infamousManagerCap}::ManagerAccountCapability`
 
 export function Read(props: ReadProps) {
-  const { className, address } = props
+  const { className } = props
 
   const [resources, setResources] = React.useState<Types.MoveResource[]>([])
 

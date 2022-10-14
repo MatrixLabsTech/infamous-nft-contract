@@ -25,7 +25,6 @@ export function ResourceAccountRead(props: ResourceAccountReadProps) {
     if (resourceAddress) {
       setLoading(true)
       client.getAccountResources(resourceAddress).then((resources) => {
-        console.log(resources) //ccc-log
         setLoading(false)
         setResources(
           resources.filter(

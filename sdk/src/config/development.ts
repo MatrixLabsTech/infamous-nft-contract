@@ -1,7 +1,7 @@
 export const collectionResource = `0x3::token::Collections`;
 export const tokenStoreResource = `0x3::token::TokenStore`;
 export const infamousCollectionName = "InfamousNFT";
-export const weaponCollectionName = "InfamousWeaponNFT";
+export const weaponCollectionName = "InfamousEquipmentNFT";
 
 export interface IDeployment {
     moduleAddress: string;
@@ -17,28 +17,29 @@ export interface IDeployment {
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0x0a76b8e3a846682fe6da566e5879a1d06d4c9d41cdf6db21dba46b5852e9e5e9",
+        moduleAddress: "0xe9766f92a044b82ee37acf70de6311c537ddf257278a02fc44858ffda0ccc454",
         infamousBackendAuth: "infamous_backend_auth",
-        infamousManagerCap: "infamous_manager_cap",
-        infamousWeaponNft: "infamous_weapon_nft",
-        infamousNft: "infamous_nft",
-        infamousWeaponWear: "infamous_weapon_wear",
-        infamousStake: "infamous_stake",
-        infamousUpgradeLevel: "infamous_upgrade_level",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
+        infamousCommon: "infamous_common",
+        infamousManagerCap: "infamous_manager_cap",
+        infamousNft: "infamous_nft",
+        infamousStake: "infamous_stake",
+        infamousUpgradeLevel: "infamous_upgrade_level",
+        infamousWeaponNft: "infamous_weapon_nft",
+        infamousWeaponWear: "infamous_weapon_wear",
     },
     devnet: {
-        moduleAddress: "0x0a76b8e3a846682fe6da566e5879a1d06d4c9d41cdf6db21dba46b5852e9e5e9",
-        infamousCommon: "infamous_common",
+        moduleAddress: "0xe9766f92a044b82ee37acf70de6311c537ddf257278a02fc44858ffda0ccc454",
         infamousBackendAuth: "infamous_backend_auth",
-        infamousManagerCap: "infamous_manager_cap",
-        infamousWeaponNft: "infamous_weapon_nft",
-        infamousNft: "infamous_nft",
-        infamousWeaponWear: "infamous_weapon_wear",
-        infamousStake: "infamous_stake",
-        infamousUpgradeLevel: "infamous_upgrade_level",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
+        infamousCommon: "infamous_common",
+        infamousManagerCap: "infamous_manager_cap",
+        infamousNft: "infamous_nft",
+        infamousStake: "infamous_stake",
+        infamousUpgradeLevel: "infamous_upgrade_level",
+        infamousWeaponNft: "infamous_weapon_nft",
+        infamousWeaponWear: "infamous_weapon_wear",
     },
 };
