@@ -146,7 +146,7 @@ module infamous::infamous_common {
         
         use std::debug;
         
-        let before_str = string::utf8(b"bluedungareeshoop earringsstraightband-aidwhitehighchokerfox maskdangermaledanger");
+        let before_str = string::utf8(b"bluehoodienullextended eyebrowsnullblack eyesbob cut 1 (navy blue)closednullnulldaggeriron");
         let hashed_string = string_hash_string(before_str);
         debug::print<String>(&hashed_string);
 
