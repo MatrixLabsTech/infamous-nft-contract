@@ -6,11 +6,9 @@ module infamous::infamous_weapon_wear {
     use std::signer;
     use std::string::{String, utf8};
     use std::option::{Self, Option};
+    
 
 
-    use aptos_framework::account;
-    use aptos_framework::timestamp;
-    use aptos_framework::event::{Self, EventHandle};
 
     use aptos_token::token::{Self, TokenId};
     use aptos_token::property_map;
@@ -20,6 +18,7 @@ module infamous::infamous_weapon_wear {
     use infamous::infamous_nft;
     use infamous::infamous_weapon_nft;
     use infamous::infamous_stake;
+    use infamous::infamous_weapon_status;
 
 
     const TOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
@@ -30,22 +29,10 @@ module infamous::infamous_weapon_wear {
     const TOKEN_STAKED_MISSED: u64 = 6;
     
     
-    struct WeaponWearEvent has drop, store {
-        operator: address,
-        token_id: TokenId,
-        weapon_token_id: TokenId,
-        time: u64,
-    }
 
-
-
-    // store in manager account
-    struct TokenWearWeapon has key {
-        weapon_wear_events: EventHandle<WeaponWearEvent>,
-    }
 
     /// wear weapon called by weapon owner
-    public entry fun wear_weapon(sender: &signer, token_name: String, weapon_name: String) acquires TokenWearWeapon {
+    public entry fun wear_weapon(sender: &signer, token_name: String, weapon_name: String) {
         let sender_addr = signer::address_of(sender);
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
@@ -70,17 +57,20 @@ module infamous::infamous_weapon_wear {
             // 1. check the manager is the owner
             assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_state(TOKEN_STAKED_MISSED));
         
-            // 2.check token revealed
-            let (revealed, old_weapon_token_name) = get_token__revealed__weapon_token_name(manager_addr, token_id);
-            assert!(revealed, error::invalid_argument(TOKEN_NOT_REVEALED));
 
-            // 3.check token staked by sender or called by manager self
+            // 2.check token staked by sender or called by manager self
             let staked_addr = option::extract(&mut option_stake_addr);
             assert!(sender_addr == staked_addr, error::invalid_argument(TOKEN_NOT_OWNED_BY_SENDER));
 
+            // 3.check has old token
+            let old_weapon_token_name = infamous_weapon_status::get_token__weapon_token_name(token_id);
+            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(TOKEN_NOT_REVEALED));
 
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
             
+
+            
+            infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
             update_token_weapon(token_id, manager_addr, new_weapon_token_id);
 
             
@@ -93,12 +83,12 @@ module infamous::infamous_weapon_wear {
             assert!(token::balance_of(sender_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_SENDER));
             
             // 2.check token revealed
-            let (revealed, old_weapon_token_name) = get_token__revealed__weapon_token_name(sender_addr, token_id);
-            assert!(revealed, error::invalid_argument(TOKEN_NOT_REVEALED));
+            let old_weapon_token_name = infamous_weapon_status::get_token__weapon_token_name(token_id);
+            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(TOKEN_NOT_REVEALED));
 
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
 
-            
+            infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
             update_token_weapon(token_id, manager_addr, new_weapon_token_id);
 
 
@@ -108,9 +98,7 @@ module infamous::infamous_weapon_wear {
 
         };
 
-
-        initialize_wear_weapon_event(&manager_signer);
-        emit_wear_event(manager_addr, sender_addr, token_id, new_weapon_token_id);
+        infamous_weapon_status::emit_wear_event(manager_addr, sender_addr, token_id, new_weapon_token_id);
         
     }
 
@@ -142,64 +130,16 @@ module infamous::infamous_weapon_wear {
      }
      
     
-    fun emit_wear_event(account: address, owner: address, token_id: TokenId, weapon_token_id: TokenId) acquires TokenWearWeapon {
-        
-        let token_wear_weapon_info = borrow_global_mut<TokenWearWeapon>(account);
-        event::emit_event<WeaponWearEvent>(
-            &mut token_wear_weapon_info.weapon_wear_events,
-            WeaponWearEvent {
-                operator: owner,
-                token_id,
-                weapon_token_id,
-                time: timestamp::now_seconds(),
-            });
-    }
-
     
-
-    fun initialize_wear_weapon_event(account: &signer) {
-        let account_addr = signer::address_of(account);
-        if(!exists<TokenWearWeapon>(account_addr)) {
-            move_to(
-                account,
-                TokenWearWeapon {
-                    weapon_wear_events: account::new_event_handle<WeaponWearEvent>(account),
-                }
-            );
-        }
-    }
-
-
-    fun get_token__revealed__weapon_token_name(owner: address, token_id: TokenId): (bool, Option<String>) { 
-        let properties = token::get_property_map(owner, token_id);
-        let weapon_token_name_key = &infamous_common::infamous_weapon_token_name_key();
-        let revealed = property_map::contains_key(&properties, &utf8(b"revealed"));
-        let cur_weapon = option::none();
-        if(property_map::contains_key(&properties, weapon_token_name_key)) {
-            cur_weapon = option::some(property_map::read_string(&properties, weapon_token_name_key));
-        };
-        (revealed, cur_weapon)
-    }
-
-
-
-
-    
-
     fun update_token_weapon(token_id: TokenId, weapon_owner_addr: address, weapon_token_id: TokenId) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
         let token_data_id = token::create_token_data_id(creator, collection, name);
-
-        
-
         // get weapon weapon
         let weapon = get_weapon__weapon_property(weapon_owner_addr, weapon_token_id);
-        let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
-
-        let keys = vector<String>[infamous_common::infamous_weapon_key(), infamous_common::infamous_weapon_token_name_key()];
-        let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&weapon_token_name)];
-        let types = vector<String>[utf8(b"0x1::string::String"), utf8(b"0x1::string::String")];
+        let keys = vector<String>[infamous_common::infamous_weapon_key()];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon)];
+        let types = vector<String>[utf8(b"0x1::string::String")];
         token::mutate_tokendata_property(&manager_signer,
         token_data_id,
         keys, values, types
@@ -218,7 +158,7 @@ module infamous::infamous_weapon_wear {
     
        
     #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
-    public fun wear_weapon_test(user: &signer, receiver: &signer, framework: &signer) acquires TokenWearWeapon { 
+    public fun wear_weapon_test(user: &signer, receiver: &signer, framework: &signer) { 
 
         use aptos_framework::account; 
         use aptos_framework::timestamp;
@@ -270,28 +210,24 @@ module infamous::infamous_weapon_wear {
         // infamous_stake::unstake_infamous_nft_script(receiver, token_index_1_name);-
 
 
-
         let background = utf8(b"blue");
-        let clothing = utf8(b"dungarees");
-        let ear = utf8(b"hoop earrings");
-        let eyes = utf8(b"straight");
-        let eyebrow = utf8(b"band-aid");
-        let accessories = utf8(b"white");
-        let hear = utf8(b"high");
+        let clothing = utf8(b"hoodie");
+        let ear = utf8(b"null");
+        let eyebrow = utf8(b"extended eyebrows");
+        let accessories = utf8(b"null");
+        let eyes = utf8(b"black eyes");
+        let hair = utf8(b"bob cut 1 (navy blue)");
         let mouth = utf8(b"choker");
         let neck = utf8(b"fox mask");
-        let tatto = utf8(b"danger");
-        let gender = utf8(b"male");
+        let tattoo = utf8(b"danger");
         let weapon = utf8(b"danger");
+        let material = utf8(b"iron");
 
-        let material = utf8(b"ssss");
-
-        infamous_backend_open_box::open_box(user, 
-         receiver_addr,
+         infamous_backend_open_box::open_box(user,
          token_index_1_name,
-         background, clothing, ear, eyes,
-         eyebrow, accessories, hear, mouth,
-         neck, tatto, gender,
+         background, clothing, ear, eyebrow, 
+         accessories, eyes, hair, mouth,
+         neck, tattoo,
          weapon, material
          );
 

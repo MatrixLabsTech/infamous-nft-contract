@@ -11,9 +11,10 @@ module infamous::infamous_manager_cap {
     friend infamous::infamous_stake;
     friend infamous::infamous_upgrade_level;
     friend infamous::infamous_weapon_nft;
-    friend infamous::infamous_weapon_wear;
     friend infamous::infamous_backend_open_box;
     friend infamous::infamous_backend_token_weapon_airdrop;
+    friend infamous::infamous_weapon_wear;
+    friend infamous::infamous_weapon_status;
 
     const EMANAGER_ACCOUNT_INFO_NOT_PUBLISHED: u64 = 1;
 

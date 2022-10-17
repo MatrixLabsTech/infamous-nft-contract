@@ -1,12 +1,13 @@
 module infamous::infamous_upgrade_level {
     
-    use std::bcs;
     use std::signer;
     use std::error;
-    use std::string::{Self, String};
+    use std::string::{String};
 
-    use aptos_token::token::{Self, TokenId};
-    use aptos_token::property_map;
+    
+    use aptos_std::table::{Self, Table};
+
+    use aptos_token::token::{TokenId};
 
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
@@ -33,8 +34,20 @@ module infamous::infamous_upgrade_level {
     }
     
     struct UpgradeInfo has key {
+        token_level: Table<TokenId, u64>,
         token_upgrade_events: EventHandle<TokenUpgradeEvent>,
     }
+
+    fun init_upgrade_info(account: &signer) {
+        let addr = signer::address_of(account);
+        if(!exists<UpgradeInfo>(addr)) {
+            move_to(account, UpgradeInfo {
+                token_level: table::new<TokenId, u64>(),
+                token_upgrade_events: account::new_event_handle<TokenUpgradeEvent>(account),
+            });
+        };
+    }
+
 
     // upgrade when under stake
     public entry fun upgrade(name: String) acquires UpgradeInfo {
@@ -47,7 +60,7 @@ module infamous::infamous_upgrade_level {
         assert!(available_time >= EACH_LEVEL_EXP, error::invalid_argument(EXP_NOT_ENOUGH_TO_UPGRADE));
 
         
-        let cur_level = get_token_level(creator, token_id);
+        let cur_level = get_token_level(token_id);
         assert!(cur_level < FULL_LEVEL, error::invalid_argument(TOKEN_IS_FULL_LEVEL));
 
         let available_level = available_time / EACH_LEVEL_EXP;
@@ -57,10 +70,9 @@ module infamous::infamous_upgrade_level {
         };
         let need_exp = (new_level - cur_level) * EACH_LEVEL_EXP;
 
-        update_level(token_id, new_level);
         infamous_stake::take_times_to_use(token_id, need_exp);
 
-        emit_upgrade_event(token_id, new_level);
+        update_level(token_id, new_level);
     }
 
 
@@ -69,38 +81,36 @@ module infamous::infamous_upgrade_level {
 
 
 
-    public fun get_token_level(owner: address, token_id: TokenId): u64 { 
-        let properties = token::get_property_map(owner, token_id);
-        let level_key = &infamous_common::infamous_level_key();
-        let cur_level = if(property_map::contains_key(&properties, level_key)) {
-            property_map::read_u64(&properties, level_key)
-        } else 0;
+    public fun get_token_level(token_id: TokenId): u64 acquires UpgradeInfo { 
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        let cur_level = 0;
+        if(exists<UpgradeInfo>(manager_addr)) {
+            let token_level = &borrow_global<UpgradeInfo>(manager_addr).token_level;
+            if(table::contains(token_level, token_id)){
+                cur_level = *table::borrow(token_level, token_id);
+            }
+        };
         cur_level
     }
 
-    fun update_level(token_id: TokenId, level: u64) {
+    fun update_level(token_id: TokenId, level: u64) acquires UpgradeInfo {
         let manager_signer = infamous_manager_cap::get_manager_signer();
-        let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
-        let token_data_id = token::create_token_data_id(creator, collection, name);
+        let manager_addr = signer::address_of(&manager_signer);
 
-        let keys = vector<String>[infamous_common::infamous_level_key()];
-        let values = vector<vector<u8>>[bcs::to_bytes<u64>(&level)];
-        let types = vector<String>[string::utf8(b"u64")];
-        token::mutate_tokendata_property(&manager_signer,
-        token_data_id,
-        keys, values, types
-        );
+        init_upgrade_info(&manager_signer);
+        let token_level = &mut borrow_global_mut<UpgradeInfo>(manager_addr).token_level;
+        if(table::contains(token_level, token_id)) {
+            table::remove(token_level, token_id);
+        };
+        table::add(token_level, token_id, level);
+        emit_upgrade_event(token_id, level);
     }
 
     
     fun emit_upgrade_event(token_id: TokenId, level: u64) acquires UpgradeInfo {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
-        if(!exists<UpgradeInfo>(manager_addr)) {
-            move_to(&manager_signer, UpgradeInfo {
-                token_upgrade_events: account::new_event_handle<TokenUpgradeEvent>(&manager_signer),
-            });
-        };
         let upgrade_info = borrow_global_mut<UpgradeInfo>(manager_addr);
         event::emit_event<TokenUpgradeEvent>(
             &mut upgrade_info.token_upgrade_events,
@@ -119,6 +129,8 @@ module infamous::infamous_upgrade_level {
         use aptos_framework::account; 
         use infamous::infamous_nft;
         use aptos_std::debug;
+        use aptos_token::token;
+
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -156,13 +168,13 @@ module infamous::infamous_upgrade_level {
         debug::print<u64>(&time1);
 
         upgrade(token_index_1_name);
-        let after = get_token_level(manager_addr, token_id);
+        let after = get_token_level(token_id);
         debug::print<u64>(&after);
 
         
         timestamp::fast_forward_seconds(200);
         upgrade(token_index_1_name);
-        let after1 = get_token_level(manager_addr, token_id);
+        let after1 = get_token_level(token_id);
         debug::print<u64>(&after1);
         debug::print<u64>(&111111111111);
 
@@ -171,12 +183,13 @@ module infamous::infamous_upgrade_level {
 
 
     #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
-    public fun update_level_test(user: &signer, receiver: &signer, framework: &signer) { 
+    public fun update_level_test(user: &signer, receiver: &signer, framework: &signer) acquires UpgradeInfo { 
 
         use aptos_framework::account; 
         use aptos_framework::timestamp;
         use aptos_std::debug;
         use infamous::infamous_nft;
+        use aptos_token::token;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -200,13 +213,13 @@ module infamous::infamous_upgrade_level {
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name);
         assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
     
-        let level = get_token_level(receiver_addr, token_id);
+        let level = get_token_level(token_id);
         debug::print<u64>(&level);
 
 
         let new_level = 3;
         update_level(token_id, new_level);
-        let after = get_token_level(receiver_addr, token_id);
+        let after = get_token_level(token_id);
         debug::print<u64>(&after);
 
     }

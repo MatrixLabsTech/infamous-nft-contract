@@ -2438,6 +2438,13 @@
     "@webassemblyjs/ast" "1.11.1"
     "@xtuc/long" "4.2.2"
 
+"@white-matrix/infamous-contract-sdk@0.0.26":
+  version "0.0.26"
+  resolved "https://registry.yarnpkg.com/@white-matrix/infamous-contract-sdk/-/infamous-contract-sdk-0.0.26.tgz#f529c162f9162293b5144df469070699e0a3d4cc"
+  integrity sha512-zgwcEAugzRS9kG/UBqT2qqQclP80E6UsBsTyfWXcj01pW3BTWzP7jhSqV2obJc5Z+R0k2rn5O+P86sh1oig3Zw==
+  dependencies:
+    aptos "^1.3.13"
+
 "@xtuc/ieee754@^1.2.0":
   version "1.2.0"
   resolved "https://registry.npmmirror.com/@xtuc/ieee754/-/ieee754-1.2.0.tgz"

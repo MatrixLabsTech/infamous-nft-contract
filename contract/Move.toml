@@ -1,6 +1,7 @@
 [package]
 name = "infamousNFT"
 version = "1.0.0"
+upgrade_policy = "compatible"
 
 [addresses]
 std = "0x1"

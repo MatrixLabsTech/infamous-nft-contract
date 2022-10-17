@@ -24,7 +24,9 @@ import {decodeString, decodeU64, paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
 import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
 import {ITokenStakes, ITokenStakesData} from "./StakingInfo";
-import {IWearWeaponInfo, WearWeaponEvent, WearWeaponHistoryItem} from "./WearWeaponInfo";
+import {IWearWeaponInfo, WearWeaponHistoryItem} from "./WearWeaponInfo";
+import {IUpgradeInfo} from "./UpgradeInfo";
+import {IOpenBoxStatus} from "./OpenBoxStatus";
 export enum AptosNetwork {
     Testnet = "Testnet",
     Mainnet = "Mainnet",
@@ -35,6 +37,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     readClient: AptosClient;
     deployment: IDeployment;
     tokenClient: TokenClient;
+    manager_addr?: string;
     constructor(network: AptosNetwork = AptosNetwork.Devnet) {
         if (network === AptosNetwork.Testnet) {
             this.readClient = new AptosClient(TESTNET_REST_SERVICE);
@@ -96,6 +99,28 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         const managerAddress = await this.getManagerAddress();
         const collectionInfo = await this.tokenClient.getCollectionData(managerAddress, infamousCollectionName);
         return collectionInfo;
+    }
+
+    async tokenLevel(tokenId: ITokenId): Promise<number> {
+        try {
+            const upgradeInfo = await this.getUpgradeInfo();
+            const info = upgradeInfo.data as IUpgradeInfo;
+            const level = await this.tableItem(info.token_level.handle, `0x3::token::TokenId`, `u64`, tokenId);
+            return parseInt(level);
+        } catch (e) {
+            return 0;
+        }
+    }
+
+    async tokenIsReveled(tokenId: ITokenId): Promise<boolean> {
+        try {
+            const openBoxStatus = await this.getOpenBoxStatus();
+            const info = openBoxStatus.data as IOpenBoxStatus;
+            const reveled = await this.tableItem(info.open_status.handle, `0x3::token::TokenId`, `bool`, tokenId);
+            return reveled;
+        } catch (e) {
+            return false;
+        }
     }
 
     async tokenOwned(addr: string): Promise<TokenData[]> {
@@ -198,11 +223,27 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         }
     }
 
+    private async getUpgradeInfo(): Promise<Gen.MoveResource> {
+        const managerAddress = await this.getManagerAddress();
+        return await this.readClient.getAccountResource(
+            managerAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousUpgradeLevel}::UpgradeInfo`
+        );
+    }
+
+    private async getOpenBoxStatus(): Promise<Gen.MoveResource> {
+        const managerAddress = await this.getManagerAddress();
+        return await this.readClient.getAccountResource(
+            managerAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousBackendOpenBox}::OpenBoxStatus`
+        );
+    }
+
     private async getTokenWearWeapon(): Promise<Gen.MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
-            `${this.deployment.moduleAddress}::${this.deployment.infamousWeaponWear}::TokenWearWeapon`
+            `${this.deployment.moduleAddress}::${this.deployment.infamousWeaponStatus}::TokenWearWeapon`
         );
     }
 
@@ -320,10 +361,14 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     }
 
     private async getManagerAddress(): Promise<string> {
+        if (this.manager_addr) {
+            return this.manager_addr;
+        }
         const managerAccountCapability = await this.getManagerAccountCapability();
         if (managerAccountCapability) {
             const info = managerAccountCapability.data as IManagerAccountCapability;
-            return info.signer_cap.account;
+            this.manager_addr = info.signer_cap.account;
+            return this.manager_addr;
         } else {
             throw new Error("ManagerAccountCapability not found");
         }

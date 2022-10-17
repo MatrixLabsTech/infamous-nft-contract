@@ -37,4 +37,9 @@ export interface InfamousNFTClient {
     tokenStakeData(tokenId: ITokenId): Promise<IStakingTime | undefined>;
 
     tokenPerMinted(addr: string): Promise<number>;
+
+    // token level
+    tokenLevel(tokenId: ITokenId): Promise<number>;
+    // token reveled
+    tokenIsReveled(tokenId: ITokenId): Promise<boolean>;
 }

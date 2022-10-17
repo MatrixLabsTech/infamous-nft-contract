@@ -32,16 +32,8 @@ module infamous::infamous_common {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
     }
 
-    public fun infamous_level_key(): String {
-        string::utf8(b"level")
-    }
-
     public fun infamous_weapon_key(): String {
         string::utf8(b"weapon")
-    }
-
-    public fun infamous_weapon_token_name_key(): String {
-        string::utf8(b"weapon_token_name")
     }
 
     public fun infamous_weapon_collection_name(): String {
