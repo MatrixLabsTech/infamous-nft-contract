@@ -123,7 +123,7 @@ module infamous::infamous_backend_open_box {
         
         let keys = vector<String>[utf8(b"background"), utf8(b"clothing"), utf8(b"ear"), utf8(b"eyebrow"), 
         utf8(b"accessories"), utf8(b"eyes"), utf8(b"hair"), 
-        utf8(b"mouth"), utf8(b"neck"), utf8(b"tatto"), 
+        utf8(b"mouth"), utf8(b"neck"), utf8(b"tattoo"), 
         utf8(b"weapon"), ];
         let values = vector<vector<u8>>[bcs::to_bytes<String>(&background), bcs::to_bytes<String>(&clothing), bcs::to_bytes<String>(&ear), bcs::to_bytes<String>(&eyebrow),
         bcs::to_bytes<String>(&accessories), bcs::to_bytes<String>(&eyes), bcs::to_bytes<String>(&hair), 
@@ -188,7 +188,6 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_weapon_nft;
         use infamous::infamous_upgrade_level;
-        use aptos_std::debug;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -216,17 +215,15 @@ module infamous::infamous_backend_open_box {
         infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
 
         let time = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time);
+        assert!(time == 0, 1);
 
         timestamp::fast_forward_seconds(1000);
         let time1 = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time1);
+        assert!(time1 == 1000, 1);
 
         infamous_upgrade_level::upgrade(token_index_1_name);
         let after = infamous_upgrade_level::get_token_level(token_id);
-        debug::print<u64>(&222222);
-        debug::print<u64>(&after);
-        debug::print<u64>(&222222);
+        assert!(after == 3, 1);
 
 
         let background = utf8(b"blue");
@@ -263,7 +260,6 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_weapon_nft;
         use infamous::infamous_upgrade_level;
-        use aptos_std::debug;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -291,11 +287,11 @@ module infamous::infamous_backend_open_box {
         infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
 
         let time = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time);
+        assert!(time == 0, 1);
 
         timestamp::fast_forward_seconds(1000);
         let time1 = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time1);
+        assert!(time1 == 1000, 1);
 
         infamous_upgrade_level::upgrade(token_index_1_name);
         
@@ -312,10 +308,10 @@ module infamous::infamous_backend_open_box {
         let accessories = utf8(b"null");
         let eyes = utf8(b"black eyes");
         let hair = utf8(b"bob cut 1 (navy blue)");
-        let mouth = utf8(b"choker");
-        let neck = utf8(b"fox mask");
-        let tattoo = utf8(b"danger");
-        let weapon = utf8(b"danger");
+        let mouth = utf8(b"closed");
+        let neck = utf8(b"null");
+        let tattoo = utf8(b"null");
+        let weapon = utf8(b"dagger");
         let material = utf8(b"iron");
 
          open_box(user,

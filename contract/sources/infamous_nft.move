@@ -1,6 +1,5 @@
 module infamous::infamous_nft {
 
-    use std::bcs;
     use std::signer;
     use std::error;
     use std::string::{Self, String, utf8 };
@@ -87,7 +86,7 @@ module infamous::infamous_nft {
             let name = infamous_common::append_num(base_token_name, cur);
             let uri = infamous_common::infamous_token_uri();
 
-            create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description, cur);
+            create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description);
             emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
         };
 
@@ -163,7 +162,6 @@ module infamous::infamous_nft {
         string::append(&mut properties_string, neck);
         string::append(&mut properties_string, tattoo);
         string::append(&mut properties_string, weapon);
-
         let hash_string = infamous_common::string_hash_string(properties_string);
         let base_uri = infamous_common::infamous_base_token_uri();
         string::append(&mut base_uri, hash_string);
@@ -192,7 +190,7 @@ module infamous::infamous_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver:&signer, collection_name: String, token_name: String, token_uri: String, description: String, no: u64,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver:&signer, collection_name: String, token_name: String, token_uri: String, description: String,) {
         
         let balance = 1;
         let maximum = 1;
@@ -204,7 +202,7 @@ module infamous::infamous_nft {
         0,
         0,
         vector<bool>[false, true, false, false, true],
-        vector<String>[ utf8(b"no") ], vector<vector<u8>>[bcs::to_bytes<u64>(&no)], vector<String>[ utf8(b"u64")],);
+        vector<String>[], vector<vector<u8>>[], vector<String>[],);
 
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);
         token::direct_transfer(minter, receiver, token_id, balance);

@@ -128,7 +128,6 @@ module infamous::infamous_upgrade_level {
 
         use aptos_framework::account; 
         use infamous::infamous_nft;
-        use aptos_std::debug;
         use aptos_token::token;
 
 
@@ -161,22 +160,21 @@ module infamous::infamous_upgrade_level {
         
 
         let time = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time);
+        assert!(time == 0, 1);
 
         timestamp::fast_forward_seconds(1000);
         let time1 = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time1);
+        assert!(time1 == 1000, 1);
 
         upgrade(token_index_1_name);
         let after = get_token_level(token_id);
-        debug::print<u64>(&after);
+        assert!(after == 3, 1);
 
         
         timestamp::fast_forward_seconds(200);
         upgrade(token_index_1_name);
         let after1 = get_token_level(token_id);
-        debug::print<u64>(&after1);
-        debug::print<u64>(&111111111111);
+        assert!(after1 == 4, 1);
 
     }
 
@@ -187,7 +185,6 @@ module infamous::infamous_upgrade_level {
 
         use aptos_framework::account; 
         use aptos_framework::timestamp;
-        use aptos_std::debug;
         use infamous::infamous_nft;
         use aptos_token::token;
 
@@ -214,13 +211,13 @@ module infamous::infamous_upgrade_level {
         assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
     
         let level = get_token_level(token_id);
-        debug::print<u64>(&level);
+        assert!(level == 0, 1);
 
 
         let new_level = 3;
         update_level(token_id, new_level);
         let after = get_token_level(token_id);
-        debug::print<u64>(&after);
+        assert!(after == new_level, 1);
 
     }
 

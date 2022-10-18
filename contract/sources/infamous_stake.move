@@ -240,7 +240,6 @@ module infamous::infamous_stake {
     public fun end_to_end(user: &signer, receiver: &signer, framework: &signer) acquires TokenStakes, TokenStakesData { 
 
         use aptos_framework::account; 
-        use aptos_std::debug;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -269,19 +268,17 @@ module infamous::infamous_stake {
         stake_infamous_nft_script(receiver, token_index_1_name);
 
         let time = get_available_time(token_id);
-        debug::print<u64>(&time);
+        assert!(time == 0, 1);
 
         timestamp::fast_forward_seconds(1000);
         let time1 = get_available_time(token_id);
-        debug::print<u64>(&time1);
+        assert!(time1 == 1000, 1);
 
 
         take_times_to_use(token_id, 33);
         let time2 = get_available_time(token_id);
-        debug::print<u64>(&time2);
+        assert!(time2 == 967, 1);
 
-
-        
         unstake_infamous_nft_script(receiver, token_index_1_name);
 
     

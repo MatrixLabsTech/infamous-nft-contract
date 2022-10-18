@@ -143,19 +143,10 @@ module infamous::infamous_common {
     #[test()]
     public fun hash_test() {
 
-        
-        use std::debug;
-        
-        let before_str = string::utf8(b"bluehoodienullextended eyebrowsnullblack eyesbob cut 1 (navy blue)closednullnulldaggeriron");
+        let before_str = string::utf8(b"bluehoodienullextended eyebrowsnullblack eyesbob cut 1 (navy blue)closednullnulldagger");
         let hashed_string = string_hash_string(before_str);
-        debug::print<String>(&hashed_string);
-
-        
-        let aaaaa_str = string::utf8(b"4d3bc41147ef330656ac4a24ee8819e693baf250b3fdde22e19031f1c70201e1");
-        
-        debug::print<u64>(&9999999);
-        debug::print<String>(&aaaaa_str);
-        debug::print<u64>(&9999999);
+        let aaaaa_str = string::utf8(b"39ab0876c530f0e2e54efc3a1a789547fb5afd8545c44626cb892d60cc4b8a20");
+        assert!(hashed_string == aaaaa_str, 1);
     }
   
 }

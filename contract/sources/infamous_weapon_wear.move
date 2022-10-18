@@ -169,7 +169,6 @@ module infamous::infamous_weapon_wear {
         use infamous::infamous_backend_open_box;
         use infamous::infamous_backend_token_weapon_airdrop;
 
-        use aptos_std::debug;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -197,11 +196,11 @@ module infamous::infamous_weapon_wear {
         infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
 
         let time = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time);
+        assert!(time == 0, 1);
 
         timestamp::fast_forward_seconds(2000);
         let time1 = infamous_stake::get_available_time(token_id);
-        debug::print<u64>(&time1);
+        assert!(time1 == 2000, 1);
 
         infamous_upgrade_level::upgrade(token_index_1_name);
         
