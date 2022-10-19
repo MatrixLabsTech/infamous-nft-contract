@@ -25,7 +25,7 @@ import {AptosClient, TokenClient} from "aptos";
 import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
 import {ITokenStakes, ITokenStakesData} from "./StakingInfo";
 import {IWearWeaponInfo, WearWeaponHistoryItem} from "./WearWeaponInfo";
-import {IUpgradeInfo} from "./UpgradeInfo";
+import {IAirdropInfo, IUpgradeInfo} from "./UpgradeInfo";
 import {IOpenBoxStatus} from "./OpenBoxStatus";
 export enum AptosNetwork {
     Testnet = "Testnet",
@@ -110,6 +110,35 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         } catch (e) {
             return 0;
         }
+    }
+
+    async tokenAirdroped(level: number, tokenId: ITokenId): Promise<ITokenId | undefined> {
+        try {
+            if (level === 4) {
+                const airdropInfo = await this.getAirdropInfo();
+                const info = airdropInfo.data as IAirdropInfo;
+                const weapon_token_id = await this.tableItem(
+                    info.token_level4_airdroped.handle,
+                    `0x3::token::TokenId`,
+                    `0x3::token::TokenId`,
+                    tokenId
+                );
+                return weapon_token_id;
+            } else if (level === 5) {
+                const airdropInfo = await this.getAirdropInfo();
+                const info = airdropInfo.data as IAirdropInfo;
+                const weapon_token_id = await this.tableItem(
+                    info.token_level5_airdroped.handle,
+                    `0x3::token::TokenId`,
+                    `0x3::token::TokenId`,
+                    tokenId
+                );
+                return weapon_token_id;
+            }
+        } catch (e) {
+            return undefined;
+        }
+        return undefined;
     }
 
     async tokenIsReveled(tokenId: ITokenId): Promise<boolean> {
@@ -221,6 +250,14 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         } catch (e) {
             return [];
         }
+    }
+
+    private async getAirdropInfo(): Promise<Gen.MoveResource> {
+        const managerAddress = await this.getManagerAddress();
+        return await this.readClient.getAccountResource(
+            managerAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousBackendTokenWeaponAirdrop}::AirdropInfo`
+        );
     }
 
     private async getUpgradeInfo(): Promise<Gen.MoveResource> {

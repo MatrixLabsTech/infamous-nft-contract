@@ -26,8 +26,8 @@ module infamous::infamous_backend_token_weapon_airdrop {
 
     
     struct AirdropInfo has key {
-        token_level4_airdroped: Table<TokenId, bool>,
-        token_level5_airdroped: Table<TokenId, bool>
+        token_level4_airdroped: Table<TokenId, TokenId>,
+        token_level5_airdroped: Table<TokenId, TokenId>
     }
 
     fun initialize_airdrop_info(account: &signer) {
@@ -36,8 +36,8 @@ module infamous::infamous_backend_token_weapon_airdrop {
             move_to(
                 account,
                 AirdropInfo {
-                    token_level4_airdroped: table::new<TokenId, bool>(),
-                    token_level5_airdroped: table::new<TokenId, bool>(),
+                    token_level4_airdroped: table::new<TokenId, TokenId>(),
+                    token_level5_airdroped: table::new<TokenId, TokenId>(),
                 }
             );
         }
@@ -87,8 +87,8 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(token_id, airdrop_level), error::invalid_argument(TOKEN_AIRDROPED));
 
-            infamous_weapon_nft::airdrop(receiver_addr, weapon, material, weapon_level);
-            update_token_airdroped(token_id, airdrop_level);
+            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, material, weapon_level);
+            update_token_airdroped(token_id, airdrop_level, weapon_token_id);
         } else {
             // 1. check the receiver is the owner
             assert!(token::balance_of(receiver_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_RECEIVER));
@@ -101,8 +101,8 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(token_id, airdrop_level), error::invalid_argument(TOKEN_AIRDROPED));
 
-            infamous_weapon_nft::airdrop(receiver_addr, weapon, material, weapon_level);
-            update_token_airdroped(token_id, airdrop_level);
+            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, material, weapon_level);
+            update_token_airdroped(token_id, airdrop_level, weapon_token_id);
         }
 
 
@@ -127,7 +127,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
 
       
 
-    fun update_token_airdroped(token_id: TokenId, airdrop_level: u64) acquires AirdropInfo {
+    fun update_token_airdroped(token_id: TokenId, airdrop_level: u64, weapon_token_id: TokenId) acquires AirdropInfo {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
 
@@ -136,12 +136,12 @@ module infamous::infamous_backend_token_weapon_airdrop {
         if(airdrop_level == 4) {
             let token_level4_airdroped = &mut borrow_global_mut<AirdropInfo>(manager_addr).token_level4_airdroped;
             if(!table::contains(token_level4_airdroped, token_id)) {
-                table::add(token_level4_airdroped, token_id, true);
+                table::add(token_level4_airdroped, token_id, weapon_token_id);
             };
         } else if(airdrop_level == 5) {
             let token_level5_airdroped = &mut borrow_global_mut<AirdropInfo>(manager_addr).token_level5_airdroped;
             if(!table::contains(token_level5_airdroped, token_id)) {
-                table::add(token_level5_airdroped, token_id, true);
+                table::add(token_level5_airdroped, token_id, weapon_token_id);
             };
         }
     }

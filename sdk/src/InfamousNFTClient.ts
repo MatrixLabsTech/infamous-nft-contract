@@ -42,4 +42,6 @@ export interface InfamousNFTClient {
     tokenLevel(tokenId: ITokenId): Promise<number>;
     // token reveled
     tokenIsReveled(tokenId: ITokenId): Promise<boolean>;
+
+    tokenAirdroped(level: number, tokenId: ITokenId): Promise<ITokenId | undefined>;
 }

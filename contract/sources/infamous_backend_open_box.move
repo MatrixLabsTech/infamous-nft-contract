@@ -83,10 +83,10 @@ module infamous::infamous_backend_open_box {
             let token_level = infamous_upgrade_level::get_token_level(token_id);
             assert!(token_level >= OPEN_LEVEL, error::invalid_argument(LEVEL_MUST_GREATER_THAN_THREE));
 
-            let weapon_token_name = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
+            let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
             let token_data_id = token::create_token_data_id(creator, collection, name);
             mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
-            
+            let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
             infamous_nft::update_token_uri_with_properties(manager_addr, name);
             update_box_opened(token_id);
@@ -100,10 +100,10 @@ module infamous::infamous_backend_open_box {
             let token_level = infamous_upgrade_level::get_token_level(token_id);
             assert!(token_level >= OPEN_LEVEL, error::invalid_argument(LEVEL_MUST_GREATER_THAN_THREE));
 
-            let weapon_token_name = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
+            let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
             let token_data_id = token::create_token_data_id(creator, collection, name);
             mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
-            
+            let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
             
             infamous_nft::update_token_uri_with_known_properties(name, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon,);
@@ -238,6 +238,20 @@ module infamous::infamous_backend_open_box {
         let tattoo = utf8(b"null");
         let weapon = utf8(b"dagger");
         let material = utf8(b"iron");
+
+        // { "trait_type": "background", "value": "gray" },
+        // { "trait_type": "clothing", "value": "turtleneck" },
+        // { "trait_type": "ear", "value": "null" },
+        // { "trait_type": "eyebrow", "value": "natural eyebrows" },
+        // { "trait_type": "accessories", "value": "null" },
+        // { "trait_type": "eyes", "value": "staring eyes (black)" },
+        // { "trait_type": "hair", "value": "undercut (reddish brown)" },
+        // { "trait_type": "mouth", "value": "sneer" },
+        // { "trait_type": "neck", "value": "null" },
+        // { "trait_type": "tattoo", "value": "null" },
+        // { "trait_type": "weapon", "value": "" }
+        // let weapon = utf8(b"dagger");karambit revolver 
+        // let material = utf8(b"iron");
 
          open_box(user,
          token_index_1_name,

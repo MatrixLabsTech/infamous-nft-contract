@@ -53,7 +53,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public(friend) fun airdrop(receiver_addr: address, weapon: String, material: String, level: String,): String acquires CollectionInfo {
+    public(friend) fun airdrop(receiver_addr: address, weapon: String, material: String, level: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
@@ -77,13 +77,12 @@ module infamous::infamous_weapon_nft {
         // change CollectionInfo status
         let counter_ref = &mut collection_info.counter;
         *counter_ref = cur;
-        name
+        resolve_token_id(manager_addr, collection_name, name)
     }
 
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
-
 
     fun minted_count(table_info: &Table<address, u64>, owner: address): u64 {
         if (table::contains(table_info, owner)) {

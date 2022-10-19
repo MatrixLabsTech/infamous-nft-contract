@@ -14,11 +14,12 @@ export interface IDeployment {
     infamousStake: string;
     infamousUpgradeLevel: string;
     infamousBackendOpenBox: string;
+    infamousBackendTokenWeaponAirdrop: string;
 }
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0xf62d21943a1af502a0237c9353eb57c17e90bd4da1f65b729525c1597e8df86e",
+        moduleAddress: "0x28295db485ce8ea8bbb3936dd9350bf3afe230a4cf8ddb01dc2cf172ee64273f",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
@@ -32,7 +33,7 @@ export const deployment = {
         infamousWeaponWear: "infamous_weapon_wear",
     },
     devnet: {
-        moduleAddress: "0xf62d21943a1af502a0237c9353eb57c17e90bd4da1f65b729525c1597e8df86e",
+        moduleAddress: "0x28295db485ce8ea8bbb3936dd9350bf3afe230a4cf8ddb01dc2cf172ee64273f",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
