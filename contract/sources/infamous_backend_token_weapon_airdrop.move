@@ -15,7 +15,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
     use infamous::infamous_backend_auth;
     use infamous::infamous_weapon_nft;
     use infamous::infamous_stake;
-     use infamous::infamous_upgrade_level;
+    use infamous::infamous_upgrade_level;
 
     const TOKEN_STAKED_MISSED: u64 = 1;
     const TOKEN_NOT_OWNED_BY_RECEIVER: u64 = 2;

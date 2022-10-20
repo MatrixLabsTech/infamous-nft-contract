@@ -49,7 +49,6 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             this.tokenClient = new TokenClient(this.readClient);
         }
     }
-
     mintTransaction(count: string): ITransaction {
         return {
             type: "entry_function_payload",
@@ -149,6 +148,31 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             return reveled;
         } catch (e) {
             return false;
+        }
+    }
+
+    async tokenWearedWeapon(tokenId: ITokenId): Promise<ITokenId | undefined> {
+        try {
+            const tokenWearWeapon = (await this.getTokenWearWeapon()).data as IWearWeaponInfo;
+            const weapoTokenName = await this.tableItem(
+                tokenWearWeapon.token_weapon_table.handle,
+                `0x3::token::TokenId`,
+                `0x1::string::String`,
+                tokenId
+            );
+            if (weapoTokenName) {
+                return {
+                    property_version: "0",
+                    token_data_id: {
+                        collection: weaponCollectionName,
+                        creator: this.manager_addr || "",
+                        name: weapoTokenName,
+                    },
+                };
+            }
+            return undefined;
+        } catch (e) {
+            return undefined;
         }
     }
 

@@ -1,6 +1,9 @@
 import {ITokenId} from "./CollectionInfo";
 
 export interface IWearWeaponInfo {
+    token_weapon_table: {
+        handle: string;
+    };
     weapon_wear_events: {
         counter: string;
         guid: {
