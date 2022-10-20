@@ -59,8 +59,7 @@ yarn faucet
 
 ### Step 4: Compile & Deploy contracts
 
-- set the account used to compile&deploy contract
-  open `contract`
+- check the default account in `contracts/.aptos/config.yml`, then conpile and deploy it
 
 ```
 yarn compile
