@@ -1,3 +1,4 @@
+/// This module provides the auth control for backend auth.
 module infamous::infamous_backend_auth {
 
     use std::error;

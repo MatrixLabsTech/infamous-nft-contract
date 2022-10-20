@@ -1,3 +1,4 @@
+/// This module provides airdrop control of weapon Token.
 module infamous::infamous_backend_token_weapon_airdrop {
 
     use std::signer;

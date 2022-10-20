@@ -1,3 +1,4 @@
+/// This module provides open box -> change the properties of Token.
 module infamous::infamous_backend_open_box {
 
      use std::bcs;

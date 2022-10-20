@@ -1,3 +1,4 @@
+/// This module provides the Infamous Token manager.
 module infamous::infamous_nft {
 
     use std::signer;

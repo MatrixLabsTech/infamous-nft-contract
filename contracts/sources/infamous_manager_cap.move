@@ -1,3 +1,4 @@
+/// This module provides an resource account capability for all modules.
 module infamous::infamous_manager_cap {
 
     use std::error;

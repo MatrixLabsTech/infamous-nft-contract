@@ -1,10 +1,38 @@
-# aptos develop boilerplate
+## Infamous NFT Contract
 
-## Step 1: Install the CLI
+Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs, This project contains all the contracts involved.
+
+## ✨ Features
+
+- dyanamic token properties
+- token staking
+- token binding
+- flexible auth control
+- shared resource account
+
+## 📦 Packages
+
+- contracts
+  - sources
+    - infamous_backend_auth.move
+    - infamous_backend_open_box.move
+    - infamous_backend_token_weapon_airdrop.move
+    - infamous_common.move
+    - infamous_manager_cap.move
+    - infamous_nft.move
+    - infamous_stake.move
+    - infamous_upgrade_level.move
+    - infamous_weapon_nft.move
+    - infamous_weapon_status.move
+    - infamous_weapon_wear.move
+
+## 🔨 How to Use
+
+### Step 1: Install the CLI
 
 Install the precombiled binary for the Aptos CLI [install_cli](https://aptos.dev/cli-tools/aptos-cli-tool/install-aptos-cli).
 
-## Step 2: Install node dependence
+### Step 2: Install node dependence
 
 change directory to the root of this project:
 
@@ -12,62 +40,24 @@ change directory to the root of this project:
 yarn
 ```
 
----
+### Step 3: Create an account and fund it
 
-## Step 3: Create an account and fund it
-
-- change into `contract` directory
-
-```
-cd contract
-```
-
-After installing the CLI binary, next step is to create and fund an account on the Aptos blockchain.
-
-1. Begin by starting a new terminal and run the below command to initialize a new local account:
+1. change into `contracts` directory, begin to initialize a new local account:
 
 ```bash
+cd contracts
 yarn aptos-init
 ```
 
-The output will be similar to below.
-
-```text
-Enter your rest endpoint [Current: None | No input: https://fullnode.devnet.aptoslabs.com/v1]
-
-No rest url given, using https://fullnode.devnet.aptoslabs.com/v1...
-Enter your faucet endpoint [Current: None | No input: https://faucet.devnet.aptoslabs.com | 'skip' to not use a faucet]
-
-No faucet url given, using https://faucet.devnet.aptoslabs.com...
-Enter your private key as a hex literal (0x...) [Current: None | No input: Generate new key (or keep one if present)]
-
-No key given, generating key...
-Account a345dbfb0c94416589721360f207dcc92ecfe4f06d8ddc1c286f569d59721e5a doesn't exist, creating it and funding it with 10000 coins
-Aptos is now set up for account a345dbfb0c94416589721360f207dcc92ecfe4f06d8ddc1c286f569d59721e5a!  Run `aptos help` for more information about commands
-{
-  "Result": "Success"
-}
-```
-
-The account address in the above output: `a345dbfb0c94416589721360f207dcc92ecfe4f06d8ddc1c286f569d59721e5a` is your new account, and is aliased as the profile `default`. This account address will be different for you as it is generated randomly. From now on, either `default` or `0xa345dbfb0c94416589721360f207dcc92ecfe4f06d8ddc1c286f569d59721e5a` are interchangeable.
-
-2. Now fund this account by running this command:
+2. fund this account by running this command:
 
 ```bash
 yarn faucet
 ```
 
-You will see an output similar to the below:
-
-```
-{
-  "Result": "Added 10000 coins to account a345dbfb0c94416589721360f207dcc92ecfe4f06d8ddc1c286f569d59721e5a"
-}
-```
-
 ---
 
-## Step 4: Compile & Deploy contracts
+### Step 4: Compile & Deploy contracts
 
 - set the account used to compile&deploy contract
   open `contract`
@@ -78,6 +68,8 @@ yarn test
 yarn aptos-move-publish
 ```
 
-## 3. build sdk for web develop
+## 🔗 Links
 
-## 4. use sdk in dapp
+[website](https://infamous-game-beta.whitematrix.workers.dev)
+
+[github](https://github.com/MatrixLabsTech/infamous-nft-contract)

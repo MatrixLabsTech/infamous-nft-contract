@@ -1,3 +1,4 @@
+/// This module provides the common tools convert tools for all modules.
 module infamous::infamous_common {
 
     use std::string::{Self, String};

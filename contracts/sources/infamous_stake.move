@@ -1,3 +1,4 @@
+/// This module provides the stake of Infamous Token.
 module infamous::infamous_stake {
 
     use std::string::{String};

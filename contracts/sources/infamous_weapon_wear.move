@@ -1,3 +1,4 @@
+/// This module provides Infamous Weapon Token binding functions.
 module infamous::infamous_weapon_wear {
 
 

@@ -1,3 +1,4 @@
+/// This module provides Infamous Weapon Token manager.
 module infamous::infamous_weapon_nft {
 
     use std::bcs;

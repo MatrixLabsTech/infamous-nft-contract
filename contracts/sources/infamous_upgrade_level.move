@@ -1,3 +1,4 @@
+/// This module provides level info and the upgrade of Infamous Token.
 module infamous::infamous_upgrade_level {
     
     use std::signer;

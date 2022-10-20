@@ -1,11 +1,11 @@
 {
-  "name": "aptos-boilerplate",
+  "name": "infamous-nft-contract",
   "version": "1.0.0",
   "description": "A boilerplate repository to get you started with aptos development",
   "private": true,
   "workspaces": [
-    "contract",
-    "sdk",
+    "contracts",
+    "@white-matrix/infamous-contract-sdk",
     "web-example"
   ],
   "scripts": {

@@ -1,3 +1,4 @@
+/// This module provides Infamous Weapon Token binding status. (for resolve cycle dependency)
 module infamous::infamous_weapon_status {
 
     use std::signer;
