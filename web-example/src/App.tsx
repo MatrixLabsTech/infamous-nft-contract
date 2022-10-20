@@ -29,29 +29,19 @@ function App() {
     return address === moduleAddress
   }, [address])
 
-  // const _getCollection = async () => {
-  //   const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
-  //   const collectInfo = await client.collectionInfo()
-  //   console.log({ collectInfo }) //ccc-log
+  const _getCollection = async () => {
+    const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
+    const tokenData = await client.tokenOwned(
+      '0x523b8b8eae6ada0e4af325518c014dbbf8a6ad6404cc4c5583a3b6115e491974'
+    )
 
-  //   const tokenIds = await client.tokenIdsOwned(
-  //     '0xa793c7456c449a09f94e829c5f0dc8a4ded9334775fd8ca7d54b82d096ccee06'
-  //   )
-
-  //   const level = await client.tokenLevel(tokenIds[0])
-  //   console.log({ level })
-
-  //   const isReveled = await client.tokenIsReveled(tokenIds[0])
-  //   console.log({ isReveled })
-
-  //   const history = await client.wearWeaponHistory()
-  //   console.log(history)
-  // }
+    console.log({ tokenData })
+  }
 
   return (
     <div className="App">
-      {/* sdk test
-      <button onClick={_getCollection}>getCollection</button> */}
+      sdk test
+      <button onClick={_getCollection}>getCollection</button>
       {address ? (
         isModuleOwner ? (
           <Alert variant="info">
