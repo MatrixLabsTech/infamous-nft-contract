@@ -1,6 +1,6 @@
 ## Infamous NFT Contract
 
-Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs, This project contains all the contracts involved.
+Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs. This project contains all the contracts involved.
 
 ## ✨ Features
 
@@ -55,11 +55,9 @@ yarn aptos-init
 yarn faucet
 ```
 
----
-
 ### Step 4: Compile & Deploy contracts
 
-- check the default account in `contracts/.aptos/config.yml`, then conpile and deploy it
+- check the default account in `contracts/.aptos/config.yml`, then conpile and deploy.
 
 ```
 yarn compile
