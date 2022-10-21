@@ -1,6 +1,5 @@
 import {InfamousNFTClient, ITransaction} from "./InfamousNFTClient";
 
-import * as Gen from "aptos/dist/generated";
 import {
     tokenStoreResource,
     deployment,
@@ -11,7 +10,6 @@ import {
 import {IManagerAccountCapability} from "./ManagerAccountCapability";
 import {
     CollectionInfo,
-    DepositEvent,
     ICollectionStatusInfo,
     IStakingTime,
     ITokenData,
@@ -19,6 +17,7 @@ import {
     ITokenStore,
     PropertyItem,
     TokenData,
+    TokenEvent,
 } from "./CollectionInfo";
 import {decodeString, decodeU64, paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
@@ -31,6 +30,17 @@ export enum AptosNetwork {
     Testnet = "Testnet",
     Mainnet = "Mainnet",
     Devnet = "Devnet",
+}
+
+export interface IEventItem {
+    tokenId: ITokenId;
+    type: "0x3::token::DepositEvent" | "0x3::token::BurnEvent" | "0x3::token::WithdrawEvent";
+    version: string;
+}
+
+export interface MoveResource {
+    data: any;
+    type: string;
 }
 
 export class InfamousNFTClientImpl implements InfamousNFTClient {
@@ -276,7 +286,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         }
     }
 
-    private async getAirdropInfo(): Promise<Gen.MoveResource> {
+    private async getAirdropInfo(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -284,7 +294,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getUpgradeInfo(): Promise<Gen.MoveResource> {
+    private async getUpgradeInfo(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -292,7 +302,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getOpenBoxStatus(): Promise<Gen.MoveResource> {
+    private async getOpenBoxStatus(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -300,7 +310,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getTokenWearWeapon(): Promise<Gen.MoveResource> {
+    private async getTokenWearWeapon(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -308,13 +318,13 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getTokenStakes(addr: string): Promise<Gen.MoveResource> {
+    private async getTokenStakes(addr: string): Promise<MoveResource> {
         return await this.readClient.getAccountResource(
             addr,
             `${this.deployment.moduleAddress}::${this.deployment.infamousStake}::TokenStakes`
         );
     }
-    private async getTokenStakeData(): Promise<Gen.MoveResource> {
+    private async getTokenStakeData(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -323,7 +333,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     }
 
     private async doGetTokenData(tokenId: ITokenId): Promise<TokenData> {
-        const collection: {type: Gen.MoveStructTag; data: any} = await this.readClient.getAccountResource(
+        const collection: {type: string; data: any} = await this.readClient.getAccountResource(
             tokenId.token_data_id.creator,
             "0x3::token::Collections"
         );
@@ -358,63 +368,69 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         const managerAddress = await this.getManagerAddress();
         const tokenStore = await this.getTokenStoreInfo(addr);
 
-        let tokenIds: ITokenId[] = [];
+        const events: IEventItem[] = [];
         const depositEvents = (await this.readClient.getEventsByCreationNumber(
             tokenStore.data.deposit_events.guid.id.addr,
             tokenStore.data.deposit_events.guid.id.creation_num
-        )) as DepositEvent[];
+        )) as TokenEvent[];
         depositEvents.forEach((e) => {
             if (
                 e.data.id.token_data_id.collection === collectionName &&
                 e.data.id.token_data_id.creator === managerAddress
             ) {
-                tokenIds.push(e.data.id);
+                events.push({tokenId: e.data.id, type: "0x3::token::DepositEvent", version: e.version});
             }
         });
 
-        const burnEvents = await this.readClient.getEventsByCreationNumber(
+        const burnEvents = (await this.readClient.getEventsByCreationNumber(
             tokenStore.data.burn_events.guid.id.addr,
             tokenStore.data.burn_events.guid.id.creation_num
-        );
+        )) as TokenEvent[];
 
         burnEvents.forEach((e) => {
             if (
                 e.data.id.token_data_id.collection === collectionName &&
                 e.data.id.token_data_id.creator === managerAddress
             ) {
-                tokenIds = tokenIds.filter((id) => {
-                    return !(
-                        id.property_version === e.data.id.property_version &&
-                        id.token_data_id.creator === e.data.id.token_data_id.creator &&
-                        id.token_data_id.name === e.data.id.token_data_id.name
-                    );
-                });
+                events.push({tokenId: e.data.id, type: "0x3::token::BurnEvent", version: e.version});
             }
         });
 
-        const withdrawEvents = await this.readClient.getEventsByCreationNumber(
+        const withdrawEvents = (await this.readClient.getEventsByCreationNumber(
             tokenStore.data.withdraw_events.guid.id.addr,
             tokenStore.data.withdraw_events.guid.id.creation_num
-        );
+        )) as TokenEvent[];
 
         withdrawEvents.forEach((e) => {
             if (
                 e.data.id.token_data_id.collection === collectionName &&
                 e.data.id.token_data_id.creator === managerAddress
             ) {
-                const existIndex = tokenIds.findIndex(
-                    (id) =>
-                        id.property_version === e.data.id.property_version &&
-                        id.token_data_id.creator === e.data.id.token_data_id.creator &&
-                        id.token_data_id.name === e.data.id.token_data_id.name
-                );
-                if (existIndex > -1) tokenIds = tokenIds.filter((_, index) => index !== existIndex);
+                events.push({tokenId: e.data.id, type: "0x3::token::WithdrawEvent", version: e.version});
             }
         });
+
+        events.sort((a, b) => {
+            return parseInt(a.version) - parseInt(b.version);
+        });
+
+        const tokenIds: ITokenId[] = [];
+
+        for (const event of events) {
+            if (event.type === "0x3::token::DepositEvent") {
+                tokenIds.push(event.tokenId);
+            } else {
+                const existIndex = tokenIds.findIndex(
+                    (id) => id.token_data_id.name === event.tokenId.token_data_id.name
+                );
+                if (existIndex > -1) tokenIds.splice(existIndex, 1);
+            }
+        }
+
         return tokenIds;
     }
 
-    private async getCollectionStatusInfo(): Promise<Gen.MoveResource> {
+    private async getCollectionStatusInfo(): Promise<MoveResource> {
         return await this.readClient.getAccountResource(
             this.deployment.moduleAddress,
             `${this.deployment.moduleAddress}::${this.deployment.infamousNft}::CollectionInfo`
@@ -440,7 +456,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         return tokenStore as ITokenStore;
     }
 
-    private async getManagerAccountCapability(): Promise<Gen.MoveResource> {
+    private async getManagerAccountCapability(): Promise<MoveResource> {
         return await this.readClient.getAccountResource(
             this.deployment.moduleAddress,
             `${this.deployment.moduleAddress}::${this.deployment.infamousManagerCap}::ManagerAccountCapability`

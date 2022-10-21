@@ -5,7 +5,7 @@
   "private": true,
   "workspaces": [
     "contracts",
-    "@white-matrix/infamous-contract-sdk",
+    "sdk",
     "web-example"
   ],
   "scripts": {

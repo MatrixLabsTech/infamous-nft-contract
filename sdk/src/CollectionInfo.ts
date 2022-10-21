@@ -167,7 +167,7 @@ export interface MutateEvent {
     };
 }
 
-export interface DepositEvent {
+export interface TokenEvent {
     version: string;
     key: string;
     guid: {
