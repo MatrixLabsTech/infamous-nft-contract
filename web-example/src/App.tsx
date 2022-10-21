@@ -31,11 +31,15 @@ function App() {
 
   const _getCollection = async () => {
     const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
-    const tokenData = await client.tokenOwned(
-      '0x523b8b8eae6ada0e4af325518c014dbbf8a6ad6404cc4c5583a3b6115e491974'
+    const tokenId = await client.resolveTokenId('Infamous #33')
+    console.log(tokenId)
+
+    const isOwner = await client.isTokenOwner(
+      '0x2839acfa2c4e3942c9733c0ebb236c0a9b9d79971efac97d32e394787d9ec740',
+      tokenId
     )
 
-    console.log({ tokenData })
+    console.log({ isOwner })
   }
 
   return (

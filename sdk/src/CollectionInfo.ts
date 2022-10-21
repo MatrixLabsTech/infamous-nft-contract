@@ -62,49 +62,27 @@ export interface Collections {
     };
 }
 
+export interface IEvent {
+    counter: string;
+    guid: {
+        id: {
+            addr: string;
+            creation_num: string;
+        };
+    };
+}
+
 export interface ITokenStore {
     type: "0x3::token::TokenStore";
     data: {
-        burn_events: {
-            counter: string;
-            guid: {
-                id: {
-                    addr: string;
-                    creation_num: string;
-                };
-            };
-        };
-        deposit_events: {
-            counter: string;
-            guid: {
-                id: {
-                    addr: string;
-                    creation_num: string;
-                };
-            };
-        };
+        burn_events: IEvent;
+        deposit_events: IEvent;
         direct_transfer: false;
-        mutate_token_property_events: {
-            counter: string;
-            guid: {
-                id: {
-                    addr: string;
-                    creation_num: string;
-                };
-            };
-        };
+        mutate_token_property_events: IEvent;
         tokens: {
             handle: string;
         };
-        withdraw_events: {
-            counter: string;
-            guid: {
-                id: {
-                    addr: string;
-                    creation_num: string;
-                };
-            };
-        };
+        withdraw_events: IEvent;
     };
 }
 
@@ -115,14 +93,7 @@ export interface Property {
 
 export interface IToken {
     amount: string;
-    id: {
-        property_version: string;
-        token_data_id: {
-            collection: string;
-            creator: string;
-            name: string;
-        };
-    };
+    id: ITokenId;
     token_properties: {
         map: {
             data: Property[];
@@ -175,36 +146,7 @@ export interface TokenEvent {
         account_address: string;
     };
     sequence_number: string;
-    type: "0x3::token::DepositEvent";
-    data: {
-        amount: string;
-        id: ITokenId;
-    };
-}
-export interface BurnEvent {
-    version: string;
-    key: string;
-    guid: {
-        creation_number: string;
-        account_address: string;
-    };
-    sequence_number: string;
-    type: "0x3::token::BurnTokenEvent";
-    data: {
-        amount: string;
-        id: ITokenId;
-    };
-}
-
-export interface WithdrawEvent {
-    version: string;
-    key: string;
-    guid: {
-        creation_number: string;
-        account_address: string;
-    };
-    sequence_number: string;
-    type: "0x3::token::WithdrawEvent";
+    type: TokenEventType;
     data: {
         amount: string;
         id: ITokenId;
@@ -263,4 +205,16 @@ export interface ITokenData {
     };
     supply: string;
     uri: string;
+}
+
+export type TokenEventType = "0x3::token::DepositEvent" | "0x3::token::BurnEvent" | "0x3::token::WithdrawEvent";
+export interface IEventItem {
+    tokenId: ITokenId;
+    type: TokenEventType;
+    version: string;
+}
+
+export interface MoveResource {
+    data: any;
+    type: string;
 }

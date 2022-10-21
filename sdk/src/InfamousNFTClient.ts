@@ -19,6 +19,10 @@ export interface InfamousNFTClient {
     // infamous collection info
     collectionInfo(): Promise<CollectionInfo>;
 
+    resolveTokenId(tokenName: string): Promise<ITokenId>;
+    resolveWeaponTokenId(tokenName: string): Promise<ITokenId>;
+    isTokenOwner(addr: string, tokenId: ITokenId): Promise<boolean>;
+
     // token owned
     tokenOwned(addr: string): Promise<TokenData[]>;
 
