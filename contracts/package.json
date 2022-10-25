@@ -5,9 +5,9 @@
   "scripts": {
     "init-local": "aptos init --profile local --rest-url http://localhost:8080 --faucet-url http://localhost:8081",
     "init-dev": "aptos init --profile devnet --rest-url https://fullnode.testnet.aptoslabs.com/v1 --faucet-url https://faucet.devnet.aptoslabs.com/",
-    "init-testnet": "aptos init --profile devnet --rest-url https://fullnode.testnet.aptoslabs.com/v1 --faucet-url https://faucet.devnet.aptoslabs.com/",
+    "init-testnet": "aptos init --profile testnet --rest-url https://fullnode.testnet.aptoslabs.com/v1 --faucet-url https://faucet.devnet.aptoslabs.com/",
     "aptos-init-dev": "aptos init",
-    "faucet": "aptos account fund-with-faucet --account default",
+    "faucet": "aptos account fund-with-faucet --account default --amount 1000000000",
     "compile": "aptos move compile --named-addresses infamous=default",
     "test": "aptos move test --named-addresses infamous=default",
     "aptos-move-publish": "aptos move publish --named-addresses infamous=default --assume-yes",
@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@types/node": "^17.0.21",
-    "aptos": "1.3.16",
+    "aptos": "^1.3.16",
     "cross-fetch": "^3.1.5",
     "dotenv": "^16.0.1",
     "dotenv-expand": "^8.0.3",

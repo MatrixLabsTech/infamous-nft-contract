@@ -19,7 +19,7 @@ export interface IDeployment {
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0x28295db485ce8ea8bbb3936dd9350bf3afe230a4cf8ddb01dc2cf172ee64273f",
+        moduleAddress: "0x2ba5609d67e31b2b29b931f0cca24731e9aad87c58703a8bda01dcb848b3d933",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
@@ -33,7 +33,7 @@ export const deployment = {
         infamousWeaponWear: "infamous_weapon_wear",
     },
     devnet: {
-        moduleAddress: "0x28295db485ce8ea8bbb3936dd9350bf3afe230a4cf8ddb01dc2cf172ee64273f",
+        moduleAddress: "0x2ba5609d67e31b2b29b931f0cca24731e9aad87c58703a8bda01dcb848b3d933",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",

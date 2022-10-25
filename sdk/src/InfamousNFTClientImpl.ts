@@ -1,4 +1,4 @@
-import {InfamousNFTClient, ITransaction} from "./InfamousNFTClient";
+import {InfamousNFTClient, ITransaction, PaginationArgs} from "./InfamousNFTClient";
 
 import {
     tokenStoreResource,
@@ -27,7 +27,7 @@ import {decodeString, decodeU64, paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
 import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
 import {ITokenStakes, ITokenStakesData} from "./StakingInfo";
-import {IWearWeaponInfo, WearWeaponHistoryItem} from "./WearWeaponInfo";
+import {IWearWeaponInfo, WearWeaponEvents, WearWeaponHistoryItem} from "./WearWeaponInfo";
 import {IAirdropInfo, IUpgradeInfo} from "./UpgradeInfo";
 import {IOpenBoxStatus} from "./OpenBoxStatus";
 import {localCache} from "./utils/localCache";
@@ -310,20 +310,30 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         }
     }
 
-    async wearWeaponHistory(tokenId?: ITokenId): Promise<WearWeaponHistoryItem[]> {
+    async wearWeaponTotal(tokenId: ITokenId): Promise<WearWeaponEvents | undefined> {
         try {
             const tokenWearWeapon = (await this.getTokenWearWeapon()).data as IWearWeaponInfo;
+            const events = (await this.tableItem(
+                tokenWearWeapon.token_wear_events_table.handle,
+                "0x3::token::TokenId",
+                `0x1::event::EventHandle<${this.deployment.moduleAddress}::${this.deployment.infamousWeaponStatus}::WeaponWearEvent>`,
+                tokenId
+            )) as WearWeaponEvents;
+            return events;
+        } catch (e) {
+            return undefined;
+        }
+    }
 
+    async wearWeaponPage(events: WearWeaponEvents, query?: PaginationArgs): Promise<WearWeaponHistoryItem[]> {
+        try {
             const wearEvents = await this.readClient.getEventsByCreationNumber(
-                tokenWearWeapon.weapon_wear_events.guid.id.addr,
-                tokenWearWeapon.weapon_wear_events.guid.id.creation_num
+                events.guid.id.addr,
+                events.guid.id.creation_num,
+                query
             );
             const list = wearEvents.map((e) => e.data as WearWeaponHistoryItem);
-            if (tokenId) {
-                return list.filter((l) => l.token_id.token_data_id.name === tokenId.token_data_id.name);
-            } else {
-                return list;
-            }
+            return list;
         } catch (e) {
             return [];
         }

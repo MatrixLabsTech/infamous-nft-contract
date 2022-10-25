@@ -99,7 +99,7 @@ module infamous::infamous_weapon_wear {
 
         };
 
-        infamous_weapon_status::emit_wear_event(manager_addr, sender_addr, token_id, new_weapon_token_id);
+        infamous_weapon_status::emit_wear_event(&manager_signer, sender_addr, token_id, new_weapon_token_id);
         
     }
 

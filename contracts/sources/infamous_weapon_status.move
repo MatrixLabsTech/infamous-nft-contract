@@ -20,7 +20,7 @@ module infamous::infamous_weapon_status {
     friend infamous::infamous_weapon_wear;
 
 
-    struct WeaponWearEvent has drop, store {
+    struct WeaponWearEvent has drop, store, copy {
         operator: address,
         token_id: TokenId,
         weapon_token_id: TokenId,
@@ -28,11 +28,10 @@ module infamous::infamous_weapon_status {
     }
 
 
-
     // store in manager account
     struct TokenWearWeapon has key {
         token_weapon_table: Table<TokenId, String>,
-        weapon_wear_events: EventHandle<WeaponWearEvent>,
+        token_wear_events_table: Table<TokenId, EventHandle<WeaponWearEvent>>,
     }
 
     
@@ -66,10 +65,16 @@ module infamous::infamous_weapon_status {
     }
 
     
-    public(friend) fun emit_wear_event(account: address, owner: address, token_id: TokenId, weapon_token_id: TokenId) acquires TokenWearWeapon {
-        let token_wear_weapon_info = borrow_global_mut<TokenWearWeapon>(account);
+    public(friend) fun emit_wear_event(account: &signer, owner: address, token_id: TokenId, weapon_token_id: TokenId) acquires TokenWearWeapon {
+        let account_addr = signer::address_of(account);
+        let token_wear_events_table_mut = &mut borrow_global_mut<TokenWearWeapon>(account_addr).token_wear_events_table;
+
+        if(!table::contains(token_wear_events_table_mut, token_id)) {
+            table::add(token_wear_events_table_mut, token_id, account::new_event_handle<WeaponWearEvent>(account));
+        };
+        let wear_events_mut = table::borrow_mut(token_wear_events_table_mut, token_id);
         event::emit_event<WeaponWearEvent>(
-            &mut token_wear_weapon_info.weapon_wear_events,
+            wear_events_mut,
             WeaponWearEvent {
                 operator: owner,
                 token_id,
@@ -77,9 +82,6 @@ module infamous::infamous_weapon_status {
                 time: timestamp::now_seconds(),
             });
     }
-
-
-
 
     
     
@@ -90,7 +92,7 @@ module infamous::infamous_weapon_status {
                 account,
                 TokenWearWeapon {
                     token_weapon_table: table::new<TokenId, String>(),
-                    weapon_wear_events: account::new_event_handle<WeaponWearEvent>(account),
+                    token_wear_events_table: table::new<TokenId, EventHandle<WeaponWearEvent>>(), 
                 }
             );
         }
