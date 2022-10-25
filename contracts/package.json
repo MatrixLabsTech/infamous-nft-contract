@@ -3,7 +3,10 @@
   "version": "1.0.1",
   "description": "",
   "scripts": {
-    "aptos-init": "aptos init",
+    "init-local": "aptos init --profile local --rest-url http://localhost:8080 --faucet-url http://localhost:8081",
+    "init-dev": "aptos init --profile devnet --rest-url https://fullnode.testnet.aptoslabs.com/v1 --faucet-url https://faucet.devnet.aptoslabs.com/",
+    "init-testnet": "aptos init --profile devnet --rest-url https://fullnode.testnet.aptoslabs.com/v1 --faucet-url https://faucet.devnet.aptoslabs.com/",
+    "aptos-init-dev": "aptos init",
     "faucet": "aptos account fund-with-faucet --account default",
     "compile": "aptos move compile --named-addresses infamous=default",
     "test": "aptos move test --named-addresses infamous=default",

@@ -7,49 +7,46 @@ async function main() {
   const alice = new AptosAccount()
   const bob = new AptosAccount()
   await faucetClient.fundAccount(alice.address(), 100_000_000)
-  await faucetClient.fundAccount(bob.address(), 100)
+  await faucetClient.fundAccount(bob.address(), 100_000)
 
-  // transfer
+  console.log('=== Initial Alice and Bob ===')
+  console.log(`Alice:`)
+  console.log(alice.toPrivateKeyObject())
+  console.log(`Bob:`)
+  console.log(bob.toPrivateKeyObject())
+  console.log('')
 
   // Print out initial balances.
   console.log('=== Initial Balances ===')
-  // :!:>section_4
-  console.log(`Alice Addr: ${alice.address()}`)
   console.log(`Alice: ${await coinClient.checkBalance(alice)}`)
+  console.log(`Bob: ${await coinClient.checkBalance(bob)}`)
   console.log('')
 
   const helperAccount = new AptosAccount()
-  await faucetClient.fundAccount(helperAccount.address(), 0) // <:!:section_3
+  await faucetClient.fundAccount(helperAccount.address(), 0)
   console.log(`helperAccount Addr: ${helperAccount.address()}`)
 
+  /// rotate peivate key
   const pendingTxn = await client.rotateAuthKeyEd25519(
     alice,
     helperAccount.signingKey.secretKey
   )
-
   await client.waitForTransaction(pendingTxn.hash)
 
-  const origAddressHex = await client.lookupOriginalAddress(
-    helperAccount.address()
+  const rotatedAlice = new AptosAccount(
+    helperAccount.signingKey.secretKey,
+    alice.address()
   )
-  // Sometimes the returned addresses do not have leading 0s. To be safe, converting hex addresses to AccountAddress
-  const origAddress = TxnBuilderTypes.AccountAddress.fromHex(origAddressHex)
-  const aliceAddress = TxnBuilderTypes.AccountAddress.fromHex(alice.address())
 
-  // Print out initial balances.
-  console.log('=== Initial Balances ===')
-  // :!:>section_4
-  console.log(`helperAccount origAddress: ${origAddress}`)
-  console.log(`helperAccount: ${await coinClient.checkBalance(helperAccount)}`)
+  const transHash = await coinClient.transfer(rotatedAlice, bob, 1_000, {
+    gasUnitPrice: BigInt(100),
+  })
+  await client.waitForTransaction(transHash)
+
+  console.log('=== After transfered, Rotated Balances ===')
+  console.log(`RotatedAlice: ${await coinClient.checkBalance(rotatedAlice)}`)
+  console.log(`Bob: ${await coinClient.checkBalance(bob)}`)
   console.log('')
-
-  // const transHash = await coinClient.transfer(alice, bob, 1_000, {
-  //   gasUnitPrice: BigInt(100),
-  // })
-  // await client.waitForTransaction(transHash)
-
-  console.log({ origAddress })
-  console.log({ aliceAddress })
 }
 
 if (require.main === module) {
