@@ -1,4 +1,5 @@
 import localForage from "localforage";
+import {block} from "../config/development";
 
 const INFAMOUS_PREFIX = `infamous-data-`;
 export class IndexedDbStorage {
@@ -9,6 +10,16 @@ export class IndexedDbStorage {
             storeName: storeName || "infmousData",
             description: description || "infmous aptos cache data",
         });
+        this.clearWhenVersionChange();
+    }
+
+    async clearWhenVersionChange() {
+        const versionKey = "VERSION";
+        const version = await this.get(versionKey);
+        if (version !== block) {
+            await this.storage.clear();
+            this.set(versionKey, block);
+        }
     }
 
     async get(key: string): Promise<unknown> {

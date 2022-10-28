@@ -3,6 +3,7 @@ export const tokenStoreResource = `0x3::token::TokenStore`;
 export const infamousCollectionName = "InfamousNFT";
 export const weaponCollectionName = "InfamousEquipmentNFT";
 
+export const block = "1312312";
 export interface IDeployment {
     moduleAddress: string;
     infamousBackendAuth: string;

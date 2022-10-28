@@ -31,17 +31,24 @@ function App() {
 
   const _getCollection = async () => {
     const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
-    const tokenId = await client.resolveTokenId('Infamous #1')
-    const events = await client.wearWeaponTotal(tokenId)
 
-    if (events) {
-      console.log(events)
-      const paged = await client.wearWeaponPage(events, {
-        start: 0,
-        limit: 3,
-      })
-      console.log(paged)
-    }
+    const owned = await client.tokenOwned(
+      '0x4e1bd8fa766c0eada557bf8b456c59c0d9bf2e6e1a0635b78192d3e06c3c1dfe'
+    )
+
+    console.log(owned)
+
+    // const tokenId = await client.resolveTokenId('Infamous #1')
+    // const events = await client.wearWeaponTotal(tokenId)
+
+    // if (events) {
+    //   console.log(events)
+    //   const paged = await client.wearWeaponPage(events, {
+    //     start: 0,
+    //     limit: 3,
+    //   })
+    //   console.log(paged)
+    // }
 
     // console.log(tokenId)
 
