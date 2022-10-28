@@ -18,7 +18,8 @@
     "createToken": "ts-node scripts/4_create_token_script.ts",
     "updateLevel": "ts-node scripts/5_upgrade_level.ts",
     "cn": "ts-node scripts/nft/createNFT.ts",
-    "rotate": "ts-node scripts/rotate_account_test.ts"
+    "rotate": "ts-node scripts/rotate_account_test.ts",
+    "map": "ts-node scripts/set_property_url_map.ts"
   },
   "dependencies": {
     "@types/node": "^17.0.21",

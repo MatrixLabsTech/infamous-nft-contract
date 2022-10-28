@@ -4,17 +4,19 @@ module infamous::infamous_nft {
     use std::signer;
     use std::error;
     use std::string::{Self, String, utf8 };
-
+    
+    use aptos_framework::timestamp;
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
 
     use aptos_std::table::{Self, Table};
 
-    use aptos_token::property_map::{Self, PropertyMap};
-    use aptos_token::token::{Self, TokenId};
+    use aptos_token::property_map;
+    use aptos_token::token::{Self, TokenId, TokenDataId};
 
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
+    use infamous::infamous_properties_url_encode_map;
 
     friend infamous::infamous_backend_open_box;
 
@@ -30,6 +32,7 @@ module infamous::infamous_nft {
     struct TokenMintedEvent has drop, store {
         token_receiver_address: address,
         token_id: TokenId,
+        mint_time: u64,
     }
 
 
@@ -38,6 +41,7 @@ module infamous::infamous_nft {
         counter: u64,
         per_minted_table: Table<address, u64>,
         token_minted_events: EventHandle<TokenMintedEvent>,
+        gender_table: Table<TokenDataId, String>,
     }
 
 
@@ -51,6 +55,7 @@ module infamous::infamous_nft {
         move_to(source, CollectionInfo {
             counter: 0, 
             per_minted_table: table::new(),
+            gender_table: table::new(),
             token_minted_events: account::new_event_handle<TokenMintedEvent>(&manager_signer),
         });
 
@@ -109,77 +114,99 @@ module infamous::infamous_nft {
 
   
 
+
     
 
-     public fun update_token_uri_with_properties(owner_addr: address, name: String,) {
+     public fun update_token_uri_with_properties(owner_addr: address, name: String,) acquires CollectionInfo {
       
         let creator = infamous_manager_cap::get_manager_signer();
         let creator_addr = signer::address_of(&creator);
         let collection_name = infamous_common::infamous_collection_name();
         let token_id = resolve_token_id(creator_addr, collection_name, name);
-        let properties = token::get_property_map(owner_addr, token_id);
-        let properties_string = utf8(b"");
-        append_property(&mut properties_string, properties, utf8(b"background"));
-        append_property(&mut properties_string, properties, utf8(b"clothing"));
-        append_property(&mut properties_string, properties, utf8(b"ear"));
-        append_property(&mut properties_string, properties, utf8(b"eyebrow"));
-        append_property(&mut properties_string, properties, utf8(b"accessories"));
-        append_property(&mut properties_string, properties, utf8(b"eyes"));
-        append_property(&mut properties_string, properties, utf8(b"hair"));
-        append_property(&mut properties_string, properties, utf8(b"mouth"));
-        append_property(&mut properties_string, properties, utf8(b"neck"));
-        append_property(&mut properties_string, properties, utf8(b"tattoo"));
-        append_property(&mut properties_string, properties, utf8(b"weapon"));
-        let hash_string = infamous_common::string_hash_string(properties_string);
-        let base_uri = infamous_common::infamous_base_token_uri();
-        string::append(&mut base_uri, hash_string);
-        string::append(&mut base_uri, utf8(b".png"));
-
+        let properties = &token::get_property_map(owner_addr, token_id);
         let token_data_id = token::create_token_data_id(creator_addr, collection_name, name);
-        token::mutate_tokendata_uri(&creator, token_data_id, base_uri);
 
+        update_token_uri_with_known_properties(token_data_id,
+        property_map::read_string(properties, &utf8(b"background")),
+        property_map::read_string(properties, &utf8(b"clothing")),
+        property_map::read_string(properties, &utf8(b"ear")),
+        property_map::read_string(properties, &utf8(b"eyebrow")),
+        property_map::read_string(properties, &utf8(b"accessories")),
+        property_map::read_string(properties, &utf8(b"eyes")),
+        property_map::read_string(properties, &utf8(b"hair")),
+        property_map::read_string(properties, &utf8(b"mouth")),
+        property_map::read_string(properties, &utf8(b"neck")),
+        property_map::read_string(properties, &utf8(b"tattoo")),
+        property_map::read_string(properties, &utf8(b"weapon")), 
+        get_token_gender(token_data_id));
      }
 
+     public(friend) fun set_token_gender(token_data_id: TokenDataId, gender: String) acquires CollectionInfo {
+        let source_addr = @infamous;
+        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
+        let gender_table_mut = &mut borrow_global_mut<CollectionInfo>(source_addr).gender_table;
+        table::add(gender_table_mut, token_data_id, gender);
+     }
      
-     public(friend) fun update_token_uri_with_known_properties(name: String,
+     public fun get_token_gender(token_data_id: TokenDataId): String acquires CollectionInfo {
+        let source_addr = @infamous;
+        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
+        let gender_table = &borrow_global<CollectionInfo>(source_addr).gender_table;
+        *table::borrow(gender_table, token_data_id)
+     }
      
+     public(friend) fun update_token_uri_with_known_properties(token_data_id: TokenDataId,
         background: String, clothing: String, ear: String, eyebrow: String,
         accessories: String, eyes: String, hair: String,  
         mouth: String, neck: String, tattoo: String, 
-        weapon: String,) {
-      
+        weapon: String, gender: String) {
         let creator = infamous_manager_cap::get_manager_signer();
-        let creator_addr = signer::address_of(&creator);
-        let collection_name = infamous_common::infamous_collection_name();
-        let properties_string = utf8(b"");
-        string::append(&mut properties_string, background);
-        string::append(&mut properties_string, clothing);
-        string::append(&mut properties_string, ear);
-        string::append(&mut properties_string, eyebrow);
-        string::append(&mut properties_string, accessories);
-        string::append(&mut properties_string, eyes);
-        string::append(&mut properties_string, hair);
-        string::append(&mut properties_string, mouth);
-        string::append(&mut properties_string, neck);
-        string::append(&mut properties_string, tattoo);
-        string::append(&mut properties_string, weapon);
-        let hash_string = infamous_common::string_hash_string(properties_string);
+        let gender_code = resolve_property_value_encode(gender, utf8(b"gender"), gender);
+        let background_code = resolve_property_value_encode(gender, utf8(b"background"), background);
+        let clothing_code = resolve_property_value_encode(gender, utf8(b"clothing"), clothing);
+        let ear_code = resolve_property_value_encode(gender, utf8(b"ear"), ear);
+        let eyebrow_code = resolve_property_value_encode(gender, utf8(b"eyebrow"), eyebrow);
+        let accessories_code = resolve_property_value_encode(gender, utf8(b"accessories"), accessories);
+        let eyes_code = resolve_property_value_encode(gender, utf8(b"eyes"), eyes);
+        let hair_code = resolve_property_value_encode(gender, utf8(b"hair"), hair);
+        let mouth_code = resolve_property_value_encode(gender, utf8(b"mouth"), mouth);
+        let neck_code = resolve_property_value_encode(gender, utf8(b"neck"), neck);
+        let tattoo_code = resolve_property_value_encode(gender, utf8(b"tattoo"), tattoo);
+        let weapon_code = resolve_property_value_encode(gender, utf8(b"weapon"), weapon);
+        let properties_code_string = utf8(b"");
+        string::append(&mut properties_code_string, gender_code);
+        string::append(&mut properties_code_string, background_code);
+        string::append(&mut properties_code_string, clothing_code);
+        string::append(&mut properties_code_string, ear_code);
+        string::append(&mut properties_code_string, eyebrow_code);
+        string::append(&mut properties_code_string, accessories_code);
+        string::append(&mut properties_code_string, eyes_code);
+        string::append(&mut properties_code_string, hair_code);
+        string::append(&mut properties_code_string, mouth_code);
+        string::append(&mut properties_code_string, neck_code);
+        string::append(&mut properties_code_string, tattoo_code);
+        string::append(&mut properties_code_string, weapon_code);
         let base_uri = infamous_common::infamous_base_token_uri();
-        string::append(&mut base_uri, hash_string);
+        string::append(&mut base_uri, properties_code_string);
         string::append(&mut base_uri, utf8(b".png"));
 
-        let token_data_id = token::create_token_data_id(creator_addr, collection_name, name);
         token::mutate_tokendata_uri(&creator, token_data_id, base_uri);
 
      }
 
+     fun resolve_property_value_encode(gender: String, value_key: String, value: String): String {
+        let key = utf8(b"");
+        string::append(&mut key, gender);
+        string::append(&mut key, utf8(b"-"));
+        string::append(&mut key, value_key);
+        string::append(&mut key, utf8(b"-"));
+        string::append(&mut key, value);
+        infamous_properties_url_encode_map::get_property_value_encode(key)
+     }
+
 
      
-     fun append_property(properties_string: &mut String, properties: PropertyMap, property_key: String) {
-        if(property_map::contains_key(&properties, &property_key)) {
-            string::append(properties_string, property_map::read_string(&properties, &property_key));
-        };
-     }
+    
 
 
     fun minted_count(table_info: &Table<address, u64>, owner: address): u64 {
@@ -215,6 +242,7 @@ module infamous::infamous_nft {
             TokenMintedEvent {
                 token_receiver_address: receiver_addr,
                 token_id: resolve_token_id(creator_addr, collection_name, token_name),
+                mint_time: timestamp::now_seconds(), 
             });
     }
 

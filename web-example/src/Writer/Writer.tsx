@@ -86,7 +86,8 @@ export function Writer(props: WriterProps) {
               moduleName === infamousBackendOpenBox ||
               moduleName === infamousBackendAuth ||
               moduleName === infamousBackendTokenWeaponAirdrop ||
-              moduleName === infamousWeaponWear
+              moduleName === infamousWeaponWear ||
+              moduleName === 'infamous_properties_url_encode_map'
             )
           })
         )
@@ -172,63 +173,65 @@ export function Writer(props: WriterProps) {
                   <Breadcrumb.Item active>{abi.name}</Breadcrumb.Item>
                 </Breadcrumb>
                 <Accordion>
-                  {abi.exposed_functions.map((fun) => (
-                    <Accordion.Item eventKey={fun.name} key={fun.name}>
-                      <Accordion.Header>{fun.name}</Accordion.Header>
-                      <Accordion.Body>
-                        <Form
-                          onSubmit={(e) =>
-                            handleSubmit(
-                              e,
-                              `${abi.address}::${abi.name}::${fun.name}`
-                            )
-                          }
-                        >
-                          {fun.params.map((p, index) => {
-                            if (p !== '&signer') {
-                              return (
-                                <Form.Group
-                                  className="mb-3"
-                                  controlId="formBasicEmail"
-                                  key={`${fun.name}::${index}`}
-                                >
-                                  <Form.Control
-                                    type="text"
-                                    placeholder={p}
-                                    name={`params-${index}-${p}`}
-                                  />
-                                </Form.Group>
+                  {abi.exposed_functions
+                    .filter((f) => f.is_entry)
+                    .map((fun) => (
+                      <Accordion.Item eventKey={fun.name} key={fun.name}>
+                        <Accordion.Header>{fun.name}</Accordion.Header>
+                        <Accordion.Body>
+                          <Form
+                            onSubmit={(e) =>
+                              handleSubmit(
+                                e,
+                                `${abi.address}::${abi.name}::${fun.name}`
                               )
                             }
-                            return null
-                          })}
-                          <Button
-                            variant="primary"
-                            type="submit"
-                            disabled={
-                              isSaving[
-                                `${abi.address}::${abi.name}::${fun.name}`
-                              ]
-                            }
                           >
-                            {isSaving[
+                            {fun.params.map((p, index) => {
+                              if (p !== '&signer') {
+                                return (
+                                  <Form.Group
+                                    className="mb-3"
+                                    controlId="formBasicEmail"
+                                    key={`${fun.name}::${index}`}
+                                  >
+                                    <Form.Control
+                                      type="text"
+                                      placeholder={p}
+                                      name={`params-${index}-${p}`}
+                                    />
+                                  </Form.Group>
+                                )
+                              }
+                              return null
+                            })}
+                            <Button
+                              variant="primary"
+                              type="submit"
+                              disabled={
+                                isSaving[
+                                  `${abi.address}::${abi.name}::${fun.name}`
+                                ]
+                              }
+                            >
+                              {isSaving[
+                                `${abi.address}::${abi.name}::${fun.name}`
+                              ] && (
+                                <>
+                                  <Spinner animation="border" size="sm" />
+                                  &nbsp;&nbsp;
+                                </>
+                              )}
+                              Submit
+                            </Button>
+                            {renderResult(
+                              handleInfo,
                               `${abi.address}::${abi.name}::${fun.name}`
-                            ] && (
-                              <>
-                                <Spinner animation="border" size="sm" />
-                                &nbsp;&nbsp;
-                              </>
                             )}
-                            Submit
-                          </Button>
-                          {renderResult(
-                            handleInfo,
-                            `${abi.address}::${abi.name}::${fun.name}`
-                          )}
-                        </Form>
-                      </Accordion.Body>
-                    </Accordion.Item>
-                  ))}
+                          </Form>
+                        </Accordion.Body>
+                      </Accordion.Item>
+                    ))}
                 </Accordion>
               </div>
             )

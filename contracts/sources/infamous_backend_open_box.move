@@ -3,7 +3,7 @@ module infamous::infamous_backend_open_box {
 
      use std::bcs;
      use std::signer;
-     use std::string::{Self, String, utf8};
+     use std::string::{String, utf8};
      use std::option;
      use std::error;
 
@@ -11,7 +11,6 @@ module infamous::infamous_backend_open_box {
      use aptos_std::table::{Self, Table};
      
      use aptos_token::token::{Self, TokenDataId, TokenId};
-     use aptos_token::property_map::{Self, PropertyMap};
 
      use infamous::infamous_common;
      use infamous::infamous_upgrade_level;
@@ -54,7 +53,7 @@ module infamous::infamous_backend_open_box {
         background: String, clothing: String, ear: String, eyebrow: String,
         accessories: String, eyes: String, hair: String,  
         mouth: String, neck: String, tattoo: String, 
-        weapon: String, material: String) acquires OpenBoxStatus {
+        weapon: String, material: String, gender: String) acquires OpenBoxStatus {
 
               
         let sender_addr = signer::address_of(sender);
@@ -86,6 +85,7 @@ module infamous::infamous_backend_open_box {
 
             let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
             let token_data_id = token::create_token_data_id(creator, collection, name);
+            infamous_nft::set_token_gender(token_data_id, gender);
             mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
             let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
@@ -103,11 +103,12 @@ module infamous::infamous_backend_open_box {
 
             let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
             let token_data_id = token::create_token_data_id(creator, collection, name);
+            infamous_nft::set_token_gender(token_data_id, gender);
             mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
             let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
             
-            infamous_nft::update_token_uri_with_known_properties(name, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon,);
+            infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon, gender,);
             update_box_opened(token_id);
         }
 
@@ -142,14 +143,6 @@ module infamous::infamous_backend_open_box {
 
 
 
-     }
-
-
-
-     fun append_property(properties_string: &mut String, properties: PropertyMap, property_key: String) {
-        if(property_map::contains_key(&properties, &property_key)) {
-            string::append(properties_string, property_map::read_string(&properties, &property_key));
-        };
      }
 
      
@@ -189,6 +182,7 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_weapon_nft;
         use infamous::infamous_upgrade_level;
+        use infamous::infamous_properties_url_encode_map;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -199,6 +193,7 @@ module infamous::infamous_backend_open_box {
         infamous_manager_cap::initialize(user);
         infamous_nft::initialize(user);
         infamous_weapon_nft::initialize(user);
+        infamous_properties_url_encode_map::initialize(user);
 
         let receiver_addr = signer::address_of(receiver);
         account::create_account_for_test(receiver_addr);
@@ -239,27 +234,14 @@ module infamous::infamous_backend_open_box {
         let tattoo = utf8(b"null");
         let weapon = utf8(b"dagger");
         let material = utf8(b"iron");
-
-        // { "trait_type": "background", "value": "gray" },
-        // { "trait_type": "clothing", "value": "turtleneck" },
-        // { "trait_type": "ear", "value": "null" },
-        // { "trait_type": "eyebrow", "value": "natural eyebrows" },
-        // { "trait_type": "accessories", "value": "null" },
-        // { "trait_type": "eyes", "value": "staring eyes (black)" },
-        // { "trait_type": "hair", "value": "undercut (reddish brown)" },
-        // { "trait_type": "mouth", "value": "sneer" },
-        // { "trait_type": "neck", "value": "null" },
-        // { "trait_type": "tattoo", "value": "null" },
-        // { "trait_type": "weapon", "value": "" }
-        // let weapon = utf8(b"dagger");karambit revolver 
-        // let material = utf8(b"iron");
+        let gender = utf8(b"female");
 
          open_box(user,
          token_index_1_name,
          background, clothing, ear, eyebrow, 
          accessories, eyes, hair, mouth,
          neck, tattoo,
-         weapon, material
+         weapon, material, gender
          );
 
 
@@ -275,6 +257,7 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_weapon_nft;
         use infamous::infamous_upgrade_level;
+        use infamous::infamous_properties_url_encode_map;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -285,6 +268,7 @@ module infamous::infamous_backend_open_box {
         infamous_manager_cap::initialize(user);
         infamous_nft::initialize(user);
         infamous_weapon_nft::initialize(user);
+        infamous_properties_url_encode_map::initialize(user);
 
         let receiver_addr = signer::address_of(receiver);
         account::create_account_for_test(receiver_addr);
@@ -315,7 +299,6 @@ module infamous::infamous_backend_open_box {
         infamous_stake::unstake_infamous_nft_script(receiver, token_index_1_name);
 
 
-
         let background = utf8(b"blue");
         let clothing = utf8(b"hoodie");
         let ear = utf8(b"null");
@@ -328,13 +311,14 @@ module infamous::infamous_backend_open_box {
         let tattoo = utf8(b"null");
         let weapon = utf8(b"dagger");
         let material = utf8(b"iron");
+        let gender = utf8(b"female");
 
          open_box(user,
          token_index_1_name,
          background, clothing, ear, eyebrow, 
          accessories, eyes, hair, mouth,
          neck, tattoo,
-         weapon, material
+         weapon, material, gender
          );
 
 

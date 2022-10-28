@@ -16,6 +16,7 @@ module infamous::infamous_manager_cap {
     friend infamous::infamous_backend_token_weapon_airdrop;
     friend infamous::infamous_weapon_wear;
     friend infamous::infamous_weapon_status;
+    friend infamous::infamous_properties_url_encode_map;
 
     const EMANAGER_ACCOUNT_INFO_NOT_PUBLISHED: u64 = 1;
 

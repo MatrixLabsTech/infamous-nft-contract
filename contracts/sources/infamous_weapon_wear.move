@@ -22,12 +22,12 @@ module infamous::infamous_weapon_wear {
     use infamous::infamous_weapon_status;
 
 
-    const TOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
-    const WEAPON_NOT_OWNED_BY_SENDER: u64 = 2;
-    const OLD_WEAPON_MISSED: u64 = 3;
-    const WEAPON_DONT_HAVE_WEAPON_PROPERTY: u64 = 4;
-    const TOKEN_NOT_REVEALED: u64 = 5;
-    const TOKEN_STAKED_MISSED: u64 = 6;
+    const ETOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
+    const EWEAPON_NOT_OWNED_BY_SENDER: u64 = 2;
+    const EOLD_WEAPON_MISSED: u64 = 3;
+    const EWEAPON_DONT_HAVE_WEAPON_PROPERTY: u64 = 4;
+    const ETOKEN_NOT_REVEALED: u64 = 5;
+    const ETOKEN_STAKED_MISSED: u64 = 6;
     
     
 
@@ -43,7 +43,7 @@ module infamous::infamous_weapon_wear {
         let weapon_collection_name = infamous_common::infamous_weapon_collection_name();
         let weapon_creator = manager_addr;
         let new_weapon_token_id = infamous_weapon_nft::resolve_token_id(weapon_creator, weapon_collection_name, weapon_name);
-        assert!(token::balance_of(sender_addr, new_weapon_token_id) == 1, error::invalid_argument(WEAPON_NOT_OWNED_BY_SENDER));
+        assert!(token::balance_of(sender_addr, new_weapon_token_id) == 1, error::invalid_argument(EWEAPON_NOT_OWNED_BY_SENDER));
 
         let collection_name = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_name);
@@ -56,16 +56,16 @@ module infamous::infamous_weapon_wear {
         if(option::is_some(&option_stake_addr)) { // wear weapon under stake
         
             // 1. check the manager is the owner
-            assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_state(TOKEN_STAKED_MISSED));
+            assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_state(ETOKEN_STAKED_MISSED));
         
 
             // 2.check token staked by sender or called by manager self
             let staked_addr = option::extract(&mut option_stake_addr);
-            assert!(sender_addr == staked_addr, error::invalid_argument(TOKEN_NOT_OWNED_BY_SENDER));
+            assert!(sender_addr == staked_addr, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
 
             // 3.check has old token
             let old_weapon_token_name = infamous_weapon_status::get_token__weapon_token_name(token_id);
-            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(TOKEN_NOT_REVEALED));
+            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(ETOKEN_NOT_REVEALED));
 
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
             
@@ -81,11 +81,11 @@ module infamous::infamous_weapon_wear {
             
         } else { // not under stake
             // 1. check the sender is the owner
-            assert!(token::balance_of(sender_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_SENDER));
+            assert!(token::balance_of(sender_addr, token_id) == 1, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
             
             // 2.check token revealed
             let old_weapon_token_name = infamous_weapon_status::get_token__weapon_token_name(token_id);
-            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(TOKEN_NOT_REVEALED));
+            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(ETOKEN_NOT_REVEALED));
 
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
 
@@ -112,7 +112,7 @@ module infamous::infamous_weapon_wear {
         if (option::is_some(&old_weapon_token_name)) { // old weapon
             let old_weapon_name = option::extract(&mut old_weapon_token_name);
             let old_weapon_token_id = infamous_weapon_nft::resolve_token_id(weapon_creator, weapon_collection_name, old_weapon_name);
-            assert!(token::balance_of(manager_addr, old_weapon_token_id) == 1, error::invalid_state(OLD_WEAPON_MISSED));
+            assert!(token::balance_of(manager_addr, old_weapon_token_id) == 1, error::invalid_state(EOLD_WEAPON_MISSED));
             // transfer back old weapon
             transfer(manager_signer, sender, old_weapon_token_id);
         };
@@ -152,7 +152,7 @@ module infamous::infamous_weapon_wear {
     fun get_weapon__weapon_property(owner: address, weapon_token_id: TokenId): String { 
         let properties = token::get_property_map(owner, weapon_token_id);
         let weapon_key = &infamous_common::infamous_weapon_key();
-        assert!(property_map::contains_key(&properties, weapon_key), error::invalid_state(WEAPON_DONT_HAVE_WEAPON_PROPERTY));
+        assert!(property_map::contains_key(&properties, weapon_key), error::invalid_state(EWEAPON_DONT_HAVE_WEAPON_PROPERTY));
         property_map::read_string(&properties, weapon_key)
     }
 
@@ -169,10 +169,10 @@ module infamous::infamous_weapon_wear {
         use infamous::infamous_upgrade_level;
         use infamous::infamous_backend_open_box;
         use infamous::infamous_backend_token_weapon_airdrop;
+        use infamous::infamous_properties_url_encode_map;
 
 
         timestamp::set_time_has_started_for_testing(framework);
-
 
         let user_addr = signer::address_of(user);
         account::create_account_for_test(user_addr);
@@ -180,6 +180,7 @@ module infamous::infamous_weapon_wear {
         infamous_manager_cap::initialize(user);
         infamous_nft::initialize(user);
         infamous_weapon_nft::initialize(user);
+        infamous_properties_url_encode_map::initialize(user);
 
         let receiver_addr = signer::address_of(receiver);
         account::create_account_for_test(receiver_addr);
@@ -217,30 +218,31 @@ module infamous::infamous_weapon_wear {
         let accessories = utf8(b"null");
         let eyes = utf8(b"black eyes");
         let hair = utf8(b"bob cut 1 (navy blue)");
-        let mouth = utf8(b"choker");
-        let neck = utf8(b"fox mask");
-        let tattoo = utf8(b"danger");
-        let weapon = utf8(b"danger");
+        let mouth = utf8(b"closed");
+        let neck = utf8(b"null");
+        let tattoo = utf8(b"null");
+        let weapon = utf8(b"dagger");
         let material = utf8(b"iron");
+        let gender = utf8(b"female");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
          background, clothing, ear, eyebrow, 
          accessories, eyes, hair, mouth,
          neck, tattoo,
-         weapon, material
+         weapon, material, gender
          );
 
          
         let weapon_token_1_name = utf8(b"Equipment #1");
         // let weapon_l3_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
 
-        infamous_backend_token_weapon_airdrop::airdrop_level_four(user, token_index_1_name, receiver_addr, utf8(b"knif"), utf8(b"normal knif"));
+        infamous_backend_token_weapon_airdrop::airdrop_level_four(user, token_index_1_name, receiver_addr, utf8(b"karambit"), utf8(b"normal karambit"));
 
         let weapon_token_2_name = utf8(b"Equipment #2");
         // let weapon_l4_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
 
-        infamous_backend_token_weapon_airdrop::airdrop_level_five(user, token_index_1_name, receiver_addr, utf8(b"AK-47"), utf8(b"normal AK-47"));
+        infamous_backend_token_weapon_airdrop::airdrop_level_five(user, token_index_1_name, receiver_addr, utf8(b"revolver"), utf8(b"normal revolver"));
 
         let weapon_token_3_name = utf8(b"Equipment #3");
         // let weapon_l5_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
