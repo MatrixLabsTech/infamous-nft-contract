@@ -8,7 +8,7 @@ import {
   infamousBackendOpenBox,
   infamousBackendTokenWeaponAirdrop,
   infamousNft,
-  infamousStake,
+  infamousLock,
   infamousUpgradeLevel,
   infamousWeaponWear,
   metadataModuleName,
@@ -81,7 +81,7 @@ export function Writer(props: WriterProps) {
             return (
               moduleName === metadataModuleName ||
               moduleName === infamousNft ||
-              moduleName === infamousStake ||
+              moduleName === infamousLock ||
               moduleName === infamousUpgradeLevel ||
               moduleName === infamousBackendOpenBox ||
               moduleName === infamousBackendAuth ||
@@ -114,7 +114,6 @@ export function Writer(props: WriterProps) {
       }
     })
 
-    console.log(params) //ccc-log
     const transaction = {
       type: 'entry_function_payload',
       function: fun,

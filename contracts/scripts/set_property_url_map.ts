@@ -54,9 +54,9 @@ function resolveUrlEncodeMap() {
   const properties: string[] = []
   const properties_values: string[] = []
 
-  properties.push('female-gender-female')
+  properties.push('femalegenderfemale')
   properties_values.push('0')
-  properties.push('male-gender-male')
+  properties.push('malegendermale')
   properties_values.push('1')
 
   const mapString = fs
@@ -69,7 +69,7 @@ function resolveUrlEncodeMap() {
     const valueMap = map.male[valueKey]
     Object.keys(valueMap).forEach((value: string) => {
       const encode = valueMap[value]
-      properties.push(`male-${valueKey}-${value}`)
+      properties.push(`male${valueKey}${value}`)
       properties_values.push(encode)
     })
   })
@@ -78,7 +78,7 @@ function resolveUrlEncodeMap() {
     const valueMap = map.male[valueKey]
     Object.keys(valueMap).forEach((value: string) => {
       const encode = valueMap[value]
-      properties.push(`female-${valueKey}-${value}`)
+      properties.push(`female${valueKey}${value}`)
       properties_values.push(encode)
     })
   })

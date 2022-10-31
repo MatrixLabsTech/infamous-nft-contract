@@ -26,7 +26,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_base_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/test/")
+        string::utf8(b"https://media-test.nft.infamousnft.xyz/test/origin/")
     }
 
     public fun infamous_description(): String {
@@ -34,7 +34,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_key(): String {
-        string::utf8(b"weapon")
+        string::utf8(b"Tiers")
     }
 
     public fun infamous_weapon_collection_name(): String {

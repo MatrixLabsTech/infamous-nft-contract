@@ -12,6 +12,9 @@ export interface ICollectionStatusInfo {
     per_minted_table: {
         handle: string;
     };
+    token_mint_time_table: {
+        handle: string;
+    };
     token_minted_events: {
         counter: string;
         guid: {
@@ -107,19 +110,6 @@ export interface ITokenDataId {
     collection: string;
 }
 
-export interface TokenStakes {
-    type: string;
-    data: {
-        staking: ITokenDataId[];
-        staking_time: {
-            inner: {
-                handle: string;
-            };
-            length: string;
-        };
-    };
-}
-
 export interface MutateEvent {
     version: string;
     key: string;
@@ -187,9 +177,9 @@ export interface TokenData {
     properties: PropertyItem[];
 }
 
-export interface IStakingTime {
+export interface ILockingTime {
     start: string;
-    stake_time_used: string;
+    lock_time_used: string;
 }
 
 export interface ITokenData {

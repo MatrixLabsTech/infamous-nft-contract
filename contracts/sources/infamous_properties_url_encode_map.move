@@ -72,9 +72,9 @@ module infamous::infamous_properties_url_encode_map {
         
         set_property_map(
             user,
-            vector<String>[utf8(b"female-gender-female"), utf8(b"female-background-blue"), utf8(b"female-clothing-hoodie"), utf8(b"female-ear-null"), utf8(b"female-eyebrow-extended eyebrows"), 
-            utf8(b"female-accessories-null"), utf8(b"female-eyes-black eyes"), utf8(b"female-hair-bob cut 1 (navy blue)"), utf8(b"female-mouth-closed"), 
-            utf8(b"female-neck-null"), utf8(b"female-tattoo-null"), utf8(b"female-weapon-dagger"), utf8(b"female-weapon-karambit"), utf8(b"female-weapon-revolver")], 
+            vector<String>[utf8(b"femalegenderfemale"), utf8(b"femalebackgroundblue"), utf8(b"femaleclothinghoodie"), utf8(b"femaleearnull"), utf8(b"femaleeyebrowextended eyebrows"), 
+            utf8(b"femaleaccessoriesnull"), utf8(b"femaleeyesblack eyes"), utf8(b"femalehairbob cut 1 (navy blue)"), utf8(b"femalemouthclosed"), 
+            utf8(b"femalenecknull"), utf8(b"femaletattoonull"), utf8(b"femaleweapondagger"), utf8(b"femaleweaponkarambit"), utf8(b"femaleweaponrevolver")], 
             vector<String>[utf8(b"0"), utf8(b"0"), utf8(b"0"), utf8(b"0"), utf8(b"0"), 
             utf8(b"0"), utf8(b"0"), utf8(b"0"), utf8(b"0"), 
             utf8(b"0"), utf8(b"0"), utf8(b"0"), utf8(b"1"), utf8(b"2")]
@@ -107,13 +107,13 @@ module infamous::infamous_properties_url_encode_map {
 
         set_property_map(
             user,
-            vector<String>[utf8(b"female-background-blue"), utf8(b"female-eye-black")], 
+            vector<String>[utf8(b"femalebackgroundblue"), utf8(b"femaleeyeblack")], 
             vector<String>[utf8(b"00"), utf8(b"01")]
         );
 
 
-        assert!(get_property_value_encode(utf8(b"female-background-blue")) == utf8(b"00"), 1);
-        assert!(get_property_value_encode(utf8(b"female-eye-black")) == utf8(b"01"), 1);
+        assert!(get_property_value_encode(utf8(b"femalebackgroundblue")) == utf8(b"00"), 1);
+        assert!(get_property_value_encode(utf8(b"femaleeyeblack")) == utf8(b"01"), 1);
 
     }
 

@@ -18,7 +18,7 @@ module infamous::infamous_weapon_wear {
     use infamous::infamous_manager_cap;
     use infamous::infamous_nft;
     use infamous::infamous_weapon_nft;
-    use infamous::infamous_stake;
+    use infamous::infamous_lock;
     use infamous::infamous_weapon_status;
 
 
@@ -27,7 +27,7 @@ module infamous::infamous_weapon_wear {
     const EOLD_WEAPON_MISSED: u64 = 3;
     const EWEAPON_DONT_HAVE_WEAPON_PROPERTY: u64 = 4;
     const ETOKEN_NOT_REVEALED: u64 = 5;
-    const ETOKEN_STAKED_MISSED: u64 = 6;
+    const ETOKEN_LOCKED_MISSED: u64 = 6;
     
     
 
@@ -51,17 +51,17 @@ module infamous::infamous_weapon_wear {
         
         let sender_addr = signer::address_of(sender);
 
-        let option_stake_addr = infamous_stake::token_stake_address(token_id);
-        // token staked?
-        if(option::is_some(&option_stake_addr)) { // wear weapon under stake
+        let option_lock_addr = infamous_lock::token_lock_address(token_id);
+        // token lockd?
+        if(option::is_some(&option_lock_addr)) { // wear weapon under lock
         
             // 1. check the manager is the owner
-            assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_state(ETOKEN_STAKED_MISSED));
+            assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_state(ETOKEN_LOCKED_MISSED));
         
 
-            // 2.check token staked by sender or called by manager self
-            let staked_addr = option::extract(&mut option_stake_addr);
-            assert!(sender_addr == staked_addr, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
+            // 2.check token lockd by sender or called by manager self
+            let lockd_addr = option::extract(&mut option_lock_addr);
+            assert!(sender_addr == lockd_addr, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
 
             // 3.check has old token
             let old_weapon_token_name = infamous_weapon_status::get_token__weapon_token_name(token_id);
@@ -79,7 +79,7 @@ module infamous::infamous_weapon_wear {
             infamous_nft::update_token_uri_with_properties(manager_addr, token_name);
 
             
-        } else { // not under stake
+        } else { // not under lock
             // 1. check the sender is the owner
             assert!(token::balance_of(sender_addr, token_id) == 1, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
             
@@ -163,7 +163,7 @@ module infamous::infamous_weapon_wear {
 
         use aptos_framework::account; 
         use aptos_framework::timestamp;
-        use infamous::infamous_stake;
+        use infamous::infamous_lock;
         use infamous::infamous_nft;
         use infamous::infamous_weapon_nft;
         use infamous::infamous_upgrade_level;
@@ -195,21 +195,9 @@ module infamous::infamous_weapon_wear {
 
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name);
         assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
-        infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
+       
 
-        let time = infamous_stake::get_available_time(token_id);
-        assert!(time == 0, 1);
-
-        timestamp::fast_forward_seconds(2000);
-        let time1 = infamous_stake::get_available_time(token_id);
-        assert!(time1 == 2000, 1);
-
-        infamous_upgrade_level::upgrade(token_index_1_name);
-        
-
-        
-        // infamous_stake::unstake_infamous_nft_script(receiver, token_index_1_name);-
-
+        timestamp::fast_forward_seconds(300);
 
         let background = utf8(b"blue");
         let clothing = utf8(b"hoodie");
@@ -232,6 +220,18 @@ module infamous::infamous_weapon_wear {
          neck, tattoo,
          weapon, material, gender
          );
+
+        infamous_lock::lock_infamous_nft(receiver, token_index_1_name);
+
+        let time = infamous_lock::get_available_time(token_id);
+        assert!(time == 0, 1);
+
+        timestamp::fast_forward_seconds(2000);
+        let time1 = infamous_lock::get_available_time(token_id);
+        assert!(time1 == 2000, 1);
+
+        infamous_upgrade_level::upgrade(token_index_1_name);
+        
 
          
         let weapon_token_1_name = utf8(b"Equipment #1");

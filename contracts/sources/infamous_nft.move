@@ -32,7 +32,6 @@ module infamous::infamous_nft {
     struct TokenMintedEvent has drop, store {
         token_receiver_address: address,
         token_id: TokenId,
-        mint_time: u64,
     }
 
 
@@ -40,6 +39,7 @@ module infamous::infamous_nft {
     struct CollectionInfo has key {
         counter: u64,
         per_minted_table: Table<address, u64>,
+        token_mint_time_table: Table<TokenId, u64>,
         token_minted_events: EventHandle<TokenMintedEvent>,
         gender_table: Table<TokenDataId, String>,
     }
@@ -55,6 +55,7 @@ module infamous::infamous_nft {
         move_to(source, CollectionInfo {
             counter: 0, 
             per_minted_table: table::new(),
+            token_mint_time_table: table::new(),
             gender_table: table::new(),
             token_minted_events: account::new_event_handle<TokenMintedEvent>(&manager_signer),
         });
@@ -92,7 +93,8 @@ module infamous::infamous_nft {
             let name = infamous_common::append_num(base_token_name, cur);
             let uri = infamous_common::infamous_token_uri();
 
-            create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description);
+            let token_id = create_token_and_transfer_to_receiver(&manager_signer, receiver, collection_name, name, uri, description);
+            table::add(&mut collection_info.token_mint_time_table, token_id, timestamp::now_seconds());
             emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
         };
 
@@ -112,10 +114,12 @@ module infamous::infamous_nft {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
 
-  
-
-
-    
+    public fun get_token_mint_time(token_id: TokenId): u64 acquires CollectionInfo {
+        let source_addr = @infamous;
+        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
+        let token_mint_time_table = &borrow_global<CollectionInfo>(source_addr).token_mint_time_table;
+        *table::borrow(token_mint_time_table, token_id)
+     }
 
      public fun update_token_uri_with_properties(owner_addr: address, name: String,) acquires CollectionInfo {
       
@@ -197,9 +201,7 @@ module infamous::infamous_nft {
      fun resolve_property_value_encode(gender: String, value_key: String, value: String): String {
         let key = utf8(b"");
         string::append(&mut key, gender);
-        string::append(&mut key, utf8(b"-"));
         string::append(&mut key, value_key);
-        string::append(&mut key, utf8(b"-"));
         string::append(&mut key, value);
         infamous_properties_url_encode_map::get_property_value_encode(key)
      }
@@ -218,7 +220,7 @@ module infamous::infamous_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver:&signer, collection_name: String, token_name: String, token_uri: String, description: String,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver:&signer, collection_name: String, token_name: String, token_uri: String, description: String,): TokenId {
         
         let balance = 1;
         let maximum = 1;
@@ -234,6 +236,7 @@ module infamous::infamous_nft {
 
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);
         token::direct_transfer(minter, receiver, token_id, balance);
+        token_id
     }
 
     fun emit_minted_event(collection_info: &mut CollectionInfo, receiver_addr: address, creator_addr: address, collection_name: String, token_name: String) {
@@ -242,7 +245,6 @@ module infamous::infamous_nft {
             TokenMintedEvent {
                 token_receiver_address: receiver_addr,
                 token_id: resolve_token_id(creator_addr, collection_name, token_name),
-                mint_time: timestamp::now_seconds(), 
             });
     }
 

@@ -4,31 +4,26 @@ module infamous::infamous_backend_open_box {
      use std::bcs;
      use std::signer;
      use std::string::{String, utf8};
-     use std::option;
      use std::error;
 
 
+     use aptos_framework::timestamp;
      use aptos_std::table::{Self, Table};
      
      use aptos_token::token::{Self, TokenDataId, TokenId};
 
      use infamous::infamous_common;
-     use infamous::infamous_upgrade_level;
      use infamous::infamous_manager_cap;
      use infamous::infamous_nft;
-     use infamous::infamous_stake;
      use infamous::infamous_backend_auth;
      use infamous::infamous_weapon_nft;
      use infamous::infamous_weapon_status;
      
-    const ACCOUNT_MUSTBE_AUTHED: u64 = 1;
-    const LEVEL_MUST_GREATER_THAN_THREE: u64 = 2;
-    const BOX_NOT_UNDER_STAKE: u64 = 4;
-    const TOKEN_NOT_OWNED_BY_OWNER_ADDR: u64 = 5;
-    const BOX_ALREADY_OPENED: u64 = 6;
-    const TOKEN_STAKED_MISSED: u64 = 7;
+    const EACCOUNT_MUSTBE_AUTHED: u64 = 1;
+    const EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT: u64 = 2;
+    const EBOX_ALREADY_OPENED: u64 = 6;
 
-    const OPEN_LEVEL: u64 = 3;
+    const OPEN_TIME_GAP: u64 = 180;
 
 
     struct OpenBoxStatus has key {
@@ -55,65 +50,40 @@ module infamous::infamous_backend_open_box {
         mouth: String, neck: String, tattoo: String, 
         weapon: String, material: String, gender: String) acquires OpenBoxStatus {
 
-              
+        
+
         let sender_addr = signer::address_of(sender);
-        assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
+        assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(EACCOUNT_MUSTBE_AUTHED));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
         initialize_open_box_status(&manager_signer);
 
+        
         // resolve token id
         let creator = manager_addr;
         let collection = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(creator, collection, name);
 
-        // check under stake
-        let option_stake_addr = infamous_stake::token_stake_address(token_id);
+        let weapon_level = utf8(b"1");
 
-        let weapon_level = utf8(b"3");
+        // check owner
+        // assert!(token::balance_of(owner_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_OWNER_ADDR));
+        assert!(!is_box__opened(token_id), error::invalid_state(EBOX_ALREADY_OPENED));
 
-        if(option::is_some(&option_stake_addr)) {
-            // check owner
-            assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_argument(TOKEN_STAKED_MISSED));
+        // check now - mint time > 180s
+        let token_mint_time = infamous_nft::get_token_mint_time(token_id);
+        assert!(timestamp::now_seconds() - token_mint_time >= OPEN_TIME_GAP, error::invalid_argument(EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT));
 
-            assert!(!is_box__opened(token_id), error::invalid_state(BOX_ALREADY_OPENED));
-
-            // check level greater than 3
-            let token_level = infamous_upgrade_level::get_token_level(token_id);
-            assert!(token_level >= OPEN_LEVEL, error::invalid_argument(LEVEL_MUST_GREATER_THAN_THREE));
-
-            let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
-            let token_data_id = token::create_token_data_id(creator, collection, name);
-            infamous_nft::set_token_gender(token_data_id, gender);
-            mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
-            let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
-            infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
-            infamous_nft::update_token_uri_with_properties(manager_addr, name);
-            update_box_opened(token_id);
-        } else {
-            // check owner
-            // assert!(token::balance_of(owner_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_OWNER_ADDR));
-            
-            assert!(!is_box__opened(token_id), error::invalid_state(BOX_ALREADY_OPENED));
-
-            // check level greater than 3
-            let token_level = infamous_upgrade_level::get_token_level(token_id);
-            assert!(token_level >= OPEN_LEVEL, error::invalid_argument(LEVEL_MUST_GREATER_THAN_THREE));
-
-            let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
-            let token_data_id = token::create_token_data_id(creator, collection, name);
-            infamous_nft::set_token_gender(token_data_id, gender);
-            mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
-            let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
-            infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
-            
-            infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon, gender,);
-            update_box_opened(token_id);
-        }
-
-
+        let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
+        let token_data_id = token::create_token_data_id(creator, collection, name);
+        infamous_nft::set_token_gender(token_data_id, gender);
+        mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
+        let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
+        infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
         
+        infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon, gender,);
+        update_box_opened(token_id);
     }
 
      fun mutate_token_properties(manager_signer: signer, 
@@ -170,19 +140,15 @@ module infamous::infamous_backend_open_box {
         };
     }
 
-
-
        
     #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
-    public fun open_box_under_stake_test(user: &signer, receiver: &signer, framework: &signer) acquires OpenBoxStatus { 
+    public fun open_box_test(user: &signer, receiver: &signer, framework: &signer) acquires OpenBoxStatus { 
 
         use aptos_framework::account; 
         use aptos_framework::timestamp;
-        use infamous::infamous_stake;
         use infamous::infamous_nft;
-        use infamous::infamous_weapon_nft;
-        use infamous::infamous_upgrade_level;
         use infamous::infamous_properties_url_encode_map;
+        use infamous::infamous_weapon_nft;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -208,96 +174,9 @@ module infamous::infamous_backend_open_box {
 
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name);
         assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
-        infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
 
-        let time = infamous_stake::get_available_time(token_id);
-        assert!(time == 0, 1);
-
+    
         timestamp::fast_forward_seconds(1000);
-        let time1 = infamous_stake::get_available_time(token_id);
-        assert!(time1 == 1000, 1);
-
-        infamous_upgrade_level::upgrade(token_index_1_name);
-        let after = infamous_upgrade_level::get_token_level(token_id);
-        assert!(after == 3, 1);
-
-
-        let background = utf8(b"blue");
-        let clothing = utf8(b"hoodie");
-        let ear = utf8(b"null");
-        let eyebrow = utf8(b"extended eyebrows");
-        let accessories = utf8(b"null");
-        let eyes = utf8(b"black eyes");
-        let hair = utf8(b"bob cut 1 (navy blue)");
-        let mouth = utf8(b"closed");
-        let neck = utf8(b"null");
-        let tattoo = utf8(b"null");
-        let weapon = utf8(b"dagger");
-        let material = utf8(b"iron");
-        let gender = utf8(b"female");
-
-         open_box(user,
-         token_index_1_name,
-         background, clothing, ear, eyebrow, 
-         accessories, eyes, hair, mouth,
-         neck, tattoo,
-         weapon, material, gender
-         );
-
-
-    }
-
-       
-    #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
-    public fun open_box_not_stake_test(user: &signer, receiver: &signer, framework: &signer) acquires OpenBoxStatus { 
-
-        use aptos_framework::account; 
-        use aptos_framework::timestamp;
-        use infamous::infamous_stake;
-        use infamous::infamous_nft;
-        use infamous::infamous_weapon_nft;
-        use infamous::infamous_upgrade_level;
-        use infamous::infamous_properties_url_encode_map;
-
-        timestamp::set_time_has_started_for_testing(framework);
-
-
-        let user_addr = signer::address_of(user);
-        account::create_account_for_test(user_addr);
-        
-        infamous_manager_cap::initialize(user);
-        infamous_nft::initialize(user);
-        infamous_weapon_nft::initialize(user);
-        infamous_properties_url_encode_map::initialize(user);
-
-        let receiver_addr = signer::address_of(receiver);
-        account::create_account_for_test(receiver_addr);
-        infamous_nft::mint(receiver, 3);
-
-        
-        let manager_signer = infamous_manager_cap::get_manager_signer();
-        let manager_addr = signer::address_of(&manager_signer);
-        let collection_name = infamous_common::infamous_collection_name();
-        let base_token_name = infamous_common::infamous_base_token_name();
-        let token_index_1_name = infamous_common::append_num(base_token_name, 1);
-
-        let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_index_1_name);
-        assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
-        infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
-
-        let time = infamous_stake::get_available_time(token_id);
-        assert!(time == 0, 1);
-
-        timestamp::fast_forward_seconds(1000);
-        let time1 = infamous_stake::get_available_time(token_id);
-        assert!(time1 == 1000, 1);
-
-        infamous_upgrade_level::upgrade(token_index_1_name);
-        
-
-        
-        infamous_stake::unstake_infamous_nft_script(receiver, token_index_1_name);
-
 
         let background = utf8(b"blue");
         let clothing = utf8(b"hoodie");

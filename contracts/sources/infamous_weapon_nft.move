@@ -15,8 +15,8 @@ module infamous::infamous_weapon_nft {
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
 
-    friend infamous::infamous_backend_token_weapon_airdrop;
     friend infamous::infamous_backend_open_box;
+    friend infamous::infamous_backend_token_weapon_airdrop;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
     const ACCOUNT_MUSTBE_AUTHED: u64 = 2;
@@ -54,7 +54,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public(friend) fun airdrop(receiver_addr: address, weapon: String, material: String, level: String,): TokenId acquires CollectionInfo {
+    public(friend) fun airdrop(receiver_addr: address, weapon: String, material: String, attr: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
@@ -72,7 +72,7 @@ module infamous::infamous_weapon_nft {
         string::append(&mut uri, weapon);
         string::append(&mut uri, utf8(b".png"));
 
-        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, material, level,);
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, material, attr,);
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
@@ -94,7 +94,7 @@ module infamous::infamous_weapon_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, material: String, level: String,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, material: String, attr: String,) {
         
         let balance = 1;
         let maximum = 1;
@@ -107,8 +107,8 @@ module infamous::infamous_weapon_nft {
         0,
         0,
         vector<bool>[false, true, false, false, true],
-        vector<String>[ utf8(b"weapon"), utf8(b"material"), utf8(b"level") ], 
-        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&material), bcs::to_bytes<String>(&level)], 
+        vector<String>[ infamous_common::infamous_weapon_key(), utf8(b"Grades"), utf8(b"Attributes") ], 
+        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&material), bcs::to_bytes<String>(&attr)], 
         vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],);
 
         if(receiver_addr != minter_addr) {

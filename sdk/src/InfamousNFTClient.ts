@@ -1,5 +1,5 @@
-import {CollectionInfo, IStakingTime, ITokenId, TokenData} from "./CollectionInfo";
-import {WearWeaponEvent, WearWeaponEvents, WearWeaponHistoryItem} from "./WearWeaponInfo";
+import {CollectionInfo, ILockingTime, ITokenId, TokenData} from "./CollectionInfo";
+import {WearWeaponEvents, WearWeaponHistoryItem} from "./WearWeaponInfo";
 
 export interface ITransaction {
     type: string;
@@ -14,8 +14,8 @@ export interface PaginationArgs {
 export interface InfamousNFTClient {
     // package mint trans
     mintTransaction(count: string): ITransaction;
-    stakeTransaction(tokenName: string): ITransaction;
-    unstakeTransaction(tokenName: string): ITransaction;
+    lockTransaction(tokenName: string): ITransaction;
+    unlockTransaction(tokenName: string): ITransaction;
     upgradeTransaction(tokenName: string): ITransaction;
     wearWeaponTransaction(tokenName: string, weaponName: string): ITransaction;
 
@@ -25,6 +25,8 @@ export interface InfamousNFTClient {
     resolveTokenId(tokenName: string): Promise<ITokenId>;
     resolveWeaponTokenId(tokenName: string): Promise<ITokenId>;
     isTokenOwner(addr: string, tokenId: ITokenId): Promise<boolean>;
+
+    tokenMintTime(tokenId: ITokenId): Promise<string | undefined>;
 
     // token owned
     tokenOwned(addr: string): Promise<TokenData[]>;
@@ -40,9 +42,9 @@ export interface InfamousNFTClient {
     wearWeaponTotal(tokenId: ITokenId): Promise<WearWeaponEvents | undefined>;
     wearWeaponPage(events: WearWeaponEvents, query?: PaginationArgs): Promise<WearWeaponHistoryItem[]>;
 
-    tokenStaked(addr: string): Promise<ITokenId[]>;
+    tokenLocked(addr: string): Promise<ITokenId[]>;
 
-    tokenStakeData(tokenId: ITokenId): Promise<IStakingTime | undefined>;
+    tokenLockData(tokenId: ITokenId): Promise<ILockingTime | undefined>;
 
     tokenPerMinted(addr: string): Promise<number>;
 

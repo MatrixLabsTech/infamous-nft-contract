@@ -10,7 +10,7 @@ export const devClient = new AptosClient(
 )
 export const moduleAddress = deployment.testnet.moduleAddress
 export const infamousNft = deployment.testnet.infamousNft
-export const infamousStake = deployment.testnet.infamousStake
+export const infamousLock = deployment.testnet.infamousLock
 export const infamousManagerCap = deployment.testnet.infamousManagerCap
 export const infamousUpgradeLevel = deployment.testnet.infamousUpgradeLevel
 export const infamousBackendOpenBox = deployment.testnet.infamousBackendOpenBox
