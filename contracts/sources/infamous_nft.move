@@ -19,6 +19,7 @@ module infamous::infamous_nft {
     use infamous::infamous_properties_url_encode_map;
 
     friend infamous::infamous_backend_open_box;
+    friend infamous::infamous_weapon_wear;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
     const EMINT_COUNT_OUT_OF_PER_MAX: u64 = 2;
@@ -121,7 +122,7 @@ module infamous::infamous_nft {
         *table::borrow(token_mint_time_table, token_id)
      }
 
-     public fun update_token_uri_with_properties(owner_addr: address, name: String,) acquires CollectionInfo {
+     public(friend) fun update_token_uri_with_properties(owner_addr: address, name: String, grade: String) acquires CollectionInfo {
       
         let creator = infamous_manager_cap::get_manager_signer();
         let creator_addr = signer::address_of(&creator);
@@ -142,6 +143,7 @@ module infamous::infamous_nft {
         property_map::read_string(properties, &utf8(b"neck")),
         property_map::read_string(properties, &utf8(b"tattoo")),
         property_map::read_string(properties, &utf8(b"weapon")), 
+        grade,
         get_token_gender(token_data_id));
      }
 
@@ -163,7 +165,7 @@ module infamous::infamous_nft {
         background: String, clothing: String, ear: String, eyebrow: String,
         accessories: String, eyes: String, hair: String,  
         mouth: String, neck: String, tattoo: String, 
-        weapon: String, gender: String) {
+        weapon: String, grade: String, gender: String) {
         let creator = infamous_manager_cap::get_manager_signer();
         let gender_code = resolve_property_value_encode(gender, utf8(b"gender"), gender);
         let background_code = resolve_property_value_encode(gender, utf8(b"background"), background);
@@ -177,6 +179,7 @@ module infamous::infamous_nft {
         let neck_code = resolve_property_value_encode(gender, utf8(b"neck"), neck);
         let tattoo_code = resolve_property_value_encode(gender, utf8(b"tattoo"), tattoo);
         let weapon_code = resolve_property_value_encode(gender, utf8(b"weapon"), weapon);
+        let grade_code = resolve_property_value_encode(gender, utf8(b"grade"), grade);
         let properties_code_string = utf8(b"");
         string::append(&mut properties_code_string, gender_code);
         string::append(&mut properties_code_string, background_code);
@@ -190,6 +193,7 @@ module infamous::infamous_nft {
         string::append(&mut properties_code_string, neck_code);
         string::append(&mut properties_code_string, tattoo_code);
         string::append(&mut properties_code_string, weapon_code);
+        string::append(&mut properties_code_string, grade_code);
         let base_uri = infamous_common::infamous_base_token_uri();
         string::append(&mut base_uri, properties_code_string);
         string::append(&mut base_uri, utf8(b".png"));

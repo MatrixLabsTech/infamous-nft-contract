@@ -54,7 +54,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public(friend) fun airdrop(receiver_addr: address, weapon: String, material: String, attr: String,): TokenId acquires CollectionInfo {
+    public(friend) fun airdrop(receiver_addr: address, weapon: String, tiers: String, grades: String, attributes: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
@@ -68,11 +68,16 @@ module infamous::infamous_weapon_nft {
         let cur = prev_count + 1;
         let name = infamous_common::append_num(base_token_name, cur);
         let base_uri = infamous_common::infamous_weapon_base_token_uri();
-        let uri = copy base_uri;
-        string::append(&mut uri, weapon);
+        let image = string::utf8(b"");
+        string::append(&mut image, weapon);
+        string::append(&mut image, grades);
+        let weapon_image_name = infamous::infamous_common::escape_whitespace(image);
+
+        let uri = base_uri;
+        string::append(&mut uri, weapon_image_name);
         string::append(&mut uri, utf8(b".png"));
 
-        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, material, attr,);
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, tiers, grades, attributes,);
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
@@ -94,7 +99,7 @@ module infamous::infamous_weapon_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, material: String, attr: String,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, tiers: String, grades: String, attributes: String,) {
         
         let balance = 1;
         let maximum = 1;
@@ -107,9 +112,9 @@ module infamous::infamous_weapon_nft {
         0,
         0,
         vector<bool>[false, true, false, false, true],
-        vector<String>[ infamous_common::infamous_weapon_key(), utf8(b"Grades"), utf8(b"Attributes") ], 
-        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&material), bcs::to_bytes<String>(&attr)], 
-        vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],);
+        vector<String>[ utf8(b"name"), utf8(b"tier"), utf8(b"grade"), utf8(b"attributes") ], 
+        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&tiers), bcs::to_bytes<String>(&grades), bcs::to_bytes<String>(&attributes)], 
+        vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],);
 
         if(receiver_addr != minter_addr) {
             let token_id = resolve_token_id(minter_addr, collection_name, token_name);
@@ -162,7 +167,7 @@ module infamous::infamous_weapon_nft {
 
 
 
-        airdrop(receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
+        airdrop(receiver_addr, utf8(b"knif"), utf8(b"3"), utf8(b"normal knif"), utf8(b"3"));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -173,7 +178,7 @@ module infamous::infamous_weapon_nft {
         assert!(token::balance_of(receiver_addr, resolve_token_id(manager_addr, collection_name, token_index_1_name)) == 1, 1);
 
         
-        airdrop(receiver_addr, utf8(b"knif"), utf8(b"normal knif"), utf8(b"3"));
+        airdrop(receiver_addr, utf8(b"knif"), utf8(b"3"), utf8(b"normal knif"), utf8(b"3"));
 
     }
 

@@ -5,7 +5,8 @@ import {
   BCS,
   AptosClient,
 } from 'aptos'
-import { resolveUrlEncodeMap } from './get_properties'
+import { getPriority } from 'os'
+import { getPropertyMap, resolveUrlEncodeMap } from './get_properties'
 import { client, faucetClient } from './utils/base'
 import { getConfigAccount } from './utils/config'
 
@@ -24,16 +25,29 @@ async function main() {
   const account = deployer.toPrivateKeyObject()
   console.log('=== Use Account ===')
   console.log(account)
-
-  const { properties, properties_values } = resolveUrlEncodeMap()
+  const gender = 'male'
   const entryFunctionPayload = new TransactionPayloadEntryFunction(
     EntryFunction.natural(
-      `${account.address}::infamous_properties_url_encode_map`,
-      'set_property_map',
+      `${account.address}::infamous_backend_open_box`,
+      'open_box',
       [],
       [
-        BCS.serializeVectorWithFunc(properties, 'serializeStr'),
-        BCS.serializeVectorWithFunc(properties_values, 'serializeStr'),
+        BCS.bcsSerializeStr('Infamous #1'),
+        BCS.bcsSerializeStr(randomProperty(gender, 'background')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'clothing')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'ear')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'eyebrow')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'accessories')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'eyes')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'hair')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'mouth')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'neck')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'tattoo')),
+        BCS.bcsSerializeStr(gender),
+        BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
+        BCS.bcsSerializeStr('1'),
+        BCS.bcsSerializeStr('bronze'),
+        BCS.bcsSerializeStr('low order'),
       ]
     )
   )
@@ -69,4 +83,19 @@ async function main() {
 
 if (require.main === module) {
   main().then(() => process.exit(0))
+}
+
+export function randomProperty(gender: string, property: string) {
+  const map = getPropertyMap()
+  const propertyMap = map[gender]
+  if (!propertyMap) {
+    throw new Error('gender not support.')
+  }
+  const pMap = propertyMap[property]
+  if (!pMap) {
+    throw new Error('property not support.')
+  }
+  const keys = Object.keys(pMap)
+  const randomIndex = Math.floor(Math.random() * keys.length)
+  return keys[randomIndex]
 }

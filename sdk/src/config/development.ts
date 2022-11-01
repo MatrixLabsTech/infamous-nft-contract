@@ -3,7 +3,7 @@ export const tokenStoreResource = `0x3::token::TokenStore`;
 export const infamousCollectionName = "InfamousNFT";
 export const weaponCollectionName = "InfamousEquipmentNFT";
 
-export const block = "18407393";
+export const block = "22679654";
 export interface IDeployment {
     moduleAddress: string;
     infamousBackendAuth: string;
@@ -20,7 +20,7 @@ export interface IDeployment {
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0x7f9374665527b5a2b1a6758e57367940ad9999e62864937dd50bbc0b2328b77d",
+        moduleAddress: "0x3c14c9a04fe15ff7e8a208a60b21f1ef68a70acebf5c45416012526a56cd8661",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
@@ -34,7 +34,7 @@ export const deployment = {
         infamousWeaponWear: "infamous_weapon_wear",
     },
     devnet: {
-        moduleAddress: "0x7f9374665527b5a2b1a6758e57367940ad9999e62864937dd50bbc0b2328b77d",
+        moduleAddress: "0x3c14c9a04fe15ff7e8a208a60b21f1ef68a70acebf5c45416012526a56cd8661",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",

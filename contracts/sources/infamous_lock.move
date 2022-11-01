@@ -292,16 +292,18 @@ module infamous::infamous_lock {
         let mouth = utf8(b"closed");
         let neck = utf8(b"null");
         let tattoo = utf8(b"null");
-        let weapon = utf8(b"dagger");
-        let material = utf8(b"iron");
         let gender = utf8(b"female");
+        let weapon = utf8(b"dagger");
+        let tiers = utf8(b"1");
+        let grades = utf8(b"iron");
+        let attributes = utf8(b"iron");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
          background, clothing, ear, eyebrow, 
          accessories, eyes, hair, mouth,
-         neck, tattoo,
-         weapon, material, gender
+         neck, tattoo, gender,
+         weapon, tiers, grades, attributes
          );
 
         lock_infamous_nft(receiver, token_index_1_name);

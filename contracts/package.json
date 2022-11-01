@@ -3,10 +3,10 @@
   "version": "1.0.1",
   "description": "",
   "scripts": {
-    "init-local": "aptos init --profile local --rest-url http://localhost:8080 --faucet-url http://localhost:8081",
-    "init-dev": "aptos init --profile devnet --rest-url https://fullnode.testnet.aptoslabs.com/v1 --faucet-url https://faucet.devnet.aptoslabs.com/",
-    "init-testnet": "aptos init --profile testnet --rest-url https://fullnode.testnet.aptoslabs.com/v1 --faucet-url https://faucet.devnet.aptoslabs.com/",
-    "aptos-init-dev": "aptos init",
+    "deploy": "./shell/deploy_dev.sh",
+    "setmap": "ts-node scripts/set_property_url_map.ts",
+    "openbox": "ts-node scripts/openbox.ts",
+    "airdrop": "ts-node scripts/airdrop.ts",
     "faucet": "aptos account fund-with-faucet --account default --amount 1000000000",
     "compile": "aptos move compile --named-addresses infamous=default",
     "test": "aptos move test --named-addresses infamous=default",
@@ -18,8 +18,7 @@
     "createToken": "ts-node scripts/4_create_token_script.ts",
     "updateLevel": "ts-node scripts/5_upgrade_level.ts",
     "cn": "ts-node scripts/nft/createNFT.ts",
-    "rotate": "ts-node scripts/rotate_account_test.ts",
-    "map": "ts-node scripts/set_property_url_map.ts"
+    "rotate": "ts-node scripts/rotate_account_test.ts"
   },
   "dependencies": {
     "@types/node": "^17.0.21",

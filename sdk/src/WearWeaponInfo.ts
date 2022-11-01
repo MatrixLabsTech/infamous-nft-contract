@@ -34,5 +34,6 @@ export interface WearWeaponHistoryItem {
     operator: string;
     time: string;
     token_id: ITokenId;
+    weapon_name: string;
     weapon_token_id: ITokenId;
 }

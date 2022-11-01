@@ -247,6 +247,9 @@
       "FN SCAR": "e",
       "warglaive of azzinoth": "f",
       "XM1014": "g"
+    },
+    "grade": {
+      "bronze": "0"
     }
   },
   "female": {
@@ -511,6 +514,9 @@
       "flamethrower": "e",
       "iron ring": "f",
       "USP": "g"
+    },
+    "grade": {
+      "bronze": "0"
     }
   }
 }

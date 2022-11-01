@@ -34,7 +34,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_key(): String {
-        string::utf8(b"Tiers")
+        string::utf8(b"weapon")
     }
 
     public fun infamous_weapon_collection_name(): String {
@@ -113,8 +113,8 @@ module infamous::infamous_common {
         let i = 0;
         let result = vector::empty<u8>();
         while (i < vector::length<u8>(&bytes)) {
-        vector::append(&mut result, u8_hex_string_u8(*vector::borrow<u8>(&bytes, i)));
-        i = i + 1;
+            vector::append(&mut result, u8_hex_string_u8(*vector::borrow<u8>(&bytes, i)));
+            i = i + 1;
         };
         string::utf8(result)
     }
@@ -138,6 +138,31 @@ module infamous::infamous_common {
         let hashed = hash::sha3_256(bytes);
         let addr = from_bcs::to_address(hashed);
         address_string(addr)
+    }
+
+    public fun escape_whitespace(value: String): String {
+        let bytes = string::bytes(&value);
+        let i = 0;
+        let result = vector::empty<u8>();
+        while (i < vector::length<u8>(bytes)) {
+            let v = *vector::borrow<u8>(bytes, i);
+            if(v == 32){
+                vector::push_back(&mut result, 45);
+            }else {
+                vector::push_back(&mut result, v);
+            };
+            i = i + 1;
+        };
+        string::utf8(result)
+    }
+
+    #[test()]
+    public fun escape_whitespace_test() {
+        let before_str = string::utf8(b"sds sd");
+        let after_str = string::utf8(b"sds-sd");
+        let result = escape_whitespace(before_str);
+        assert!(after_str == result, 1);
+
     }
 
 

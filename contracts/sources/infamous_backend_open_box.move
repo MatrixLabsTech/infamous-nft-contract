@@ -23,7 +23,7 @@ module infamous::infamous_backend_open_box {
     const EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT: u64 = 2;
     const EBOX_ALREADY_OPENED: u64 = 6;
 
-    const OPEN_TIME_GAP: u64 = 180;
+    const OPEN_TIME_GAP: u64 = 60;
 
 
     struct OpenBoxStatus has key {
@@ -47,8 +47,8 @@ module infamous::infamous_backend_open_box {
         name: String,
         background: String, clothing: String, ear: String, eyebrow: String,
         accessories: String, eyes: String, hair: String,  
-        mouth: String, neck: String, tattoo: String, 
-        weapon: String, material: String, gender: String) acquires OpenBoxStatus {
+        mouth: String, neck: String, tattoo: String,  gender: String,
+        weapon: String, tier: String, grade: String, attributes: String,) acquires OpenBoxStatus {
 
         
 
@@ -65,8 +65,6 @@ module infamous::infamous_backend_open_box {
         let collection = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(creator, collection, name);
 
-        let weapon_level = utf8(b"1");
-
         // check owner
         // assert!(token::balance_of(owner_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_OWNER_ADDR));
         assert!(!is_box__opened(token_id), error::invalid_state(EBOX_ALREADY_OPENED));
@@ -75,14 +73,14 @@ module infamous::infamous_backend_open_box {
         let token_mint_time = infamous_nft::get_token_mint_time(token_id);
         assert!(timestamp::now_seconds() - token_mint_time >= OPEN_TIME_GAP, error::invalid_argument(EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT));
 
-        let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, material, weapon_level);
+        let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, tier, grade, attributes);
         let token_data_id = token::create_token_data_id(creator, collection, name);
         infamous_nft::set_token_gender(token_data_id, gender);
         mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
         let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
         infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
         
-        infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon, gender,);
+        infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon, grade, gender,);
         update_box_opened(token_id);
     }
 
@@ -188,16 +186,18 @@ module infamous::infamous_backend_open_box {
         let mouth = utf8(b"closed");
         let neck = utf8(b"null");
         let tattoo = utf8(b"null");
-        let weapon = utf8(b"dagger");
-        let material = utf8(b"iron");
         let gender = utf8(b"female");
+        let weapon = utf8(b"dagger");
+        let tier = utf8(b"1");
+        let grade = utf8(b"iron");
+        let attributes = utf8(b"iron");
 
          open_box(user,
          token_index_1_name,
          background, clothing, ear, eyebrow, 
          accessories, eyes, hair, mouth,
-         neck, tattoo,
-         weapon, material, gender
+         neck, tattoo, gender,
+         weapon, tier, grade, attributes
          );
 
 

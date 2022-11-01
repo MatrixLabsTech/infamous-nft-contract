@@ -72,11 +72,11 @@ module infamous::infamous_weapon_wear {
 
             
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
-            update_token_weapon(token_id, manager_addr, new_weapon_token_id);
+            let (_weapon, grade) = update_token_weapon(token_id, manager_addr, new_weapon_token_id);
 
             
             // update properties
-            infamous_nft::update_token_uri_with_properties(manager_addr, token_name);
+            infamous_nft::update_token_uri_with_properties(manager_addr, token_name, grade);
 
             
         } else { // not under lock
@@ -90,16 +90,16 @@ module infamous::infamous_weapon_wear {
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
 
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
-            update_token_weapon(token_id, manager_addr, new_weapon_token_id);
+            let (_weapon, grade) = update_token_weapon(token_id, manager_addr, new_weapon_token_id);
 
 
             // update properties
-            infamous_nft::update_token_uri_with_properties(sender_addr, token_name);
+            infamous_nft::update_token_uri_with_properties(sender_addr, token_name, grade);
 
 
         };
 
-        infamous_weapon_status::emit_wear_event(&manager_signer, sender_addr, token_id, new_weapon_token_id);
+        infamous_weapon_status::emit_wear_event(&manager_signer, sender_addr, token_id, new_weapon_token_id, weapon_name);
         
     }
 
@@ -132,12 +132,12 @@ module infamous::infamous_weapon_wear {
      
     
     
-    fun update_token_weapon(token_id: TokenId, weapon_owner_addr: address, weapon_token_id: TokenId) {
+    fun update_token_weapon(token_id: TokenId, weapon_owner_addr: address, weapon_token_id: TokenId): (String, String) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
         let token_data_id = token::create_token_data_id(creator, collection, name);
         // get weapon weapon
-        let weapon = get_weapon__weapon_property(weapon_owner_addr, weapon_token_id);
+        let (weapon, grade) = get_weapon__weapon_property(weapon_owner_addr, weapon_token_id);
         let keys = vector<String>[infamous_common::infamous_weapon_key()];
         let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon)];
         let types = vector<String>[utf8(b"0x1::string::String")];
@@ -145,15 +145,20 @@ module infamous::infamous_weapon_wear {
         token_data_id,
         keys, values, types
         );
+        (weapon, grade)
     }
 
     
     
-    fun get_weapon__weapon_property(owner: address, weapon_token_id: TokenId): String { 
+    fun get_weapon__weapon_property(owner: address, weapon_token_id: TokenId): (String, String) { 
         let properties = token::get_property_map(owner, weapon_token_id);
-        let weapon_key = &infamous_common::infamous_weapon_key();
-        assert!(property_map::contains_key(&properties, weapon_key), error::invalid_state(EWEAPON_DONT_HAVE_WEAPON_PROPERTY));
-        property_map::read_string(&properties, weapon_key)
+        let name_key = &utf8(b"name");
+        assert!(property_map::contains_key(&properties, name_key), error::invalid_state(EWEAPON_DONT_HAVE_WEAPON_PROPERTY));
+        let name = property_map::read_string(&properties, name_key);
+        let grade_key = &utf8(b"grade");
+        assert!(property_map::contains_key(&properties, grade_key), error::invalid_state(EWEAPON_DONT_HAVE_WEAPON_PROPERTY));
+        let grade = property_map::read_string(&properties, grade_key);
+        (name, grade)
     }
 
     
@@ -209,17 +214,20 @@ module infamous::infamous_weapon_wear {
         let mouth = utf8(b"closed");
         let neck = utf8(b"null");
         let tattoo = utf8(b"null");
-        let weapon = utf8(b"dagger");
-        let material = utf8(b"iron");
         let gender = utf8(b"female");
+        let weapon = utf8(b"dagger");
+        let tier = utf8(b"1");
+        let grade = utf8(b"iron");
+        let attributes = utf8(b"iron");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
          background, clothing, ear, eyebrow, 
          accessories, eyes, hair, mouth,
-         neck, tattoo,
-         weapon, material, gender
+         neck, tattoo, gender,
+         weapon, tier, grade, attributes
          );
+
 
         infamous_lock::lock_infamous_nft(receiver, token_index_1_name);
 
@@ -231,29 +239,19 @@ module infamous::infamous_weapon_wear {
         assert!(time1 == 2000, 1);
 
         infamous_upgrade_level::upgrade(token_index_1_name);
-        
-
-         
         let weapon_token_1_name = utf8(b"Equipment #1");
-        // let weapon_l3_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
 
-        infamous_backend_token_weapon_airdrop::airdrop_level_four(user, token_index_1_name, receiver_addr, utf8(b"karambit"), utf8(b"normal karambit"));
-
+        infamous_backend_token_weapon_airdrop::airdrop_level_five(user, token_index_1_name, receiver_addr, utf8(b"revolver"), utf8(b"5"), utf8(b"iron"), utf8(b"normal revolver"));
         let weapon_token_2_name = utf8(b"Equipment #2");
-        // let weapon_l4_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
-
-        infamous_backend_token_weapon_airdrop::airdrop_level_five(user, token_index_1_name, receiver_addr, utf8(b"revolver"), utf8(b"normal revolver"));
-
-        let weapon_token_3_name = utf8(b"Equipment #3");
-        // let weapon_l5_token_id = infamous_weapon_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_1_name);
 
          wear_weapon(receiver, token_index_1_name, weapon_token_2_name);
-         wear_weapon(receiver, token_index_1_name, weapon_token_1_name);
-         wear_weapon(receiver, token_index_1_name, weapon_token_3_name);
+        timestamp::fast_forward_seconds(60);
          wear_weapon(receiver, token_index_1_name, weapon_token_1_name);
 
+        timestamp::fast_forward_seconds(60);
          
-        // let weapon_collection_name = infamous_common::infamous_weapon_collection_name();
+         wear_weapon(receiver, token_index_1_name, weapon_token_2_name);
+
 
 
     }

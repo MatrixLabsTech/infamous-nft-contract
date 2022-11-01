@@ -25,7 +25,7 @@ module infamous::infamous_upgrade_level {
 
     
     const FULL_LEVEL: u64 = 5;
-    const EACH_LEVEL_EXP: u64 = 300;
+    const EACH_LEVEL_EXP: u64 = 60;
 
 
     struct TokenUpgradeEvent has drop, store {
@@ -180,17 +180,20 @@ module infamous::infamous_upgrade_level {
         let mouth = utf8(b"closed");
         let neck = utf8(b"null");
         let tattoo = utf8(b"null");
-        let weapon = utf8(b"dagger");
-        let material = utf8(b"iron");
         let gender = utf8(b"female");
+        let weapon = utf8(b"dagger");
+        let tiers = utf8(b"1");
+        let grades = utf8(b"iron");
+        let attributes = utf8(b"iron");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
          background, clothing, ear, eyebrow, 
          accessories, eyes, hair, mouth,
-         neck, tattoo,
-         weapon, material, gender
+         neck, tattoo, gender,
+         weapon, tiers, grades, attributes
          );
+
 
 
         infamous_lock::lock_infamous_nft(receiver, token_index_1_name);
@@ -198,16 +201,16 @@ module infamous::infamous_upgrade_level {
         let time = infamous_lock::get_available_time(token_id);
         assert!(time == 0, 1);
 
-        timestamp::fast_forward_seconds(1000);
+        timestamp::fast_forward_seconds(180);
         let time1 = infamous_lock::get_available_time(token_id);
-        assert!(time1 == 1000, 1);
+        assert!(time1 == 180, 1);
 
         upgrade(token_index_1_name);
         let after = get_token_level(token_id);
         assert!(after == 4, 1);
 
         
-        timestamp::fast_forward_seconds(200);
+        timestamp::fast_forward_seconds(60);
         upgrade(token_index_1_name);
         let after1 = get_token_level(token_id);
         assert!(after1 == 5, 1);

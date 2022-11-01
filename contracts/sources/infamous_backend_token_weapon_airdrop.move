@@ -3,7 +3,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
 
     use std::signer;
     use std::error;
-    use std::string::{ String, utf8};
+    use std::string::{ String};
     use std::option;
 
     
@@ -21,7 +21,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
     const ETOKEN_LOCKED_MISSED: u64 = 1;
     const ETOKEN_NOT_OWNED_BY_RECEIVER: u64 = 2;
     const ETOKEN_AIRDROPED: u64 = 3;
-    const ACCOUNT_MUSTBE_AUTHED: u64 = 4;
+    const EACCOUNT_MUSTBE_AUTHED: u64 = 4;
     const ELEVEL_MUST_GREATER: u64 = 5;
 
 
@@ -44,20 +44,14 @@ module infamous::infamous_backend_token_weapon_airdrop {
         }
     }
 
-
-    public entry fun airdrop_level_four(sender: &signer, token_name: String, receiver_addr: address, weapon: String, material: String) acquires AirdropInfo {
-        airdrop(sender, token_name, receiver_addr, weapon, material, utf8(b"4"), 4);
+    public entry fun airdrop_level_five(sender: &signer, token_name: String, receiver_addr: address, weapon: String, tiers: String, grades: String, attributes: String,) acquires AirdropInfo {
+        airdrop(sender, token_name, receiver_addr, weapon, tiers, grades, attributes, 5);
     }
 
 
-    public entry fun airdrop_level_five(sender: &signer, token_name: String, receiver_addr: address, weapon: String, material: String) acquires AirdropInfo {
-        airdrop(sender, token_name, receiver_addr, weapon, material, utf8(b"5"), 5);
-    }
-
-
-    fun airdrop(sender: &signer, token_name: String, receiver_addr: address, weapon: String, material: String, weapon_level: String, airdrop_level: u64 ) acquires AirdropInfo {
+    fun airdrop(sender: &signer, token_name: String, receiver_addr: address, weapon: String, tiers: String, grades: String, attributes: String, airdrop_level: u64 ) acquires AirdropInfo {
         let sender_addr = signer::address_of(sender);
-        assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(ACCOUNT_MUSTBE_AUTHED));
+        assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(EACCOUNT_MUSTBE_AUTHED));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -85,7 +79,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(token_id, airdrop_level), error::invalid_argument(ETOKEN_AIRDROPED));
 
-            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, material, weapon_level);
+            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, tiers, grades, attributes);
             update_token_airdroped(token_id, airdrop_level, weapon_token_id);
         } else {
             // 1. check the receiver is the owner
@@ -99,7 +93,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(token_id, airdrop_level), error::invalid_argument(ETOKEN_AIRDROPED));
 
-            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, material, weapon_level);
+            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, tiers, grades, attributes);
             update_token_airdroped(token_id, airdrop_level, weapon_token_id);
         }
 
