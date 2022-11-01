@@ -5,9 +5,8 @@ import {
   BCS,
   AptosClient,
 } from 'aptos'
-import { getPriority } from 'os'
-import { getPropertyMap, resolveUrlEncodeMap } from './get_properties'
-import { client, faucetClient } from './utils/base'
+import { getPropertyMap } from './get_properties'
+import { client } from './utils/base'
 import { getConfigAccount } from './utils/config'
 
 const {

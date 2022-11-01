@@ -248,9 +248,7 @@
       "warglaive of azzinoth": "f",
       "XM1014": "g"
     },
-    "grade": {
-      "bronze": "0"
-    }
+    "grade": { "bronze": "0", "silver": "1", "gold": "2" }
   },
   "female": {
     "background": {
@@ -515,8 +513,6 @@
       "iron ring": "f",
       "USP": "g"
     },
-    "grade": {
-      "bronze": "0"
-    }
+    "grade": { "bronze": "0", "silver": "1", "gold": "2" }
   }
 }

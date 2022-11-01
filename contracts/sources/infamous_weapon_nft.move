@@ -68,13 +68,10 @@ module infamous::infamous_weapon_nft {
         let cur = prev_count + 1;
         let name = infamous_common::append_num(base_token_name, cur);
         let base_uri = infamous_common::infamous_weapon_base_token_uri();
-        let image = string::utf8(b"");
-        string::append(&mut image, weapon);
-        string::append(&mut image, grades);
-        let weapon_image_name = infamous::infamous_common::escape_whitespace(image);
-
         let uri = base_uri;
-        string::append(&mut uri, weapon_image_name);
+        let image = infamous::infamous_common::escape_whitespace(weapon);
+        string::append(&mut uri, image);
+        string::append(&mut image, grades);
         string::append(&mut uri, utf8(b".png"));
 
         create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, tiers, grades, attributes,);
