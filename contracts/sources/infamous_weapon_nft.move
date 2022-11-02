@@ -54,7 +54,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public(friend) fun airdrop(receiver_addr: address, weapon: String, tiers: String, grades: String, attributes: String,): TokenId acquires CollectionInfo {
+    public(friend) fun airdrop(receiver_addr: address, weapon: String, tiers: String, grade: String, attributes: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
@@ -71,10 +71,10 @@ module infamous::infamous_weapon_nft {
         let uri = base_uri;
         let image = infamous::infamous_common::escape_whitespace(weapon);
         string::append(&mut uri, image);
-        string::append(&mut image, grades);
+        string::append(&mut uri, grade);
         string::append(&mut uri, utf8(b".png"));
 
-        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, tiers, grades, attributes,);
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, tiers, grade, attributes,);
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
