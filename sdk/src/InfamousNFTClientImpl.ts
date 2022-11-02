@@ -1,6 +1,5 @@
-import {InfamousNFTClient, ITransaction} from "./InfamousNFTClient";
+import {InfamousNFTClient, ITransaction, PaginationArgs} from "./InfamousNFTClient";
 
-import * as Gen from "aptos/dist/generated";
 import {
     tokenStoreResource,
     deployment,
@@ -11,22 +10,27 @@ import {
 import {IManagerAccountCapability} from "./ManagerAccountCapability";
 import {
     CollectionInfo,
-    DepositEvent,
     ICollectionStatusInfo,
-    IStakingTime,
+    IEvent,
+    IEventItem,
+    ILockingTime,
     ITokenData,
     ITokenId,
     ITokenStore,
+    MoveResource,
     PropertyItem,
     TokenData,
+    TokenEvent,
+    TokenEventType,
 } from "./CollectionInfo";
 import {decodeString, decodeU64, paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
 import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
-import {ITokenStakes, ITokenStakesData} from "./StakingInfo";
-import {IWearWeaponInfo, WearWeaponHistoryItem} from "./WearWeaponInfo";
+import {ITokenLocks, ITokenLocksData} from "./LockingInfo";
+import {IWearWeaponInfo, WearWeaponEvents, WearWeaponHistoryItem} from "./WearWeaponInfo";
 import {IAirdropInfo, IUpgradeInfo} from "./UpgradeInfo";
 import {IOpenBoxStatus} from "./OpenBoxStatus";
+import {localCache} from "./utils/localCache";
 export enum AptosNetwork {
     Testnet = "Testnet",
     Mainnet = "Mainnet",
@@ -58,20 +62,20 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         };
     }
 
-    stakeTransaction(tokenName: string): ITransaction {
+    lockTransaction(tokenName: string): ITransaction {
         return {
             type: "entry_function_payload",
-            function: `${this.deployment.moduleAddress}::${this.deployment.infamousStake}::stake_infamous_nft_script`,
-            arguments: [paramToHex(tokenName, "0x1::string::String")],
+            function: `${this.deployment.moduleAddress}::${this.deployment.infamousLock}::lock_infamous_nft`,
+            arguments: [tokenName],
             type_arguments: [],
         };
     }
 
-    unstakeTransaction(tokenName: string): ITransaction {
+    unlockTransaction(tokenName: string): ITransaction {
         return {
             type: "entry_function_payload",
-            function: `${this.deployment.moduleAddress}::${this.deployment.infamousStake}::unstake_infamous_nft_script`,
-            arguments: [paramToHex(tokenName, "0x1::string::String")],
+            function: `${this.deployment.moduleAddress}::${this.deployment.infamousLock}::unlock_infamous_nft`,
+            arguments: [tokenName],
             type_arguments: [],
         };
     }
@@ -80,7 +84,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         return {
             type: "entry_function_payload",
             function: `${this.deployment.moduleAddress}::${this.deployment.infamousUpgradeLevel}::upgrade`,
-            arguments: [paramToHex(tokenName, "0x1::string::String")],
+            arguments: [tokenName],
             type_arguments: [],
         };
     }
@@ -92,6 +96,55 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             arguments: [paramToHex(tokenName, "0x1::string::String"), paramToHex(weaponName, "0x1::string::String")],
             type_arguments: [],
         };
+    }
+
+    async resolveTokenId(tokenName: string): Promise<ITokenId> {
+        const managerAddress = await this.getManagerAddress();
+        return {
+            property_version: "0",
+            token_data_id: {
+                collection: infamousCollectionName,
+                creator: managerAddress,
+                name: tokenName,
+            },
+        };
+    }
+
+    async resolveWeaponTokenId(tokenName: string): Promise<ITokenId> {
+        const managerAddress = await this.getManagerAddress();
+        return {
+            property_version: "0",
+            token_data_id: {
+                collection: weaponCollectionName,
+                creator: managerAddress,
+                name: tokenName,
+            },
+        };
+    }
+
+    async isTokenOwner(addr: string, tokenId: ITokenId): Promise<boolean> {
+        try {
+            const tokenStore = await this.getTokenStoreInfo(addr);
+            try {
+                const token = await this.tableItem(
+                    tokenStore.data.tokens.handle,
+                    "0x3::token::TokenId",
+                    "0x3::token::Token",
+                    tokenId
+                );
+                if (token) {
+                    return true;
+                }
+            } catch (e) {}
+            const lockedTokenId = await this.tokenLocked(addr);
+            const eIndex = lockedTokenId.findIndex(
+                (lockTokenId) => lockTokenId.token_data_id.name === tokenId.token_data_id.name
+            );
+            if (eIndex > -1) {
+                return true;
+            }
+        } catch (e) {}
+        return false;
     }
 
     async collectionInfo(): Promise<CollectionInfo> {
@@ -107,7 +160,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             const level = await this.tableItem(info.token_level.handle, `0x3::token::TokenId`, `u64`, tokenId);
             return parseInt(level);
         } catch (e) {
-            return 0;
+            return 1;
         }
     }
 
@@ -178,7 +231,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async tokenOwned(addr: string): Promise<TokenData[]> {
         try {
-            const tokenIds = await this.doResolveTokenOwned(addr, infamousCollectionName);
+            const tokenIds = await this.doResolveTokenEvents(addr, infamousCollectionName);
             const list: TokenData[] = [];
             for (const tokenId of tokenIds) {
                 const tokenData = await this.tokenData(tokenId);
@@ -192,7 +245,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async tokenIdsOwned(addr: string): Promise<ITokenId[]> {
         try {
-            return await this.doResolveTokenOwned(addr, infamousCollectionName);
+            return await this.doResolveTokenEvents(addr, infamousCollectionName);
         } catch (e) {
             return [];
         }
@@ -206,7 +259,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async weaponIdsOwned(addr: string): Promise<ITokenId[]> {
         try {
-            return await this.doResolveTokenOwned(addr, weaponCollectionName);
+            return await this.doResolveTokenEvents(addr, weaponCollectionName);
         } catch (e) {
             return [];
         }
@@ -226,25 +279,25 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         return await this.tokenData(tokenId);
     }
 
-    async tokenStaked(addr: string): Promise<ITokenId[]> {
+    async tokenLocked(addr: string): Promise<ITokenId[]> {
         try {
-            const stakes = await this.getTokenStakes(addr);
-            return (stakes.data as ITokenStakes).staking;
+            const lockes = await this.getTokenLocks(addr);
+            return (lockes.data as ITokenLocks).locking;
         } catch (e) {
             return [];
         }
     }
 
-    async tokenStakeData(tokenId: ITokenId): Promise<IStakingTime | undefined> {
-        const tokenStakeData = await this.getTokenStakeData();
-        const data = tokenStakeData.data as ITokenStakesData;
-        const stakingTime = await this.tableItem(
-            data.staking_time.handle,
+    async tokenLockData(tokenId: ITokenId): Promise<ILockingTime | undefined> {
+        const tokenLockData = await this.getTokenLockData();
+        const data = tokenLockData.data as ITokenLocksData;
+        const lockingTime = await this.tableItem(
+            data.locking_time.handle,
             `0x3::token::TokenId`,
-            `${this.deployment.moduleAddress}::${this.deployment.infamousStake}::StakingTime`,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousLock}::LockingTime`,
             tokenId
         );
-        return stakingTime as IStakingTime;
+        return lockingTime as ILockingTime;
     }
 
     async tokenPerMinted(addr: string): Promise<number> {
@@ -257,26 +310,51 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         }
     }
 
-    async wearWeaponHistory(tokenId?: ITokenId): Promise<WearWeaponHistoryItem[]> {
+    async tokenMintTime(tokenId: ITokenId): Promise<string | undefined> {
+        try {
+            const stateResource = await this.getCollectionStatusInfo();
+            const collectionStatusInfo = stateResource.data as ICollectionStatusInfo;
+            return await this.tableItem(
+                collectionStatusInfo.token_mint_time_table.handle,
+                "0x3::token::TokenId",
+                "u64",
+                tokenId
+            );
+        } catch (e) {
+            return undefined;
+        }
+    }
+
+    async wearWeaponTotal(tokenId: ITokenId): Promise<WearWeaponEvents | undefined> {
         try {
             const tokenWearWeapon = (await this.getTokenWearWeapon()).data as IWearWeaponInfo;
+            const events = (await this.tableItem(
+                tokenWearWeapon.token_wear_events_table.handle,
+                "0x3::token::TokenId",
+                `0x1::event::EventHandle<${this.deployment.moduleAddress}::${this.deployment.infamousWeaponStatus}::WeaponWearEvent>`,
+                tokenId
+            )) as WearWeaponEvents;
+            return events;
+        } catch (e) {
+            return undefined;
+        }
+    }
 
+    async wearWeaponPage(events: WearWeaponEvents, query?: PaginationArgs): Promise<WearWeaponHistoryItem[]> {
+        try {
             const wearEvents = await this.readClient.getEventsByCreationNumber(
-                tokenWearWeapon.weapon_wear_events.guid.id.addr,
-                tokenWearWeapon.weapon_wear_events.guid.id.creation_num
+                events.guid.id.addr,
+                events.guid.id.creation_num,
+                query
             );
             const list = wearEvents.map((e) => e.data as WearWeaponHistoryItem);
-            if (tokenId) {
-                return list.filter((l) => l.token_id.token_data_id.name === tokenId.token_data_id.name);
-            } else {
-                return list;
-            }
+            return list;
         } catch (e) {
             return [];
         }
     }
 
-    private async getAirdropInfo(): Promise<Gen.MoveResource> {
+    private async getAirdropInfo(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -284,7 +362,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getUpgradeInfo(): Promise<Gen.MoveResource> {
+    private async getUpgradeInfo(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -292,7 +370,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getOpenBoxStatus(): Promise<Gen.MoveResource> {
+    private async getOpenBoxStatus(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -300,7 +378,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getTokenWearWeapon(): Promise<Gen.MoveResource> {
+    private async getTokenWearWeapon(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
@@ -308,22 +386,22 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getTokenStakes(addr: string): Promise<Gen.MoveResource> {
+    private async getTokenLocks(addr: string): Promise<MoveResource> {
         return await this.readClient.getAccountResource(
             addr,
-            `${this.deployment.moduleAddress}::${this.deployment.infamousStake}::TokenStakes`
+            `${this.deployment.moduleAddress}::${this.deployment.infamousLock}::TokenLocks`
         );
     }
-    private async getTokenStakeData(): Promise<Gen.MoveResource> {
+    private async getTokenLockData(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
-            `${this.deployment.moduleAddress}::${this.deployment.infamousStake}::TokenStakesData`
+            `${this.deployment.moduleAddress}::${this.deployment.infamousLock}::TokenLocksData`
         );
     }
 
     private async doGetTokenData(tokenId: ITokenId): Promise<TokenData> {
-        const collection: {type: Gen.MoveStructTag; data: any} = await this.readClient.getAccountResource(
+        const collection: {type: string; data: any} = await this.readClient.getAccountResource(
             tokenId.token_data_id.creator,
             "0x3::token::Collections"
         );
@@ -354,67 +432,88 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         };
     }
 
-    private async doResolveTokenOwned(addr: string, collectionName: string): Promise<ITokenId[]> {
+    private async doResolveTokenEvents(addr: string, collectionName: string): Promise<ITokenId[]> {
         const managerAddress = await this.getManagerAddress();
         const tokenStore = await this.getTokenStoreInfo(addr);
 
-        let tokenIds: ITokenId[] = [];
-        const depositEvents = (await this.readClient.getEventsByCreationNumber(
-            tokenStore.data.deposit_events.guid.id.addr,
-            tokenStore.data.deposit_events.guid.id.creation_num
-        )) as DepositEvent[];
-        depositEvents.forEach((e) => {
-            if (
-                e.data.id.token_data_id.collection === collectionName &&
-                e.data.id.token_data_id.creator === managerAddress
-            ) {
-                tokenIds.push(e.data.id);
-            }
+        const depositEvents = await this.getAllEvents(tokenStore.data.deposit_events, "0x3::token::DepositEvent");
+
+        const withdrawEvents = await this.getAllEvents(tokenStore.data.withdraw_events, "0x3::token::WithdrawEvent");
+
+        const events = [...withdrawEvents, ...depositEvents].filter(
+            (e) =>
+                e.tokenId.token_data_id.collection === collectionName &&
+                e.tokenId.token_data_id.creator === managerAddress
+        );
+        events.sort((a, b) => {
+            return parseInt(a.version) - parseInt(b.version);
         });
 
-        const burnEvents = await this.readClient.getEventsByCreationNumber(
-            tokenStore.data.burn_events.guid.id.addr,
-            tokenStore.data.burn_events.guid.id.creation_num
-        );
+        const tokenIds: ITokenId[] = [];
 
-        burnEvents.forEach((e) => {
-            if (
-                e.data.id.token_data_id.collection === collectionName &&
-                e.data.id.token_data_id.creator === managerAddress
-            ) {
-                tokenIds = tokenIds.filter((id) => {
-                    return !(
-                        id.property_version === e.data.id.property_version &&
-                        id.token_data_id.creator === e.data.id.token_data_id.creator &&
-                        id.token_data_id.name === e.data.id.token_data_id.name
-                    );
-                });
-            }
-        });
-
-        const withdrawEvents = await this.readClient.getEventsByCreationNumber(
-            tokenStore.data.withdraw_events.guid.id.addr,
-            tokenStore.data.withdraw_events.guid.id.creation_num
-        );
-
-        withdrawEvents.forEach((e) => {
-            if (
-                e.data.id.token_data_id.collection === collectionName &&
-                e.data.id.token_data_id.creator === managerAddress
-            ) {
+        for (const event of events) {
+            if (event.type === "0x3::token::DepositEvent") {
+                tokenIds.push(event.tokenId);
+            } else {
                 const existIndex = tokenIds.findIndex(
-                    (id) =>
-                        id.property_version === e.data.id.property_version &&
-                        id.token_data_id.creator === e.data.id.token_data_id.creator &&
-                        id.token_data_id.name === e.data.id.token_data_id.name
+                    (id) => id.token_data_id.name === event.tokenId.token_data_id.name
                 );
-                if (existIndex > -1) tokenIds = tokenIds.filter((_, index) => index !== existIndex);
+                if (existIndex > -1) tokenIds.splice(existIndex, 1);
             }
-        });
+        }
+
         return tokenIds;
     }
 
-    private async getCollectionStatusInfo(): Promise<Gen.MoveResource> {
+    private async getAllEvents(event: IEvent, eventType: TokenEventType) {
+        const counter = parseInt(event.counter);
+
+        if (counter) {
+            const eventId = event.guid.id;
+            const key = `${eventType}-${eventId.addr}-${eventId.creation_num}`;
+            const cached = (await localCache.get(key)) as {count: number; allEvents: IEventItem[]};
+            let start = 0;
+            const cachedEvents = cached?.allEvents || [];
+            if (cached) {
+                if (cached.count === counter) {
+                    return cached.allEvents;
+                } else {
+                    start = cached.count;
+                }
+            }
+            const leftEvents = await this.getEvents(start, counter, eventId, eventType);
+            const allEvents = [...cachedEvents, ...leftEvents];
+            await localCache.set(key, {count: counter, allEvents});
+            return allEvents;
+        }
+        return [];
+    }
+
+    private async getEvents(
+        start: number,
+        end: number,
+        eventId: {
+            addr: string;
+            creation_num: string;
+        },
+        eventType: TokenEventType
+    ) {
+        const allEvants: IEventItem[] = [];
+        const pageSize = 24;
+        for (let index = start; start < end; start = start + pageSize) {
+            const limit = Math.min(end - index, pageSize);
+            const events = (await this.readClient.getEventsByCreationNumber(eventId.addr, eventId.creation_num, {
+                start,
+                limit,
+            })) as TokenEvent[];
+            events.forEach((e) => {
+                allEvants.push({tokenId: e.data.id, type: eventType, version: e.version});
+            });
+        }
+        return allEvants;
+    }
+
+    private async getCollectionStatusInfo(): Promise<MoveResource> {
         return await this.readClient.getAccountResource(
             this.deployment.moduleAddress,
             `${this.deployment.moduleAddress}::${this.deployment.infamousNft}::CollectionInfo`
@@ -440,7 +539,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         return tokenStore as ITokenStore;
     }
 
-    private async getManagerAccountCapability(): Promise<Gen.MoveResource> {
+    private async getManagerAccountCapability(): Promise<MoveResource> {
         return await this.readClient.getAccountResource(
             this.deployment.moduleAddress,
             `${this.deployment.moduleAddress}::${this.deployment.infamousManagerCap}::ManagerAccountCapability`

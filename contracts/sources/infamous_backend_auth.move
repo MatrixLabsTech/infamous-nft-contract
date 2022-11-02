@@ -36,7 +36,7 @@ module infamous::infamous_backend_auth {
         };
     }
 
-    public entry fun has_capability(addr: address): bool acquires CapabilityState {
+    public fun has_capability(addr: address): bool acquires CapabilityState {
         let source_addr = @infamous;
         let has_flag = false;
         if(source_addr == addr) {

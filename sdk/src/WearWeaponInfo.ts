@@ -4,13 +4,17 @@ export interface IWearWeaponInfo {
     token_weapon_table: {
         handle: string;
     };
-    weapon_wear_events: {
-        counter: string;
-        guid: {
-            id: {
-                addr: string;
-                creation_num: string;
-            };
+    token_wear_events_table: {
+        handle: string;
+    };
+}
+
+export interface WearWeaponEvents {
+    counter: string;
+    guid: {
+        id: {
+            addr: string;
+            creation_num: string;
         };
     };
 }
@@ -30,5 +34,6 @@ export interface WearWeaponHistoryItem {
     operator: string;
     time: string;
     token_id: ITokenId;
+    weapon_name: string;
     weapon_token_id: ITokenId;
 }

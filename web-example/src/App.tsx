@@ -29,29 +29,43 @@ function App() {
     return address === moduleAddress
   }, [address])
 
-  // const _getCollection = async () => {
-  //   const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
-  //   const collectInfo = await client.collectionInfo()
-  //   console.log({ collectInfo }) //ccc-log
+  const _getCollection = async () => {
+    const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
 
-  //   const tokenIds = await client.tokenIdsOwned(
-  //     '0xa793c7456c449a09f94e829c5f0dc8a4ded9334775fd8ca7d54b82d096ccee06'
-  //   )
+    const tokenId = await client.resolveTokenId('Infamous #1')
 
-  //   const level = await client.tokenLevel(tokenIds[0])
-  //   console.log({ level })
+    console.log(JSON.stringify(tokenId))
 
-  //   const isReveled = await client.tokenIsReveled(tokenIds[0])
-  //   console.log({ isReveled })
+    const mintTime = await client.tokenMintTime(tokenId)
 
-  //   const history = await client.wearWeaponHistory()
-  //   console.log(history)
-  // }
+    console.log(mintTime)
+
+    // const tokenId = await client.resolveTokenId('Infamous #1')
+    // const events = await client.wearWeaponTotal(tokenId)
+
+    // if (events) {
+    //   console.log(events)
+    //   const paged = await client.wearWeaponPage(events, {
+    //     start: 0,
+    //     limit: 3,
+    //   })
+    //   console.log(paged)
+    // }
+
+    // console.log(tokenId)
+
+    // const isOwner = await client.isTokenOwner(
+    //   '0x2839acfa2c4e3942c9733c0ebb236c0a9b9d79971efac97d32e394787d9ec740',
+    //   tokenId
+    // )
+
+    // console.log({ isOwner })
+  }
 
   return (
     <div className="App">
-      {/* sdk test
-      <button onClick={_getCollection}>getCollection</button> */}
+      sdk test
+      <button onClick={_getCollection}>getCollection</button>
       {address ? (
         isModuleOwner ? (
           <Alert variant="info">

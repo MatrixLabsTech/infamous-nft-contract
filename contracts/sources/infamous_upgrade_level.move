@@ -3,7 +3,7 @@ module infamous::infamous_upgrade_level {
     
     use std::signer;
     use std::error;
-    use std::string::{String};
+    use aptos_std::string::{String};
 
     
     use aptos_std::table::{Self, Table};
@@ -15,17 +15,17 @@ module infamous::infamous_upgrade_level {
     use aptos_framework::timestamp;
 
     
-    use infamous::infamous_common;
     use infamous::infamous_manager_cap;
+    use infamous::infamous_lock;
     use infamous::infamous_nft;
-    use infamous::infamous_stake;
+    use infamous::infamous_common;
 
-    const EXP_NOT_ENOUGH_TO_UPGRADE: u64 = 1;
-    const TOKEN_IS_FULL_LEVEL: u64 = 2;
+    const EEXP_NOT_ENOUGH_TO_UPGRADE: u64 = 1;
+    const ETOKEN_IS_FULL_LEVEL: u64 = 2;
 
     
     const FULL_LEVEL: u64 = 5;
-    const EACH_LEVEL_EXP: u64 = 300;
+    const EACH_LEVEL_EXP: u64 = 60;
 
 
     struct TokenUpgradeEvent has drop, store {
@@ -50,19 +50,22 @@ module infamous::infamous_upgrade_level {
     }
 
 
-    // upgrade when under stake
+    // upgrade when under lock
     public entry fun upgrade(name: String) acquires UpgradeInfo {
-        let collection = infamous_common::infamous_collection_name();
-        let manager_signer = infamous_manager_cap::get_manager_signer();
-        let creator = signer::address_of(&manager_signer);
 
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        // resolve token id
+        let creator = manager_addr;
+        let collection = infamous_common::infamous_collection_name();
         let token_id = infamous_nft::resolve_token_id(creator, collection, name);
-        let available_time = infamous_stake::get_available_time(token_id);
-        assert!(available_time >= EACH_LEVEL_EXP, error::invalid_argument(EXP_NOT_ENOUGH_TO_UPGRADE));
 
         
+        let available_time = infamous_lock::get_available_time(token_id);
+        assert!(available_time >= EACH_LEVEL_EXP, error::invalid_argument(EEXP_NOT_ENOUGH_TO_UPGRADE));
+
         let cur_level = get_token_level(token_id);
-        assert!(cur_level < FULL_LEVEL, error::invalid_argument(TOKEN_IS_FULL_LEVEL));
+        assert!(cur_level < FULL_LEVEL, error::invalid_argument(ETOKEN_IS_FULL_LEVEL));
 
         let available_level = available_time / EACH_LEVEL_EXP;
         let new_level = available_level + cur_level;
@@ -71,7 +74,7 @@ module infamous::infamous_upgrade_level {
         };
         let need_exp = (new_level - cur_level) * EACH_LEVEL_EXP;
 
-        infamous_stake::take_times_to_use(token_id, need_exp);
+        infamous_lock::take_times_to_use(token_id, need_exp);
 
         update_level(token_id, new_level);
     }
@@ -85,7 +88,7 @@ module infamous::infamous_upgrade_level {
     public fun get_token_level(token_id: TokenId): u64 acquires UpgradeInfo { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
-        let cur_level = 0;
+        let cur_level = 1;
         if(exists<UpgradeInfo>(manager_addr)) {
             let token_level = &borrow_global<UpgradeInfo>(manager_addr).token_level;
             if(table::contains(token_level, token_id)){
@@ -128,8 +131,14 @@ module infamous::infamous_upgrade_level {
     public fun upgrade_test(user: &signer, receiver: &signer, framework: &signer) acquires UpgradeInfo { 
 
         use aptos_framework::account; 
-        use infamous::infamous_nft;
+        use infamous::infamous_backend_open_box;
+        use infamous::infamous_weapon_nft;
+        use infamous::infamous_properties_url_encode_map;
         use aptos_token::token;
+        use aptos_std::string::{utf8};
+        use infamous::infamous_common;
+
+
 
 
         timestamp::set_time_has_started_for_testing(framework);
@@ -140,6 +149,8 @@ module infamous::infamous_upgrade_level {
         
         infamous_manager_cap::initialize(user);
         infamous_nft::initialize(user);
+        infamous_weapon_nft::initialize(user);
+        infamous_properties_url_encode_map::initialize(user);
 
         let receiver_addr = signer::address_of(receiver);
         account::create_account_for_test(receiver_addr);
@@ -156,26 +167,53 @@ module infamous::infamous_upgrade_level {
         assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
 
 
-        infamous_stake::stake_infamous_nft_script(receiver, token_index_1_name);
+        timestamp::fast_forward_seconds(180);
 
-        
+            
+        let background = utf8(b"blue");
+        let clothing = utf8(b"hoodie");
+        let ear = utf8(b"null");
+        let eyebrow = utf8(b"extended eyebrows");
+        let accessories = utf8(b"null");
+        let eyes = utf8(b"black eyes");
+        let hair = utf8(b"bob cut 1 (navy blue)");
+        let mouth = utf8(b"closed");
+        let neck = utf8(b"null");
+        let tattoo = utf8(b"null");
+        let gender = utf8(b"female");
+        let weapon = utf8(b"dagger");
+        let tiers = utf8(b"1");
+        let grades = utf8(b"iron");
+        let attributes = utf8(b"iron");
 
-        let time = infamous_stake::get_available_time(token_id);
+         infamous_backend_open_box::open_box(user,
+         token_index_1_name,
+         background, clothing, ear, eyebrow, 
+         accessories, eyes, hair, mouth,
+         neck, tattoo, gender,
+         weapon, tiers, grades, attributes
+         );
+
+
+
+        infamous_lock::lock_infamous_nft(receiver, token_index_1_name);
+
+        let time = infamous_lock::get_available_time(token_id);
         assert!(time == 0, 1);
 
-        timestamp::fast_forward_seconds(1000);
-        let time1 = infamous_stake::get_available_time(token_id);
-        assert!(time1 == 1000, 1);
+        timestamp::fast_forward_seconds(180);
+        let time1 = infamous_lock::get_available_time(token_id);
+        assert!(time1 == 180, 1);
 
         upgrade(token_index_1_name);
         let after = get_token_level(token_id);
-        assert!(after == 3, 1);
+        assert!(after == 4, 1);
 
         
-        timestamp::fast_forward_seconds(200);
+        timestamp::fast_forward_seconds(60);
         upgrade(token_index_1_name);
         let after1 = get_token_level(token_id);
-        assert!(after1 == 4, 1);
+        assert!(after1 == 5, 1);
 
     }
 
@@ -188,6 +226,7 @@ module infamous::infamous_upgrade_level {
         use aptos_framework::timestamp;
         use infamous::infamous_nft;
         use aptos_token::token;
+        use infamous::infamous_common;
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -212,8 +251,7 @@ module infamous::infamous_upgrade_level {
         assert!(token::balance_of(receiver_addr, token_id) == 1, 1);
     
         let level = get_token_level(token_id);
-        assert!(level == 0, 1);
-
+        assert!(level == 1, 1);
 
         let new_level = 3;
         update_level(token_id, new_level);
