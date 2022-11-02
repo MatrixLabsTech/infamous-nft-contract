@@ -72,11 +72,12 @@ module infamous::infamous_weapon_wear {
 
             
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
-            let (_weapon, grade) = update_token_weapon(token_id, manager_addr, new_weapon_token_id);
+            let (weapon, grade) = update_token_weapon(token_id, manager_addr, new_weapon_token_id);
 
             
             // update properties
             infamous_nft::update_token_uri_with_properties(manager_addr, token_name, grade);
+            infamous_weapon_status::emit_wear_event(&manager_signer, sender_addr, token_id, new_weapon_token_id, weapon);
 
             
         } else { // not under lock
@@ -90,16 +91,16 @@ module infamous::infamous_weapon_wear {
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
 
             infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
-            let (_weapon, grade) = update_token_weapon(token_id, manager_addr, new_weapon_token_id);
+            let (weapon, grade) = update_token_weapon(token_id, manager_addr, new_weapon_token_id);
 
 
             // update properties
             infamous_nft::update_token_uri_with_properties(sender_addr, token_name, grade);
+            infamous_weapon_status::emit_wear_event(&manager_signer, sender_addr, token_id, new_weapon_token_id, weapon);
 
 
         };
 
-        infamous_weapon_status::emit_wear_event(&manager_signer, sender_addr, token_id, new_weapon_token_id, weapon_name);
         
     }
 
