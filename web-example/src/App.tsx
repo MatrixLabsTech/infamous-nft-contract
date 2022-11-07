@@ -31,14 +31,17 @@ function App() {
 
   const _getCollection = async () => {
     const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
-
     const tokenId = await client.resolveTokenId('Infamous #1')
 
-    console.log(JSON.stringify(tokenId))
+    const airdroped = await client.tokenAirdroped(5, tokenId)
 
-    const mintTime = await client.tokenMintTime(tokenId)
+    console.log(airdroped)
 
-    console.log(mintTime)
+    // console.log(JSON.stringify(tokenId))
+
+    // const mintTime = await client.tokenMintTime(tokenId)
+
+    // console.log(mintTime)
 
     // const tokenId = await client.resolveTokenId('Infamous #1')
     // const events = await client.wearWeaponTotal(tokenId)

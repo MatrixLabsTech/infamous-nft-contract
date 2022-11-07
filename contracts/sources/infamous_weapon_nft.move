@@ -54,7 +54,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public(friend) fun airdrop(receiver_addr: address, weapon: String, tiers: String, grade: String, attributes: String,): TokenId acquires CollectionInfo {
+    public(friend) fun airdrop(receiver_addr: address, weapon: String, tier: String, grade: String, attributes: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
@@ -74,7 +74,7 @@ module infamous::infamous_weapon_nft {
         string::append(&mut uri, grade);
         string::append(&mut uri, utf8(b".png"));
 
-        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, tiers, grade, attributes,);
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, tier, grade, attributes,);
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
@@ -96,7 +96,7 @@ module infamous::infamous_weapon_nft {
     }
     
 
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, tiers: String, grades: String, attributes: String,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, tier: String, grade: String, attributes: String,) {
         
         let balance = 1;
         let maximum = 1;
@@ -110,7 +110,7 @@ module infamous::infamous_weapon_nft {
         0,
         vector<bool>[false, true, false, false, true],
         vector<String>[ utf8(b"name"), utf8(b"tier"), utf8(b"grade"), utf8(b"attributes") ], 
-        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&tiers), bcs::to_bytes<String>(&grades), bcs::to_bytes<String>(&attributes)], 
+        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&tier), bcs::to_bytes<String>(&grade), bcs::to_bytes<String>(&attributes)], 
         vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],);
 
         if(receiver_addr != minter_addr) {

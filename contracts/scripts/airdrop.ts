@@ -31,16 +31,17 @@ async function main() {
       'airdrop_level_five',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #2'),
+        BCS.bcsSerializeStr('Infamous #15'),
         BCS.bcsToBytes(
           AccountAddress.fromHex(
-            '0xf62d21943a1af502a0237c9353eb57c17e90bd4da1f65b729525c1597e8df86e'
+            '0x4e1bd8fa766c0eada557bf8b456c59c0d9bf2e6e1a0635b78192d3e06c3c1dfe'
           )
         ),
-        BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
+        // BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
+        BCS.bcsSerializeStr('warglaive of azzinoth'),
         BCS.bcsSerializeStr('1'),
-        BCS.bcsSerializeStr('bronze'),
-        BCS.bcsSerializeStr('low order'),
+        BCS.bcsSerializeStr('gold'),
+        BCS.bcsSerializeStr('gold'),
       ]
     )
   )

@@ -166,31 +166,26 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async tokenAirdroped(level: number, tokenId: ITokenId): Promise<ITokenId | undefined> {
         try {
-            if (level === 4) {
-                const airdropInfo = await this.getAirdropInfo();
-                const info = airdropInfo.data as IAirdropInfo;
-                const weapon_token_id = await this.tableItem(
-                    info.token_level4_airdroped.handle,
-                    `0x3::token::TokenId`,
-                    `0x3::token::TokenId`,
-                    tokenId
-                );
-                return weapon_token_id;
-            } else if (level === 5) {
-                const airdropInfo = await this.getAirdropInfo();
-                const info = airdropInfo.data as IAirdropInfo;
-                const weapon_token_id = await this.tableItem(
-                    info.token_level5_airdroped.handle,
-                    `0x3::token::TokenId`,
-                    `0x3::token::TokenId`,
-                    tokenId
-                );
-                return weapon_token_id;
-            }
+            const airdropInfo = await this.getAirdropInfo();
+            const info = airdropInfo.data as IAirdropInfo;
+            const token_level_weapon_table = await this.tableItem(
+                info.airdroped.handle,
+                `0x3::token::TokenId`,
+                `0x1::table::Table<u64, 0x3::token::TokenId>`,
+                tokenId
+            );
+
+            const weaponTokenId = await this.tableItem(
+                token_level_weapon_table.handle,
+                `u64`,
+                `0x3::token::TokenId`,
+                String(level)
+            );
+
+            return weaponTokenId;
         } catch (e) {
             return undefined;
         }
-        return undefined;
     }
 
     async tokenIsReveled(tokenId: ITokenId): Promise<boolean> {

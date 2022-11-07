@@ -24,13 +24,13 @@ module infamous::infamous_lock {
 
 
     const ETOKEN_NOT_OPENED:u64 = 1;
-    const ETOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
-    const ELOCK_INFO_NOT_PUBLISHED: u64 = 2;
-    const ETOKEN_NOT_LOCKED: u64 = 3;
-    const ETOKEN_ALREADY_LOCKED: u64 = 4;
-    const ELOCK_TIME_NOT_ENOUGH: u64 = 5;
-    const EACCOUNT_MUSTBE_AUTHED: u64 =6;
-    const ETOKEN_NOT_LOCKED_BY_THIS_ACCOUNT: u64 =6;
+    const ETOKEN_NOT_OWNED_BY_SENDER: u64 = 2;
+    const ELOCK_INFO_NOT_PUBLISHED: u64 = 3;
+    const ETOKEN_NOT_LOCKED: u64 = 4;
+    const ETOKEN_ALREADY_LOCKED: u64 = 5;
+    const ELOCK_TIME_NOT_ENOUGH: u64 = 6;
+    const EACCOUNT_MUSTBE_AUTHED: u64 = 7;
+    const ETOKEN_NOT_LOCKED_BY_THIS_ACCOUNT: u64 = 8;
     
     
 
@@ -284,26 +284,26 @@ module infamous::infamous_lock {
         
         let background = utf8(b"blue");
         let clothing = utf8(b"hoodie");
-        let ear = utf8(b"null");
-        let eyebrow = utf8(b"extended eyebrows");
-        let accessories = utf8(b"null");
+        let earrings = utf8(b"null");
+        let eyebrows = utf8(b"extended eyebrowss");
+        let face_accessories = utf8(b"null");
         let eyes = utf8(b"black eyes");
         let hair = utf8(b"bob cut 1 (navy blue)");
         let mouth = utf8(b"closed");
-        let neck = utf8(b"null");
+        let necklace = utf8(b"null");
         let tattoo = utf8(b"null");
         let gender = utf8(b"female");
         let weapon = utf8(b"dagger");
-        let tiers = utf8(b"1");
-        let grades = utf8(b"iron");
+        let tier = utf8(b"1");
+        let grade = utf8(b"iron");
         let attributes = utf8(b"iron");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
-         background, clothing, ear, eyebrow, 
-         accessories, eyes, hair, mouth,
-         neck, tattoo, gender,
-         weapon, tiers, grades, attributes
+         background, clothing, earrings, eyebrows, 
+         face_accessories, eyes, hair, mouth,
+         necklace, tattoo, gender,
+         weapon, tier, grade, attributes
          );
 
         lock_infamous_nft(receiver, token_index_1_name);

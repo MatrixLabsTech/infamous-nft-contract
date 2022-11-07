@@ -4,10 +4,7 @@ export interface IUpgradeInfo {
     };
 }
 export interface IAirdropInfo {
-    token_level4_airdroped: {
-        handle: string;
-    };
-    token_level5_airdroped: {
+    airdroped: {
         handle: string;
     };
 }

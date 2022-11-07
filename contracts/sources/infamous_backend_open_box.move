@@ -21,7 +21,7 @@ module infamous::infamous_backend_open_box {
      
     const EACCOUNT_MUSTBE_AUTHED: u64 = 1;
     const EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT: u64 = 2;
-    const EBOX_ALREADY_OPENED: u64 = 6;
+    const EBOX_ALREADY_OPENED: u64 = 3;
 
     const OPEN_TIME_GAP: u64 = 60;
 
@@ -45,9 +45,9 @@ module infamous::infamous_backend_open_box {
 
     public entry fun open_box(sender: &signer,
         name: String,
-        background: String, clothing: String, ear: String, eyebrow: String,
-        accessories: String, eyes: String, hair: String,  
-        mouth: String, neck: String, tattoo: String,  gender: String,
+        background: String, clothing: String, earrings: String, eyebrows: String,
+        face_accessories: String, eyes: String, hair: String,  
+        mouth: String, necklace: String, tattoo: String,  gender: String,
         weapon: String, tier: String, grade: String, attributes: String,) acquires OpenBoxStatus {
 
         
@@ -76,28 +76,28 @@ module infamous::infamous_backend_open_box {
         let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, tier, grade, attributes);
         let token_data_id = token::create_token_data_id(creator, collection, name);
         infamous_nft::set_token_gender(token_data_id, gender);
-        mutate_token_properties(manager_signer, token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon);
+        mutate_token_properties(manager_signer, token_data_id, background, clothing, earrings, eyebrows, face_accessories, eyes, hair, mouth, necklace, tattoo, weapon);
         let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
         infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
         
-        infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, ear, eyebrow, accessories, eyes, hair, mouth, neck, tattoo, weapon, grade, gender,);
+        infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, earrings, eyebrows, face_accessories, eyes, hair, mouth, necklace, tattoo, weapon, grade, gender,);
         update_box_opened(token_id);
     }
 
      fun mutate_token_properties(manager_signer: signer, 
         token_data_id: TokenDataId, 
-        background: String, clothing: String, ear: String, eyebrow: String,
-        accessories: String, eyes: String, hair: String,  
-        mouth: String, neck: String, tattoo: String, 
+        background: String, clothing: String, earrings: String, eyebrows: String,
+        face_accessories: String, eyes: String, hair: String,  
+        mouth: String, necklace: String, tattoo: String, 
         weapon: String) {
         
-        let keys = vector<String>[utf8(b"background"), utf8(b"clothing"), utf8(b"ear"), utf8(b"eyebrow"), 
-        utf8(b"accessories"), utf8(b"eyes"), utf8(b"hair"), 
-        utf8(b"mouth"), utf8(b"neck"), utf8(b"tattoo"), 
+        let keys = vector<String>[utf8(b"background"), utf8(b"clothing"), utf8(b"earrings"), utf8(b"eyebrows"), 
+        utf8(b"face-accessories"), utf8(b"eyes"), utf8(b"hair"), 
+        utf8(b"mouth"), utf8(b"necklace"), utf8(b"tattoo"), 
         utf8(b"weapon"), ];
-        let values = vector<vector<u8>>[bcs::to_bytes<String>(&background), bcs::to_bytes<String>(&clothing), bcs::to_bytes<String>(&ear), bcs::to_bytes<String>(&eyebrow),
-        bcs::to_bytes<String>(&accessories), bcs::to_bytes<String>(&eyes), bcs::to_bytes<String>(&hair), 
-        bcs::to_bytes<String>(&mouth), bcs::to_bytes<String>(&neck), bcs::to_bytes<String>(&tattoo), 
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&background), bcs::to_bytes<String>(&clothing), bcs::to_bytes<String>(&earrings), bcs::to_bytes<String>(&eyebrows),
+        bcs::to_bytes<String>(&face_accessories), bcs::to_bytes<String>(&eyes), bcs::to_bytes<String>(&hair), 
+        bcs::to_bytes<String>(&mouth), bcs::to_bytes<String>(&necklace), bcs::to_bytes<String>(&tattoo), 
         bcs::to_bytes<String>(&weapon), ];
         let types = vector<String>[utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
         utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
@@ -178,13 +178,13 @@ module infamous::infamous_backend_open_box {
 
         let background = utf8(b"blue");
         let clothing = utf8(b"hoodie");
-        let ear = utf8(b"null");
-        let eyebrow = utf8(b"extended eyebrows");
-        let accessories = utf8(b"null");
+        let earrings = utf8(b"null");
+        let eyebrows = utf8(b"extended eyebrowss");
+        let face_accessories = utf8(b"null");
         let eyes = utf8(b"black eyes");
         let hair = utf8(b"bob cut 1 (navy blue)");
         let mouth = utf8(b"closed");
-        let neck = utf8(b"null");
+        let necklace = utf8(b"null");
         let tattoo = utf8(b"null");
         let gender = utf8(b"female");
         let weapon = utf8(b"dagger");
@@ -194,9 +194,9 @@ module infamous::infamous_backend_open_box {
 
          open_box(user,
          token_index_1_name,
-         background, clothing, ear, eyebrow, 
-         accessories, eyes, hair, mouth,
-         neck, tattoo, gender,
+         background, clothing, earrings, eyebrows, 
+         face_accessories, eyes, hair, mouth,
+         necklace, tattoo, gender,
          weapon, tier, grade, attributes
          );
 

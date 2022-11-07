@@ -25,7 +25,7 @@ module infamous::infamous_upgrade_level {
 
     
     const FULL_LEVEL: u64 = 5;
-    const EACH_LEVEL_EXP: u64 = 60;
+    const EACH_LEVEL_EXP_OF_PRESALE: u64 = 60;
 
 
     struct TokenUpgradeEvent has drop, store {
@@ -62,27 +62,22 @@ module infamous::infamous_upgrade_level {
 
         
         let available_time = infamous_lock::get_available_time(token_id);
-        assert!(available_time >= EACH_LEVEL_EXP, error::invalid_argument(EEXP_NOT_ENOUGH_TO_UPGRADE));
+        assert!(available_time >= EACH_LEVEL_EXP_OF_PRESALE, error::invalid_argument(EEXP_NOT_ENOUGH_TO_UPGRADE));
 
         let cur_level = get_token_level(token_id);
         assert!(cur_level < FULL_LEVEL, error::invalid_argument(ETOKEN_IS_FULL_LEVEL));
 
-        let available_level = available_time / EACH_LEVEL_EXP;
+        let available_level = available_time / EACH_LEVEL_EXP_OF_PRESALE;
         let new_level = available_level + cur_level;
         if(new_level > FULL_LEVEL) {
             new_level = FULL_LEVEL;
         };
-        let need_exp = (new_level - cur_level) * EACH_LEVEL_EXP;
+        let need_exp = (new_level - cur_level) * EACH_LEVEL_EXP_OF_PRESALE;
 
         infamous_lock::take_times_to_use(token_id, need_exp);
 
         update_level(token_id, new_level);
     }
-
-
-
-
-
 
 
     public fun get_token_level(token_id: TokenId): u64 acquires UpgradeInfo { 
@@ -172,26 +167,26 @@ module infamous::infamous_upgrade_level {
             
         let background = utf8(b"blue");
         let clothing = utf8(b"hoodie");
-        let ear = utf8(b"null");
-        let eyebrow = utf8(b"extended eyebrows");
-        let accessories = utf8(b"null");
+        let earrings = utf8(b"null");
+        let eyebrows = utf8(b"extended eyebrowss");
+        let face_accessories = utf8(b"null");
         let eyes = utf8(b"black eyes");
         let hair = utf8(b"bob cut 1 (navy blue)");
         let mouth = utf8(b"closed");
-        let neck = utf8(b"null");
+        let necklace = utf8(b"null");
         let tattoo = utf8(b"null");
         let gender = utf8(b"female");
         let weapon = utf8(b"dagger");
-        let tiers = utf8(b"1");
-        let grades = utf8(b"iron");
+        let tier = utf8(b"1");
+        let grade = utf8(b"iron");
         let attributes = utf8(b"iron");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
-         background, clothing, ear, eyebrow, 
-         accessories, eyes, hair, mouth,
-         neck, tattoo, gender,
-         weapon, tiers, grades, attributes
+         background, clothing, earrings, eyebrows, 
+         face_accessories, eyes, hair, mouth,
+         necklace, tattoo, gender,
+         weapon, tier, grade, attributes
          );
 
 

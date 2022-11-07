@@ -11,6 +11,11 @@ export interface PaginationArgs {
     start?: number;
     limit?: number;
 }
+
+// Failed to deserialize table item retrieved from DB:
+// StructTag StructTag { address: 0000000000000000000000000000000000000000000000000000000000000001,
+//     module: Identifier("table"), name: Identifier("Table"), type_params: [] } cannot be resolved:
+//     PartialVMError { major_status: UNKNOWN_INVARIANT_VIOLATION_ERROR, sub_status: None, message: Some("fat type substitution failed: index out of bounds -- len 0 got 0"), exec_state: None, indices: [], offsets: [] }
 export interface InfamousNFTClient {
     // package mint trans
     mintTransaction(count: string): ITransaction;

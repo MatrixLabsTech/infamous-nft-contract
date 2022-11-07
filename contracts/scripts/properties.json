@@ -63,14 +63,14 @@
       "suspenders": "k",
       "school uniform 2": "l"
     },
-    "ear": {
+    "earrings": {
       "null": "0",
       "huggie earrings": "1",
       "cross earring": "2",
       "stud earrings": "3",
       "clip-on earring": "4"
     },
-    "eyebrow": {
+    "eyebrows": {
       "null": "0",
       "natural eyebrows": "1",
       "broken eyebrows": "2",
@@ -78,7 +78,7 @@
       "upward eyebrows": "4",
       "straight eyebrows": "5"
     },
-    "accessories": {
+    "face-accessories": {
       "null": "0",
       "face tattoo 1": "1",
       "band-aid 1": "2",
@@ -185,7 +185,7 @@
       "ear of wheat": "H",
       "clown mask": "I"
     },
-    "neck": {
+    "necklace": {
       "null": "0",
       "gold chain": "1",
       "skull necklace": "2",
@@ -322,7 +322,7 @@
       "ripped tee": "s",
       "knit tank top": "t"
     },
-    "ear": {
+    "earrings": {
       "null": "0",
       "hoop earrings": "1",
       "heart earrings": "2",
@@ -332,7 +332,7 @@
       "clip-on earring": "6",
       "pearl earrings": "7"
     },
-    "eyebrow": {
+    "eyebrows": {
       "null": "0",
       "straight eyebrows": "1",
       "feathered eyebrows": "2",
@@ -340,7 +340,7 @@
       "natural eyebrows": "4",
       "thin eyebrows": "5"
     },
-    "accessories": {
+    "face-accessories": {
       "null": "0",
       "band-aid 1": "1",
       "eyepatch 1": "2",
@@ -449,7 +449,7 @@
       "gas mask": "L",
       "clown mask": "M"
     },
-    "neck": {
+    "necklace": {
       "null": "0",
       "choker": "1",
       "circle pendant 1": "2",

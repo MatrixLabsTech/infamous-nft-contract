@@ -24,28 +24,29 @@ async function main() {
   const account = deployer.toPrivateKeyObject()
   console.log('=== Use Account ===')
   console.log(account)
-  const gender = 'male'
+  const gender = 'female'
   const entryFunctionPayload = new TransactionPayloadEntryFunction(
     EntryFunction.natural(
       `${account.address}::infamous_backend_open_box`,
       'open_box',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #10'),
+        BCS.bcsSerializeStr('Infamous #16'),
         BCS.bcsSerializeStr(randomProperty(gender, 'background')),
         BCS.bcsSerializeStr(randomProperty(gender, 'clothing')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'ear')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'eyebrow')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'accessories')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'earrings')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'eyebrows')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'face-accessories')),
         BCS.bcsSerializeStr(randomProperty(gender, 'eyes')),
         BCS.bcsSerializeStr(randomProperty(gender, 'hair')),
         BCS.bcsSerializeStr(randomProperty(gender, 'mouth')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'neck')),
+        BCS.bcsSerializeStr(randomProperty(gender, 'necklace')),
         BCS.bcsSerializeStr(randomProperty(gender, 'tattoo')),
         BCS.bcsSerializeStr(gender),
         BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
+        // BCS.bcsSerializeStr('katana'),
         BCS.bcsSerializeStr('1'),
-        BCS.bcsSerializeStr('bronze'),
+        BCS.bcsSerializeStr('silver'),
         BCS.bcsSerializeStr('low order'),
       ]
     )

@@ -1,6 +1,6 @@
 {
   "name": "@white-matrix/infamous-contract-sdk",
-  "version": "0.0.46",
+  "version": "0.0.48",
   "description": "infamous sdk aptos",
   "main": "dist/index.js",
   "scripts": {

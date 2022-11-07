@@ -38,7 +38,7 @@ export function resolveUrlEncodeMap() {
   })
   // resolve female
   Object.keys(map.female).forEach((valueKey: string) => {
-    const valueMap = map.male[valueKey]
+    const valueMap = map.female[valueKey]
     Object.keys(valueMap).forEach((value: string) => {
       const encode = valueMap[value]
       properties.push(`female${valueKey}${value}`)

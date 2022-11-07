@@ -134,13 +134,13 @@ module infamous::infamous_nft {
         update_token_uri_with_known_properties(token_data_id,
         property_map::read_string(properties, &utf8(b"background")),
         property_map::read_string(properties, &utf8(b"clothing")),
-        property_map::read_string(properties, &utf8(b"ear")),
-        property_map::read_string(properties, &utf8(b"eyebrow")),
-        property_map::read_string(properties, &utf8(b"accessories")),
+        property_map::read_string(properties, &utf8(b"earrings")),
+        property_map::read_string(properties, &utf8(b"eyebrows")),
+        property_map::read_string(properties, &utf8(b"face-accessories")),
         property_map::read_string(properties, &utf8(b"eyes")),
         property_map::read_string(properties, &utf8(b"hair")),
         property_map::read_string(properties, &utf8(b"mouth")),
-        property_map::read_string(properties, &utf8(b"neck")),
+        property_map::read_string(properties, &utf8(b"necklace")),
         property_map::read_string(properties, &utf8(b"tattoo")),
         property_map::read_string(properties, &utf8(b"weapon")), 
         grade,
@@ -162,21 +162,21 @@ module infamous::infamous_nft {
      }
      
      public(friend) fun update_token_uri_with_known_properties(token_data_id: TokenDataId,
-        background: String, clothing: String, ear: String, eyebrow: String,
-        accessories: String, eyes: String, hair: String,  
-        mouth: String, neck: String, tattoo: String, 
+        background: String, clothing: String, earrings: String, eyebrows: String,
+        face_accessories: String, eyes: String, hair: String,  
+        mouth: String, necklace: String, tattoo: String, 
         weapon: String, grade: String, gender: String) {
         let creator = infamous_manager_cap::get_manager_signer();
         let gender_code = resolve_property_value_encode(gender, utf8(b"gender"), gender);
         let background_code = resolve_property_value_encode(gender, utf8(b"background"), background);
         let clothing_code = resolve_property_value_encode(gender, utf8(b"clothing"), clothing);
-        let ear_code = resolve_property_value_encode(gender, utf8(b"ear"), ear);
-        let eyebrow_code = resolve_property_value_encode(gender, utf8(b"eyebrow"), eyebrow);
-        let accessories_code = resolve_property_value_encode(gender, utf8(b"accessories"), accessories);
+        let earrings_code = resolve_property_value_encode(gender, utf8(b"earrings"), earrings);
+        let eyebrows_code = resolve_property_value_encode(gender, utf8(b"eyebrows"), eyebrows);
+        let face_accessories_code = resolve_property_value_encode(gender, utf8(b"face-accessories"), face_accessories);
         let eyes_code = resolve_property_value_encode(gender, utf8(b"eyes"), eyes);
         let hair_code = resolve_property_value_encode(gender, utf8(b"hair"), hair);
         let mouth_code = resolve_property_value_encode(gender, utf8(b"mouth"), mouth);
-        let neck_code = resolve_property_value_encode(gender, utf8(b"neck"), neck);
+        let necklace_code = resolve_property_value_encode(gender, utf8(b"necklace"), necklace);
         let tattoo_code = resolve_property_value_encode(gender, utf8(b"tattoo"), tattoo);
         let weapon_code = resolve_property_value_encode(gender, utf8(b"weapon"), weapon);
         let grade_code = resolve_property_value_encode(gender, utf8(b"grade"), grade);
@@ -184,13 +184,13 @@ module infamous::infamous_nft {
         string::append(&mut properties_code_string, gender_code);
         string::append(&mut properties_code_string, background_code);
         string::append(&mut properties_code_string, clothing_code);
-        string::append(&mut properties_code_string, ear_code);
-        string::append(&mut properties_code_string, eyebrow_code);
-        string::append(&mut properties_code_string, accessories_code);
+        string::append(&mut properties_code_string, earrings_code);
+        string::append(&mut properties_code_string, eyebrows_code);
+        string::append(&mut properties_code_string, face_accessories_code);
         string::append(&mut properties_code_string, eyes_code);
         string::append(&mut properties_code_string, hair_code);
         string::append(&mut properties_code_string, mouth_code);
-        string::append(&mut properties_code_string, neck_code);
+        string::append(&mut properties_code_string, necklace_code);
         string::append(&mut properties_code_string, tattoo_code);
         string::append(&mut properties_code_string, weapon_code);
         string::append(&mut properties_code_string, grade_code);
