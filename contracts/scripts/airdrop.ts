@@ -24,24 +24,19 @@ async function main() {
   const account = deployer.toPrivateKeyObject()
   console.log('=== Use Account ===')
   console.log(account)
-  const gender = 'male'
   const entryFunctionPayload = new TransactionPayloadEntryFunction(
     EntryFunction.natural(
-      `${account.address}::infamous_backend_token_weapon_airdrop`,
+      `${account.address}::infamous_backend_token_weapon_airdrop_box`,
       'airdrop_level_five',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #15'),
+        BCS.bcsSerializeStr('Infamous #23'),
         BCS.bcsToBytes(
           AccountAddress.fromHex(
-            '0x4e1bd8fa766c0eada557bf8b456c59c0d9bf2e6e1a0635b78192d3e06c3c1dfe'
+            '0x1a0286514bf9433294a0b5b13d8cc6c27d60948e4163fed406ae3aca5c539802'
           )
         ),
-        // BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
-        BCS.bcsSerializeStr('warglaive of azzinoth'),
-        BCS.bcsSerializeStr('1'),
-        BCS.bcsSerializeStr('gold'),
-        BCS.bcsSerializeStr('gold'),
+        BCS.bcsSerializeStr('LV5'),
       ]
     )
   )
@@ -52,22 +47,15 @@ async function main() {
   ])
 
   const rawTxn = new RawTransaction(
-    // Transaction sender account address
     AccountAddress.fromHex(deployer.address()),
     BigInt(sequenceNumber),
     entryFunctionPayload,
-    // Max gas unit to spend
     BigInt(500000),
-    // Gas price per unit
     BigInt(100),
-    // Expiration timestamp. Transaction is discarded if it is not executed within 10 seconds from now.
     BigInt(Math.floor(Date.now() / 1000) + 10),
     new ChainId(chainId)
   )
-
-  // Sign the raw transaction with account1's private key
   const bcsTxn = AptosClient.generateBCSTransaction(deployer, rawTxn)
-
   const transactionRes = await client.submitSignedBCSTransaction(bcsTxn)
 
   console.log({ hash: transactionRes.hash })

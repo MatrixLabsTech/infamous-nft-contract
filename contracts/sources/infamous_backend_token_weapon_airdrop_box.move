@@ -1,5 +1,5 @@
 /// This module provides airdrop control of weapon Token.
-module infamous::infamous_backend_token_weapon_airdrop {
+module infamous::infamous_backend_token_weapon_airdrop_box {
 
     use std::signer;
     use std::error;
@@ -35,7 +35,6 @@ module infamous::infamous_backend_token_weapon_airdrop {
         receiver_addr: address,
         token_id: TokenId,
         weapon_token_id: TokenId,
-        weapon_name: String,
         time: u64,
     }
 
@@ -58,12 +57,12 @@ module infamous::infamous_backend_token_weapon_airdrop {
         }
     }
 
-    public entry fun airdrop_level_five(sender: &signer, token_name: String, receiver_addr: address, weapon: String, tier: String, grade: String, attributes: String,) acquires AirdropInfo {
-        airdrop(sender, token_name, receiver_addr, weapon, tier, grade, attributes, 5);
+    public entry fun airdrop_level_five(sender: &signer, token_name: String, receiver_addr: address, tier: String) acquires AirdropInfo {
+        airdrop(sender, token_name, receiver_addr, tier, 5);
     }
 
 
-    fun airdrop(sender: &signer, token_name: String, receiver_addr: address, weapon: String, tier: String, grade: String, attributes: String, airdrop_level: u64 ) acquires AirdropInfo {
+    fun airdrop(sender: &signer, token_name: String, receiver_addr: address, tier: String, airdrop_level: u64 ) acquires AirdropInfo {
         let sender_addr = signer::address_of(sender);
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(EACCOUNT_MUSTBE_AUTHED));
 
@@ -93,8 +92,8 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(token_id, airdrop_level), error::invalid_argument(ETOKEN_AIRDROPED));
 
-            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, tier, grade, attributes);
-            update_token_airdroped(receiver_addr, token_id, airdrop_level, weapon_token_id, weapon);
+            let weapon_token_id = infamous_weapon_nft::airdrop_box(receiver_addr,  tier);
+            update_token_airdroped(receiver_addr, token_id, airdrop_level, weapon_token_id);
         } else {
             // 1. check the receiver is the owner
             assert!(token::balance_of(receiver_addr, token_id) == 1, error::invalid_argument(ETOKEN_NOT_OWNED_BY_RECEIVER));
@@ -107,8 +106,8 @@ module infamous::infamous_backend_token_weapon_airdrop {
             // 3.check token airdroped
             assert!(!is_token__airdroped(token_id, airdrop_level), error::invalid_argument(ETOKEN_AIRDROPED));
 
-            let weapon_token_id = infamous_weapon_nft::airdrop(receiver_addr, weapon, tier, grade, attributes);
-            update_token_airdroped(receiver_addr, token_id, airdrop_level, weapon_token_id, weapon);
+            let weapon_token_id = infamous_weapon_nft::airdrop_box(receiver_addr, tier);
+            update_token_airdroped(receiver_addr, token_id, airdrop_level, weapon_token_id);
         }
 
 
@@ -131,7 +130,7 @@ module infamous::infamous_backend_token_weapon_airdrop {
 
       
 
-    fun update_token_airdroped(receiver_addr: address, token_id: TokenId, airdrop_level: u64, weapon_token_id: TokenId, weapon_name: String) acquires AirdropInfo {
+    fun update_token_airdroped(receiver_addr: address, token_id: TokenId, airdrop_level: u64, weapon_token_id: TokenId) acquires AirdropInfo {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
 
@@ -146,17 +145,16 @@ module infamous::infamous_backend_token_weapon_airdrop {
         if(!table::contains(token_airdroped, airdrop_level)) {
             table::add(token_airdroped, airdrop_level, weapon_token_id);
         };
-        emit_weapon_airdrop_event(airdrop_info, receiver_addr, token_id, weapon_token_id, weapon_name);
+        emit_weapon_airdrop_event(airdrop_info, receiver_addr, token_id, weapon_token_id);
     }
 
-    fun emit_weapon_airdrop_event(airdrop_info: &mut AirdropInfo, receiver_addr: address, token_id: TokenId, weapon_token_id: TokenId, weapon_name: String) {
+    fun emit_weapon_airdrop_event(airdrop_info: &mut AirdropInfo, receiver_addr: address, token_id: TokenId, weapon_token_id: TokenId) {
         event::emit_event<AirdropEvent>(
            &mut airdrop_info.weapon_airdrop_events,
             AirdropEvent {
                 receiver_addr,
                 token_id,
                 weapon_token_id,
-                weapon_name,
                 time: timestamp::now_seconds(),
             });
     }

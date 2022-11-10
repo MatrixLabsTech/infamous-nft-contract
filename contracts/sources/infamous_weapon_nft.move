@@ -10,13 +10,14 @@ module infamous::infamous_weapon_nft {
 
     use aptos_std::table::{Self, Table};
 
-    use aptos_token::token::{Self, TokenId};
+    use aptos_token::token::{Self, TokenId, TokenDataId};
 
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
 
     friend infamous::infamous_backend_open_box;
-    friend infamous::infamous_backend_token_weapon_airdrop;
+    friend infamous::infamous_backend_token_weapon_airdrop_box;
+    friend infamous::infamous_backend_token_weapon_open_box;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
     const ACCOUNT_MUSTBE_AUTHED: u64 = 2;
@@ -54,6 +55,34 @@ module infamous::infamous_weapon_nft {
        
     }
 
+    public(friend) fun airdrop_box(receiver_addr: address, tier: String,): TokenId acquires CollectionInfo {
+
+        let source_addr = @infamous;
+        let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
+
+        // token infos
+        let collection_name = infamous_common::infamous_weapon_collection_name();
+        let base_token_name = infamous_common::infamous_weapon_base_token_name();
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let manager_addr = signer::address_of(&manager_signer);
+        let prev_count = collection_info.counter;
+        let cur = prev_count + 1;
+        let name = infamous_common::append_num(base_token_name, cur);
+        let uri = infamous_common::infamous_weapon_token_uri();
+
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, 
+            vector<String>[ utf8(b"tier"), ], 
+            vector<vector<u8>>[ bcs::to_bytes<String>(&tier), ], 
+            vector<String>[ utf8(b"0x1::string::String"), ],
+        );
+        emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
+
+        // change CollectionInfo status
+        let counter_ref = &mut collection_info.counter;
+        *counter_ref = cur;
+        resolve_token_id(manager_addr, collection_name, name)
+    }
+
     public(friend) fun airdrop(receiver_addr: address, weapon: String, tier: String, grade: String, attributes: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
@@ -74,7 +103,11 @@ module infamous::infamous_weapon_nft {
         string::append(&mut uri, grade);
         string::append(&mut uri, utf8(b".png"));
 
-        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, weapon, tier, grade, attributes,);
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, 
+        vector<String>[ utf8(b"name"), utf8(b"tier"), utf8(b"grade"), utf8(b"attributes") ], 
+        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&tier), bcs::to_bytes<String>(&grade), bcs::to_bytes<String>(&attributes)], 
+        vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],
+        );
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
@@ -82,6 +115,29 @@ module infamous::infamous_weapon_nft {
         *counter_ref = cur;
         resolve_token_id(manager_addr, collection_name, name)
     }
+
+    public(friend) fun mutate_token_properties(creator: &signer, 
+        token_data_id: TokenDataId, 
+        name: String, grade: String, attributes: String,) {
+        let keys = vector<String>[utf8(b"name"), utf8(b"grade"), utf8(b"attributes"), ];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&name), bcs::to_bytes<String>(&grade), bcs::to_bytes<String>(&attributes), ];
+        let types = vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")];
+
+        token::mutate_tokendata_property(creator,
+        token_data_id,
+        keys, values, types
+        );
+
+        let base_uri = infamous_common::infamous_weapon_base_token_uri();
+        let uri = base_uri;
+        let image = infamous::infamous_common::escape_whitespace(name);
+        string::append(&mut uri, image);
+        string::append(&mut uri, grade);
+        string::append(&mut uri, utf8(b".png"));
+        
+        token::mutate_tokendata_uri(creator, token_data_id, uri);
+     }
+
 
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
@@ -95,8 +151,13 @@ module infamous::infamous_weapon_nft {
         }
     }
     
-
-    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, collection_name: String, token_name: String, token_uri: String, weapon: String, tier: String, grade: String, attributes: String,) {
+    fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, 
+    collection_name: String, 
+    token_name: String, 
+    token_uri: String, 
+    property_keys: vector<String>, 
+    property_values: vector<vector<u8>>, 
+    property_types: vector<String>) {
         
         let balance = 1;
         let maximum = 1;
@@ -108,16 +169,17 @@ module infamous::infamous_weapon_nft {
         minter_addr,
         0,
         0,
-        vector<bool>[false, true, false, false, true],
-        vector<String>[ utf8(b"name"), utf8(b"tier"), utf8(b"grade"), utf8(b"attributes") ], 
-        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&tier), bcs::to_bytes<String>(&grade), bcs::to_bytes<String>(&attributes)], 
-        vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],);
+        vector<bool>[true, true, true, true, true],
+        property_keys, 
+        property_values, 
+        property_types,);
 
         if(receiver_addr != minter_addr) {
             let token_id = resolve_token_id(minter_addr, collection_name, token_name);
             token::transfer(minter, token_id, receiver_addr, balance);
         }
     }
+
 
     fun emit_minted_event(collection_info: &mut CollectionInfo, receiver_addr: address, creator_addr: address, collection_name: String, token_name: String) {
         event::emit_event<TokenMintedEvent>(

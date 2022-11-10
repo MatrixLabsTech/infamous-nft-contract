@@ -1,16 +1,15 @@
 /// This module provides open box -> change the properties of Token.
 module infamous::infamous_backend_open_box {
 
-     use std::bcs;
      use std::signer;
-     use std::string::{String, utf8};
+     use std::string::{String};
      use std::error;
 
 
      use aptos_framework::timestamp;
      use aptos_std::table::{Self, Table};
      
-     use aptos_token::token::{Self, TokenDataId, TokenId};
+     use aptos_token::token::{Self, TokenId};
 
      use infamous::infamous_common;
      use infamous::infamous_manager_cap;
@@ -46,8 +45,8 @@ module infamous::infamous_backend_open_box {
     public entry fun open_box(sender: &signer,
         name: String,
         background: String, clothing: String, earrings: String, eyebrows: String,
-        face_accessories: String, eyes: String, hair: String,  
-        mouth: String, necklace: String, tattoo: String,  gender: String,
+        face_accessory: String, eyes: String, hair: String,  
+        mouth: String, neck: String, tattoo: String,  gender: String,
         weapon: String, tier: String, grade: String, attributes: String,) acquires OpenBoxStatus {
 
         
@@ -73,45 +72,18 @@ module infamous::infamous_backend_open_box {
         let token_mint_time = infamous_nft::get_token_mint_time(token_id);
         assert!(timestamp::now_seconds() - token_mint_time >= OPEN_TIME_GAP, error::invalid_argument(EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT));
 
+        // airdrop weapon
         let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, tier, grade, attributes);
         let token_data_id = token::create_token_data_id(creator, collection, name);
-        infamous_nft::set_token_gender(token_data_id, gender);
-        mutate_token_properties(manager_signer, token_data_id, background, clothing, earrings, eyebrows, face_accessories, eyes, hair, mouth, necklace, tattoo, weapon);
+       
+        // update token bind weapon token name
         let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
         infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
         
-        infamous_nft::update_token_uri_with_known_properties(token_data_id, background, clothing, earrings, eyebrows, face_accessories, eyes, hair, mouth, necklace, tattoo, weapon, grade, gender,);
+        // update token properties
+        infamous_nft::mutate_token_properties(&manager_signer, token_data_id, background, clothing, earrings, eyebrows, face_accessory, eyes, hair, mouth, neck, tattoo, weapon, grade, gender,);
         update_box_opened(token_id);
     }
-
-     fun mutate_token_properties(manager_signer: signer, 
-        token_data_id: TokenDataId, 
-        background: String, clothing: String, earrings: String, eyebrows: String,
-        face_accessories: String, eyes: String, hair: String,  
-        mouth: String, necklace: String, tattoo: String, 
-        weapon: String) {
-        
-        let keys = vector<String>[utf8(b"background"), utf8(b"clothing"), utf8(b"earrings"), utf8(b"eyebrows"), 
-        utf8(b"face-accessories"), utf8(b"eyes"), utf8(b"hair"), 
-        utf8(b"mouth"), utf8(b"necklace"), utf8(b"tattoo"), 
-        utf8(b"weapon"), ];
-        let values = vector<vector<u8>>[bcs::to_bytes<String>(&background), bcs::to_bytes<String>(&clothing), bcs::to_bytes<String>(&earrings), bcs::to_bytes<String>(&eyebrows),
-        bcs::to_bytes<String>(&face_accessories), bcs::to_bytes<String>(&eyes), bcs::to_bytes<String>(&hair), 
-        bcs::to_bytes<String>(&mouth), bcs::to_bytes<String>(&necklace), bcs::to_bytes<String>(&tattoo), 
-        bcs::to_bytes<String>(&weapon), ];
-        let types = vector<String>[utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
-        utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
-        utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
-        utf8(b"0x1::string::String"),];
-
-        token::mutate_tokendata_property(&manager_signer,
-        token_data_id,
-        keys, values, types
-        );
-
-
-
-     }
 
      
     public fun is_box__opened(token_id: TokenId): bool acquires OpenBoxStatus { 
@@ -147,6 +119,7 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_properties_url_encode_map;
         use infamous::infamous_weapon_nft;
+        use std::string::{utf8};
 
         timestamp::set_time_has_started_for_testing(framework);
 
@@ -180,11 +153,11 @@ module infamous::infamous_backend_open_box {
         let clothing = utf8(b"hoodie");
         let earrings = utf8(b"null");
         let eyebrows = utf8(b"extended eyebrowss");
-        let face_accessories = utf8(b"null");
+        let face_accessory = utf8(b"null");
         let eyes = utf8(b"black eyes");
         let hair = utf8(b"bob cut 1 (navy blue)");
         let mouth = utf8(b"closed");
-        let necklace = utf8(b"null");
+        let neck = utf8(b"null");
         let tattoo = utf8(b"null");
         let gender = utf8(b"female");
         let weapon = utf8(b"dagger");
@@ -195,8 +168,8 @@ module infamous::infamous_backend_open_box {
          open_box(user,
          token_index_1_name,
          background, clothing, earrings, eyebrows, 
-         face_accessories, eyes, hair, mouth,
-         necklace, tattoo, gender,
+         face_accessory, eyes, hair, mouth,
+         neck, tattoo, gender,
          weapon, tier, grade, attributes
          );
 

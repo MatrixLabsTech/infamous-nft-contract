@@ -3,7 +3,7 @@ export const tokenStoreResource = `0x3::token::TokenStore`;
 export const infamousCollectionName = "InfamousNFT";
 export const weaponCollectionName = "InfamousEquipmentNFT";
 
-export const block = "5301828";
+export const block = "8769304";
 export interface IDeployment {
     moduleAddress: string;
     infamousBackendAuth: string;
@@ -15,15 +15,17 @@ export interface IDeployment {
     infamousLock: string;
     infamousUpgradeLevel: string;
     infamousBackendOpenBox: string;
+    infamousBackendTokenWeaponOpenBox: string;
     infamousBackendTokenWeaponAirdrop: string;
 }
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0xb084dde4ee5647ce172fc36d91180f5fc4130e8b207e06328ecef20b68789af7",
+        moduleAddress: "0xdcc6436668bbe560334a1c8467f9a7035aaa6e9b475ed10af4f966d5dd4c2779",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
-        infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
+        infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop_box",
+        infamousBackendTokenWeaponOpenBox: "infamous_backend_token_weapon_open_box",
         infamousCommon: "infamous_common",
         infamousManagerCap: "infamous_manager_cap",
         infamousNft: "infamous_nft",
@@ -34,10 +36,11 @@ export const deployment = {
         infamousWeaponWear: "infamous_weapon_wear",
     },
     devnet: {
-        moduleAddress: "0xb084dde4ee5647ce172fc36d91180f5fc4130e8b207e06328ecef20b68789af7",
+        moduleAddress: "0xdcc6436668bbe560334a1c8467f9a7035aaa6e9b475ed10af4f966d5dd4c2779",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
-        infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop",
+        infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop_box",
+        infamousBackendTokenWeaponOpenBox: "infamous_backend_token_weapon_open_box",
         infamousCommon: "infamous_common",
         infamousManagerCap: "infamous_manager_cap",
         infamousNft: "infamous_nft",

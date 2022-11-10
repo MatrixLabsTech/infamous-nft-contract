@@ -198,7 +198,16 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             return false;
         }
     }
-
+    async weaponIsReveled(tokenId: ITokenId): Promise<boolean> {
+        try {
+            const openBoxStatus = await this.getWeaponOpenBoxStatus();
+            const info = openBoxStatus.data as IOpenBoxStatus;
+            const reveled = await this.tableItem(info.open_status.handle, `0x3::token::TokenId`, `bool`, tokenId);
+            return reveled;
+        } catch (e) {
+            return false;
+        }
+    }
     async tokenWearedWeapon(tokenId: ITokenId): Promise<ITokenId | undefined> {
         try {
             const tokenWearWeapon = (await this.getTokenWearWeapon()).data as IWearWeaponInfo;
@@ -370,6 +379,13 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         return await this.readClient.getAccountResource(
             managerAddress,
             `${this.deployment.moduleAddress}::${this.deployment.infamousBackendOpenBox}::OpenBoxStatus`
+        );
+    }
+    private async getWeaponOpenBoxStatus(): Promise<MoveResource> {
+        const managerAddress = await this.getManagerAddress();
+        return await this.readClient.getAccountResource(
+            managerAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousBackendTokenWeaponOpenBox}::OpenBoxStatus`
         );
     }
 

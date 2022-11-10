@@ -286,11 +286,11 @@ module infamous::infamous_lock {
         let clothing = utf8(b"hoodie");
         let earrings = utf8(b"null");
         let eyebrows = utf8(b"extended eyebrowss");
-        let face_accessories = utf8(b"null");
+        let face_accessory = utf8(b"null");
         let eyes = utf8(b"black eyes");
         let hair = utf8(b"bob cut 1 (navy blue)");
         let mouth = utf8(b"closed");
-        let necklace = utf8(b"null");
+        let neck = utf8(b"null");
         let tattoo = utf8(b"null");
         let gender = utf8(b"female");
         let weapon = utf8(b"dagger");
@@ -301,8 +301,8 @@ module infamous::infamous_lock {
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
          background, clothing, earrings, eyebrows, 
-         face_accessories, eyes, hair, mouth,
-         necklace, tattoo, gender,
+         face_accessory, eyes, hair, mouth,
+         neck, tattoo, gender,
          weapon, tier, grade, attributes
          );
 

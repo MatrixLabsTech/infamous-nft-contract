@@ -27,27 +27,14 @@ async function main() {
   const gender = 'female'
   const entryFunctionPayload = new TransactionPayloadEntryFunction(
     EntryFunction.natural(
-      `${account.address}::infamous_backend_open_box`,
+      `${account.address}::infamous_backend_token_weapon_open_box`,
       'open_box',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #32'),
-        BCS.bcsSerializeStr(randomProperty(gender, 'background')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'clothing')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'earrings')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'eyebrows')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'face-accessory')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'eyes')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'hair')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'mouth')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'neck')),
-        BCS.bcsSerializeStr(randomProperty(gender, 'tattoo')),
-        BCS.bcsSerializeStr(gender),
+        BCS.bcsSerializeStr('Equipment #2'),
         BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
-        // BCS.bcsSerializeStr('katana'),
-        BCS.bcsSerializeStr('1'),
         BCS.bcsSerializeStr('bronze'),
-        BCS.bcsSerializeStr('low order'),
+        BCS.bcsSerializeStr('100'),
       ]
     )
   )

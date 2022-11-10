@@ -7,6 +7,7 @@
     "setmap": "ts-node scripts/set_property_url_map.ts",
     "openbox": "ts-node scripts/openbox.ts",
     "airdrop": "ts-node scripts/airdrop.ts",
+    "openweaponbox": "ts-node scripts/openweaponbox.ts",
     "faucet": "aptos account fund-with-faucet --account default --amount 1000000000",
     "compile": "aptos move compile --named-addresses infamous=default",
     "test": "aptos move test --named-addresses infamous=default",

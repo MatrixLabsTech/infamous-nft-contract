@@ -1,6 +1,7 @@
 /// This module provides the Infamous Token manager.
 module infamous::infamous_nft {
 
+    use std::bcs;
     use std::signer;
     use std::error;
     use std::string::{Self, String, utf8 };
@@ -122,37 +123,72 @@ module infamous::infamous_nft {
         *table::borrow(token_mint_time_table, token_id)
      }
 
-     public(friend) fun update_token_uri_with_properties(owner_addr: address, name: String, grade: String) acquires CollectionInfo {
-      
-        let creator = infamous_manager_cap::get_manager_signer();
-        let creator_addr = signer::address_of(&creator);
-        let collection_name = infamous_common::infamous_collection_name();
-        let token_id = resolve_token_id(creator_addr, collection_name, name);
-        let properties = &token::get_property_map(owner_addr, token_id);
-        let token_data_id = token::create_token_data_id(creator_addr, collection_name, name);
+     
+     public(friend) fun mutate_token_properties(creator: &signer, 
+        token_data_id: TokenDataId, 
+        background: String, clothing: String, earrings: String, eyebrows: String,
+        face_accessory: String, eyes: String, hair: String,  
+        mouth: String, neck: String, tattoo: String, 
+        weapon: String, grade: String, gender: String,) acquires CollectionInfo {
+        
+        let keys = vector<String>[utf8(b"background"), utf8(b"clothing"), utf8(b"earrings"), utf8(b"eyebrows"), 
+        utf8(b"face-accessory"), utf8(b"eyes"), utf8(b"hair"), 
+        utf8(b"mouth"), utf8(b"neck"), utf8(b"tattoo"), 
+        utf8(b"weapon"), ];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&background), bcs::to_bytes<String>(&clothing), bcs::to_bytes<String>(&earrings), bcs::to_bytes<String>(&eyebrows),
+        bcs::to_bytes<String>(&face_accessory), bcs::to_bytes<String>(&eyes), bcs::to_bytes<String>(&hair), 
+        bcs::to_bytes<String>(&mouth), bcs::to_bytes<String>(&neck), bcs::to_bytes<String>(&tattoo), 
+        bcs::to_bytes<String>(&weapon), ];
+        let types = vector<String>[utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
+        utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
+        utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), 
+        utf8(b"0x1::string::String"),];
 
-        update_token_uri_with_known_properties(token_data_id,
+        token::mutate_tokendata_property(creator,
+        token_data_id,
+        keys, values, types
+        );
+
+        set_token_gender(token_data_id, gender);
+
+        update_token_uri_with_properties(token_data_id, background, clothing, earrings, eyebrows, face_accessory, eyes, hair, mouth, neck, tattoo, weapon, grade, gender,);
+
+
+
+     }
+
+      
+    public(friend) fun update_token_weapon_properties(owner_addr: address, token_id: TokenId, weapon: String, grade: String) acquires CollectionInfo {
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
+        let token_data_id = token::create_token_data_id(creator, collection, name);
+        // get weapon weapon
+        let keys = vector<String>[utf8(b"weapon"),];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&weapon),];
+        let types = vector<String>[utf8(b"0x1::string::String"),];
+        token::mutate_tokendata_property(&manager_signer,
+        token_data_id,
+        keys, values, types
+        );
+        
+        let token_id = resolve_token_id(creator, collection, name);
+        let properties = &token::get_property_map(owner_addr, token_id);
+        update_token_uri_with_properties(token_data_id,
         property_map::read_string(properties, &utf8(b"background")),
         property_map::read_string(properties, &utf8(b"clothing")),
         property_map::read_string(properties, &utf8(b"earrings")),
         property_map::read_string(properties, &utf8(b"eyebrows")),
-        property_map::read_string(properties, &utf8(b"face-accessories")),
+        property_map::read_string(properties, &utf8(b"face-accessory")),
         property_map::read_string(properties, &utf8(b"eyes")),
         property_map::read_string(properties, &utf8(b"hair")),
         property_map::read_string(properties, &utf8(b"mouth")),
-        property_map::read_string(properties, &utf8(b"necklace")),
+        property_map::read_string(properties, &utf8(b"neck")),
         property_map::read_string(properties, &utf8(b"tattoo")),
-        property_map::read_string(properties, &utf8(b"weapon")), 
+        weapon, 
         grade,
         get_token_gender(token_data_id));
-     }
+    }
 
-     public(friend) fun set_token_gender(token_data_id: TokenDataId, gender: String) acquires CollectionInfo {
-        let source_addr = @infamous;
-        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
-        let gender_table_mut = &mut borrow_global_mut<CollectionInfo>(source_addr).gender_table;
-        table::add(gender_table_mut, token_data_id, gender);
-     }
      
      public fun get_token_gender(token_data_id: TokenDataId): String acquires CollectionInfo {
         let source_addr = @infamous;
@@ -161,10 +197,11 @@ module infamous::infamous_nft {
         *table::borrow(gender_table, token_data_id)
      }
      
-     public(friend) fun update_token_uri_with_known_properties(token_data_id: TokenDataId,
+
+     fun update_token_uri_with_properties(token_data_id: TokenDataId,
         background: String, clothing: String, earrings: String, eyebrows: String,
-        face_accessories: String, eyes: String, hair: String,  
-        mouth: String, necklace: String, tattoo: String, 
+        face_accessory: String, eyes: String, hair: String,  
+        mouth: String, neck: String, tattoo: String, 
         weapon: String, grade: String, gender: String) {
         let creator = infamous_manager_cap::get_manager_signer();
         let gender_code = resolve_property_value_encode(gender, utf8(b"gender"), gender);
@@ -172,11 +209,11 @@ module infamous::infamous_nft {
         let clothing_code = resolve_property_value_encode(gender, utf8(b"clothing"), clothing);
         let earrings_code = resolve_property_value_encode(gender, utf8(b"earrings"), earrings);
         let eyebrows_code = resolve_property_value_encode(gender, utf8(b"eyebrows"), eyebrows);
-        let face_accessories_code = resolve_property_value_encode(gender, utf8(b"face-accessories"), face_accessories);
+        let face_accessory_code = resolve_property_value_encode(gender, utf8(b"face-accessory"), face_accessory);
         let eyes_code = resolve_property_value_encode(gender, utf8(b"eyes"), eyes);
         let hair_code = resolve_property_value_encode(gender, utf8(b"hair"), hair);
         let mouth_code = resolve_property_value_encode(gender, utf8(b"mouth"), mouth);
-        let necklace_code = resolve_property_value_encode(gender, utf8(b"necklace"), necklace);
+        let neck_code = resolve_property_value_encode(gender, utf8(b"neck"), neck);
         let tattoo_code = resolve_property_value_encode(gender, utf8(b"tattoo"), tattoo);
         let weapon_code = resolve_property_value_encode(gender, utf8(b"weapon"), weapon);
         let grade_code = resolve_property_value_encode(gender, utf8(b"grade"), grade);
@@ -186,11 +223,11 @@ module infamous::infamous_nft {
         string::append(&mut properties_code_string, clothing_code);
         string::append(&mut properties_code_string, earrings_code);
         string::append(&mut properties_code_string, eyebrows_code);
-        string::append(&mut properties_code_string, face_accessories_code);
+        string::append(&mut properties_code_string, face_accessory_code);
         string::append(&mut properties_code_string, eyes_code);
         string::append(&mut properties_code_string, hair_code);
         string::append(&mut properties_code_string, mouth_code);
-        string::append(&mut properties_code_string, necklace_code);
+        string::append(&mut properties_code_string, neck_code);
         string::append(&mut properties_code_string, tattoo_code);
         string::append(&mut properties_code_string, weapon_code);
         string::append(&mut properties_code_string, grade_code);
@@ -210,7 +247,13 @@ module infamous::infamous_nft {
         infamous_properties_url_encode_map::get_property_value_encode(key)
      }
 
-
+    fun set_token_gender(token_data_id: TokenDataId, gender: String) acquires CollectionInfo {
+        let source_addr = @infamous;
+        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
+        let gender_table_mut = &mut borrow_global_mut<CollectionInfo>(source_addr).gender_table;
+        table::add(gender_table_mut, token_data_id, gender);
+     }
+     
      
     
 
@@ -235,7 +278,7 @@ module infamous::infamous_nft {
         minter_addr,
         0,
         0,
-        vector<bool>[false, true, false, false, true],
+        vector<bool>[true, true, true, true, true],
         vector<String>[], vector<vector<u8>>[], vector<String>[],);
 
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);
