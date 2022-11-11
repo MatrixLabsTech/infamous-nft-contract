@@ -26,17 +26,15 @@ async function main() {
   console.log(account)
   const entryFunctionPayload = new TransactionPayloadEntryFunction(
     EntryFunction.natural(
-      `${account.address}::infamous_backend_token_weapon_airdrop_box`,
-      'airdrop_level_five',
+      `${account.address}::infamous_backend_auth`,
+      'delegate',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #14'),
         BCS.bcsToBytes(
           AccountAddress.fromHex(
-            '0x081b61647e533b9fe2267e61c354746e37990dd0112947b9975e8d94509a7614'
+            '0x523b8b8eae6ada0e4af325518c014dbbf8a6ad6404cc4c5583a3b6115e491974'
           )
         ),
-        BCS.bcsSerializeStr('Lv 5'),
       ]
     )
   )
@@ -65,19 +63,4 @@ async function main() {
 
 if (require.main === module) {
   main().then(() => process.exit(0))
-}
-
-export function randomProperty(gender: string, property: string) {
-  const map = getPropertyMap()
-  const propertyMap = map[gender]
-  if (!propertyMap) {
-    throw new Error('gender not support.')
-  }
-  const pMap = propertyMap[property]
-  if (!pMap) {
-    throw new Error('property not support.')
-  }
-  const keys = Object.keys(pMap)
-  const randomIndex = Math.floor(Math.random() * keys.length)
-  return keys[randomIndex]
 }

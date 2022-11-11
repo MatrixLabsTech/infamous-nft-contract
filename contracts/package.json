@@ -5,6 +5,7 @@
   "scripts": {
     "deploy": "./shell/deploy_dev.sh",
     "setmap": "ts-node scripts/set_property_url_map.ts",
+    "auth": "ts-node scripts/auth.ts",
     "openbox": "ts-node scripts/openbox.ts",
     "airdrop": "ts-node scripts/airdrop.ts",
     "openweaponbox": "ts-node scripts/openweaponbox.ts",

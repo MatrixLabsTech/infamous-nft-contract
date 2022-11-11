@@ -31,7 +31,7 @@ async function main() {
       'open_box',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #32'),
+        BCS.bcsSerializeStr('Infamous #14'),
         BCS.bcsSerializeStr(randomProperty(gender, 'background')),
         BCS.bcsSerializeStr(randomProperty(gender, 'clothing')),
         BCS.bcsSerializeStr(randomProperty(gender, 'earrings')),
@@ -44,10 +44,9 @@ async function main() {
         BCS.bcsSerializeStr(randomProperty(gender, 'tattoo')),
         BCS.bcsSerializeStr(gender),
         BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
-        // BCS.bcsSerializeStr('katana'),
-        BCS.bcsSerializeStr('1'),
+        BCS.bcsSerializeStr('Lv 1'),
         BCS.bcsSerializeStr('bronze'),
-        BCS.bcsSerializeStr('low order'),
+        BCS.bcsSerializeStr('30'),
       ]
     )
   )

@@ -31,9 +31,9 @@ async function main() {
       'open_box',
       [],
       [
-        BCS.bcsSerializeStr('Equipment #2'),
+        BCS.bcsSerializeStr('Equipment #12'),
         BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
-        BCS.bcsSerializeStr('bronze'),
+        BCS.bcsSerializeStr('silver'),
         BCS.bcsSerializeStr('100'),
       ]
     )
