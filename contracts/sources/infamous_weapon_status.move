@@ -39,6 +39,7 @@ module infamous::infamous_weapon_status {
         token_weapon_table: Table<TokenId, String>,
         token_wear_events_table: Table<TokenId, EventHandle<WeaponWearEvent>>,
         tokon_wear_weapon_time_table: Table<TokenId, u64>,
+        token_wear_weapon_events: EventHandle<WeaponWearEvent>,
     }
 
     
@@ -100,6 +101,18 @@ module infamous::infamous_weapon_status {
                 weapon_name,
                 time: timestamp::now_seconds(),
             });
+        
+        
+        let token_wear_weapon_events = &mut borrow_global_mut<TokenWearWeapon>(account_addr).token_wear_weapon_events;
+        event::emit_event<WeaponWearEvent>(
+            token_wear_weapon_events,
+            WeaponWearEvent {
+                operator: owner,
+                token_id,
+                weapon_token_id,
+                weapon_name,
+                time: timestamp::now_seconds(),
+            });
     }
 
     
@@ -113,6 +126,7 @@ module infamous::infamous_weapon_status {
                     token_weapon_table: table::new<TokenId, String>(),
                     token_wear_events_table: table::new<TokenId, EventHandle<WeaponWearEvent>>(), 
                     tokon_wear_weapon_time_table: table::new<TokenId, u64>(), 
+                    token_wear_weapon_events: account::new_event_handle<WeaponWearEvent>(account),
                 }
             );
         }

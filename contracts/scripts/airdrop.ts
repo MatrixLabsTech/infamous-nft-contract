@@ -35,10 +35,10 @@ async function main() {
       'airdrop_level_five',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #23'),
+        BCS.bcsSerializeStr('Infamous #1'),
         BCS.bcsToBytes(
           AccountAddress.fromHex(
-            '0x081b61647e533b9fe2267e61c354746e37990dd0112947b9975e8d94509a7614'
+            '0xf62d21943a1af502a0237c9353eb57c17e90bd4da1f65b729525c1597e8df86e'
           )
         ),
         BCS.bcsSerializeStr('Lv 5'),
