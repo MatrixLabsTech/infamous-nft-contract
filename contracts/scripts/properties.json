@@ -79,7 +79,8 @@
       "tang suit 1 (black)": "i",
       "denim jacket": "j",
       "leather jacket 1": "k",
-      "trench coat": "l"
+      "trench coat": "l",
+      "cyberpunk jacket (early bird)": "m"
     },
     "earrings": {
       "null": "0",
@@ -137,7 +138,9 @@
       "scar 1": "G",
       "scar 2": "H",
       "monocle": "I",
-      "green sunglasses": "J"
+      "green sunglasses": "J",
+      "cyberpunk glasses (early bird)": "K",
+      "cyberware (early bird)": "L"
     },
     "hair": {
       "null": "0",
@@ -180,7 +183,8 @@
       "medium fringe (brown)": "b",
       "medium fringe (red brown)": "c",
       "long straight (gray)": "d",
-      "long straight (white)": "e"
+      "long straight (white)": "e",
+      "side part 3 (silver)": "f"
     },
     "mouth": {
       "null": "0",
@@ -227,26 +231,27 @@
       "iron fan": "K",
       "vector gun": "L",
       "explosives": "M",
-      "nunchaku": "N",
-      "crossbow": "O",
-      "DBS": "P",
-      "FN SCAR": "Q",
-      "caliburn": "R",
-      "golden cudgel": "S",
-      "M4A1": "T",
-      "AK-47": "U",
-      "golf club": "V",
-      "iron claw": "W",
-      "sawn-off shotgun": "X",
-      "flamethrower": "Y",
-      "chainsaw": "Z",
-      "bow and arrow": "a",
-      "grenade launcher": "b",
-      "AWM": "c",
-      "mace": "d",
-      "warglaive of azzinoth": "e",
-      "gatling gun": "f",
-      "RPG": "g"
+      "cyberpunk gun (early bird)": "N",
+      "nunchaku": "O",
+      "crossbow": "P",
+      "DBS": "Q",
+      "FN SCAR": "R",
+      "caliburn": "S",
+      "golden cudgel": "T",
+      "M4A1": "U",
+      "AK-47": "V",
+      "golf club": "W",
+      "iron claw": "X",
+      "sawn-off shotgun": "Y",
+      "flamethrower": "Z",
+      "chainsaw": "a",
+      "bow and arrow": "b",
+      "grenade launcher": "c",
+      "AWM": "d",
+      "mace": "e",
+      "warglaive of azzinoth": "f",
+      "gatling gun": "g",
+      "RPG": "h"
     },
     "grade": { "bronze": "0", "silver": "1", "gold": "2" }
   },
@@ -339,7 +344,8 @@
       "leather jacket 1": "q",
       "leather trench coat": "r",
       "studded leather jacket 2": "s",
-      "fur coat 1": "t"
+      "fur coat 1": "t",
+      "cyberpunk jacket (early bird)": "u"
     },
     "earrings": {
       "null": "0",
@@ -401,7 +407,9 @@
       "eye makeup (vampire)": "M",
       "sunglasses 4": "N",
       "eyepatch 1": "O",
-      "sunglasses 1": "P"
+      "sunglasses 1": "P",
+      "cyberpunk glasses (early bird)": "Q",
+      "cyberware (early bird)": "R"
     },
     "hair": {
       "null": "0",
@@ -439,7 +447,8 @@
       "layered long hair (red)": "W",
       "hime cut (black)": "X",
       "double ponytail (violet)": "Y",
-      "double ponytail (brown)": "Z"
+      "double ponytail (brown)": "Z",
+      "short dreadlocks (silver)": "a"
     },
     "mouth": {
       "null": "0",
@@ -489,26 +498,27 @@
       "iron fan": "K",
       "vector gun": "L",
       "explosives": "M",
-      "nunchaku": "N",
-      "crossbow": "O",
-      "DBS": "P",
-      "FN SCAR": "Q",
-      "caliburn": "R",
-      "golden cudgel": "S",
-      "M4A1": "T",
-      "AK-47": "U",
-      "golf club": "V",
-      "iron claw": "W",
-      "sawn-off shotgun": "X",
-      "flamethrower": "Y",
-      "chainsaw": "Z",
-      "bow and arrow": "a",
-      "grenade launcher": "b",
-      "AWM": "c",
-      "mace": "d",
-      "warglaive of azzinoth": "e",
-      "gatling gun": "f",
-      "RPG": "g"
+      "cyberpunk gun (early bird)": "N",
+      "nunchaku": "O",
+      "crossbow": "P",
+      "DBS": "Q",
+      "FN SCAR": "R",
+      "caliburn": "S",
+      "golden cudgel": "T",
+      "M4A1": "U",
+      "AK-47": "V",
+      "golf club": "W",
+      "iron claw": "X",
+      "sawn-off shotgun": "Y",
+      "flamethrower": "Z",
+      "chainsaw": "a",
+      "bow and arrow": "b",
+      "grenade launcher": "c",
+      "AWM": "d",
+      "mace": "e",
+      "warglaive of azzinoth": "f",
+      "gatling gun": "g",
+      "RPG": "h"
     },
     "grade": { "bronze": "0", "silver": "1", "gold": "2" }
   }

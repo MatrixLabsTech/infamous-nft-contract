@@ -96,13 +96,18 @@ module infamous::infamous_lock {
         token::direct_transfer(&manager_signer, sender, token_id, 1);
     }
 
-    public entry fun unlock_infamous_nft_admin(sender: &signer, token_id: TokenId,) acquires TokenLocks, TokenLocksData {
+    public entry fun unlock_infamous_nft_admin(sender: &signer, name: String,) acquires TokenLocks, TokenLocksData {
         
         let sender_addr = signer::address_of(sender);
         assert!(infamous_backend_auth::has_capability(sender_addr), error::unauthenticated(EACCOUNT_MUSTBE_AUTHED));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
+
+        
+        let creator = manager_addr;
+        let collection = infamous_common::infamous_collection_name();
+        let token_id = infamous_nft::resolve_token_id(creator, collection, name);
 
         let locking_token_address = &borrow_global<TokenLocksData>(manager_addr).locking_token_address;
         let locker_addr = *table::borrow(locking_token_address, token_id);

@@ -5,7 +5,7 @@ export async function getConfigAccount() {
     .readFileSync(path.resolve(__dirname, '../../.aptos/config.yaml'))
     .toString()
 
-  const defaultPrivateKey = /private_key: "(.*)"/g.exec(accountConfig)[1]
+  const defaultPrivateKey = /private_key: '(.*)'/g.exec(accountConfig)[1]
 
   if (!defaultPrivateKey) {
     throw new Error('Account Config not found in .aptos')

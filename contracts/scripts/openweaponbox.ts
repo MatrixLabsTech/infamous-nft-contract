@@ -6,7 +6,7 @@ import {
   AptosClient,
 } from 'aptos'
 import { getPropertyMap } from './get_properties'
-import { client } from './utils/base'
+import { client, testnetClient } from './utils/base'
 import { getConfigAccount } from './utils/config'
 
 const {
@@ -17,6 +17,11 @@ const {
   ChainId,
 } = TxnBuilderTypes
 async function main() {
+  const env = process.argv[2]
+  let realClient = client
+  if (env === 'testnet') {
+    realClient = testnetClient
+  }
   const defaultPrivateKey = await getConfigAccount()
   const deployer = new AptosAccount(
     new HexString(defaultPrivateKey).toUint8Array()
@@ -31,7 +36,7 @@ async function main() {
       'open_box',
       [],
       [
-        BCS.bcsSerializeStr('Equipment #12'),
+        BCS.bcsSerializeStr('Equipment #16'),
         BCS.bcsSerializeStr(randomProperty(gender, 'weapon')),
         BCS.bcsSerializeStr('silver'),
         BCS.bcsSerializeStr('100'),
@@ -40,8 +45,8 @@ async function main() {
   )
 
   const [{ sequence_number: sequenceNumber }, chainId] = await Promise.all([
-    client.getAccount(deployer.address()),
-    client.getChainId(),
+    realClient.getAccount(deployer.address()),
+    realClient.getChainId(),
   ])
 
   const rawTxn = new RawTransaction(
@@ -61,11 +66,11 @@ async function main() {
   // Sign the raw transaction with account1's private key
   const bcsTxn = AptosClient.generateBCSTransaction(deployer, rawTxn)
 
-  const transactionRes = await client.submitSignedBCSTransaction(bcsTxn)
+  const transactionRes = await realClient.submitSignedBCSTransaction(bcsTxn)
 
   console.log({ hash: transactionRes.hash })
 
-  await client.waitForTransaction(transactionRes.hash)
+  await realClient.waitForTransaction(transactionRes.hash)
 }
 
 if (require.main === module) {

@@ -6,6 +6,24 @@ export const FAUCET_URL = 'https://faucet.devnet.aptoslabs.com'
 export const client = new AptosClient(NODE_URL)
 export const faucetClient = new FaucetClient(NODE_URL, FAUCET_URL)
 
+export const NODE_TESTNET_URL = 'https://fullnode.testnet.aptoslabs.com'
+export const FAUCET_TESTNET_URL = 'https://faucet.testnet.aptoslabs.com'
+
+export const testnetClient = new AptosClient(NODE_TESTNET_URL)
+export const testnetFaucetClient = new FaucetClient(
+  NODE_TESTNET_URL,
+  FAUCET_TESTNET_URL
+)
+
+export const NODE_MAINNET_URL = 'https://fullnode.testnet.aptoslabs.com'
+export const FAUCET_MAINNET_URL = 'https://faucet.testnet.aptoslabs.com'
+
+export const mainnetClient = new AptosClient(NODE_MAINNET_URL)
+export const mainnetFaucetClient = new FaucetClient(
+  NODE_MAINNET_URL,
+  FAUCET_MAINNET_URL
+)
+
 export async function accountBalance(
   accountAddress: MaybeHexString
 ): Promise<number | null> {
