@@ -36,14 +36,14 @@ module infamous::infamous_weapon_status {
 
     // store in manager account
     struct TokenWearWeapon has key {
-        token_weapon_table: Table<TokenId, String>,
+        token_weapon_table: Table<TokenId, TokenId>,
         token_wear_events_table: Table<TokenId, EventHandle<WeaponWearEvent>>,
         tokon_wear_weapon_time_table: Table<TokenId, u64>,
         token_wear_weapon_events: EventHandle<WeaponWearEvent>,
     }
 
     
-    public fun get_token__weapon_token_name(token_id: TokenId): Option<String> acquires TokenWearWeapon { 
+    public fun get_token__weapon_token_id(token_id: TokenId): Option<TokenId> acquires TokenWearWeapon { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
         let cur_weapon = option::none();
@@ -58,7 +58,7 @@ module infamous::infamous_weapon_status {
     }
 
     
-    public(friend) fun update_token__weapon_token_name(token_id: TokenId, weapon_token_name: String) acquires TokenWearWeapon { 
+    public(friend) fun update_token__weapon_token_id(token_id: TokenId, weapon_token_id: TokenId) acquires TokenWearWeapon { 
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -79,7 +79,7 @@ module infamous::infamous_weapon_status {
         if(table::contains(token_weapon_table, token_id)) {
             table::remove(token_weapon_table, token_id);
         };
-        table::add(token_weapon_table, token_id, weapon_token_name);
+        table::add(token_weapon_table, token_id, weapon_token_id);
         
     }
 

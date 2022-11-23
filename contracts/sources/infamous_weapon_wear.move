@@ -63,13 +63,13 @@ module infamous::infamous_weapon_wear {
             assert!(sender_addr == lockd_addr, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
 
             // 3.check has old token
-            let old_weapon_token_name = infamous_weapon_status::get_token__weapon_token_name(token_id);
-            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(ETOKEN_NOT_REVEALED));
+            let old_weapon_token_id = infamous_weapon_status::get_token__weapon_token_id(token_id);
+            assert!(option::is_some(&old_weapon_token_id), error::invalid_argument(ETOKEN_NOT_REVEALED));
 
-            exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
+            exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_id, new_weapon_token_id);
             
             // update token bind weapon
-            infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
+            infamous_weapon_status::update_token__weapon_token_id(token_id, new_weapon_token_id);
             
             // update token weapon properties
             let (weapon, grade) = get_weapon__weapon_property(manager_addr, new_weapon_token_id);
@@ -82,13 +82,13 @@ module infamous::infamous_weapon_wear {
             assert!(token::balance_of(sender_addr, token_id) == 1, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
             
             // 2.check token revealed
-            let old_weapon_token_name = infamous_weapon_status::get_token__weapon_token_name(token_id);
-            assert!(option::is_some(&old_weapon_token_name), error::invalid_argument(ETOKEN_NOT_REVEALED));
+            let old_weapon_token_id = infamous_weapon_status::get_token__weapon_token_id(token_id);
+            assert!(option::is_some(&old_weapon_token_id), error::invalid_argument(ETOKEN_NOT_REVEALED));
 
-            exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_name, new_weapon_token_id);
+            exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_id, new_weapon_token_id);
 
             // update token bind weapon
-            infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_name);
+            infamous_weapon_status::update_token__weapon_token_id(token_id, new_weapon_token_id);
 
             // update token weapon properties
             let (weapon, grade) = get_weapon__weapon_property(sender_addr, new_weapon_token_id);
@@ -102,17 +102,16 @@ module infamous::infamous_weapon_wear {
     }
 
 
-     fun exchange__old_weapon__to__new_weapon(sender: &signer, manager_signer: &signer, old_weapon_token_name: Option<String>, new_weapon_token_id: TokenId) {
+     fun exchange__old_weapon__to__new_weapon(sender: &signer, manager_signer: &signer, old_weapon_token_id: Option<TokenId>, new_weapon_token_id: TokenId) {
         let manager_addr = signer::address_of(manager_signer);
         let weapon_creator = manager_addr;
         let weapon_collection_name = infamous_common::infamous_weapon_collection_name();
         // 1.transfer back old weapon
-        if (option::is_some(&old_weapon_token_name)) { // old weapon
-            let old_weapon_name = option::extract(&mut old_weapon_token_name);
-            let old_weapon_token_id = infamous_weapon_nft::resolve_token_id(weapon_creator, weapon_collection_name, old_weapon_name);
-            assert!(token::balance_of(manager_addr, old_weapon_token_id) == 1, error::invalid_state(EOLD_WEAPON_MISSED));
+        if (option::is_some(&old_weapon_token_id)) { // old weapon
+            let old_weapon_token_id_extract = option::extract(&mut old_weapon_token_id);
+            assert!(token::balance_of(manager_addr, old_weapon_token_id_extract) == 1, error::invalid_state(EOLD_WEAPON_MISSED));
             // transfer back old weapon
-            transfer(manager_signer, sender, old_weapon_token_id);
+            transfer(manager_signer, sender, old_weapon_token_id_extract);
         };
 
         // 2. lock new weapon to manager
@@ -220,10 +219,13 @@ module infamous::infamous_weapon_wear {
         assert!(time1 == 2000, 1);
 
         infamous_upgrade_level::upgrade(token_index_1_name);
-        let weapon_token_1_name = utf8(b"Equipment #1");
+        
+        let base_token_name = infamous_common::infamous_weapon_base_token_name();
+        let weapon_token_1_name = infamous_common::append_num(base_token_name, 1);
 
-        infamous_backend_token_weapon_airdrop_box::airdrop_level_five(user, token_index_1_name, receiver_addr, utf8(b"LV5"),);  
-        let weapon_token_2_name = utf8(b"Equipment #2");
+        infamous_backend_token_weapon_airdrop_box::airdrop_level_five(user, token_index_1_name, receiver_addr, utf8(b"LV5"),); 
+        let weapon_token_2_name = infamous_common::append_num(base_token_name, 2);
+
         // let weapon_collection_name = infamous_common::infamous_weapon_collection_name();
         // let weapon_token_id = infamous_nft::resolve_token_id(manager_addr, weapon_collection_name, weapon_token_2_name);
         // assert!(token::balance_of(receiver_addr, weapon_token_id) == 1, 1);

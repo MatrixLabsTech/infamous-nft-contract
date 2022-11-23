@@ -27,6 +27,8 @@ module infamous::infamous_upgrade_level {
     const FULL_LEVEL: u64 = 5;
     const EACH_LEVEL_EXP_OF_PRESALE: u64 = 60;
 
+    const FILVE_LEVEL_AIRDROP: u64 = 5;
+
 
     struct TokenUpgradeEvent has drop, store {
         token_id: TokenId,

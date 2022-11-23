@@ -30,12 +30,8 @@ module infamous::infamous_common {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs.")
     }
 
-    public fun infamous_weapon_key(): String {
-        string::utf8(b"weapon")
-    }
-
     public fun infamous_weapon_collection_name(): String {
-        string::utf8(b"InfamousEquipmentNFT")
+        string::utf8(b"InfamousWeaponNFT")
     }
 
     public fun infamous_weapon_collection_uri(): String {
@@ -43,9 +39,8 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_base_token_name(): String {
-        string::utf8(b"Equipment #")
+        string::utf8(b"Infamous Weapon #")
     }
-
     
     public fun infamous_weapon_base_token_uri(): String {
         string::utf8(b"https://media.nft.infamousnft.xyz/media/weapon/")
@@ -56,6 +51,32 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_description(): String {
+        string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
+    }
+
+
+
+    public fun infamous_accessory_collection_name(): String {
+        string::utf8(b"InfamousAccessoryNFT")
+    }
+
+    public fun infamous_accessory_collection_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/accessory-collection.png")
+    }
+
+    public fun infamous_accessory_base_token_name(): String {
+        string::utf8(b"Infamous Accessory #")
+    }
+    
+    public fun infamous_accessory_base_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/media/accessory/")
+    }
+
+    public fun infamous_accessory_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/accessory_box.png")
+    }
+
+    public fun infamous_accessory_description(): String {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
     }
 

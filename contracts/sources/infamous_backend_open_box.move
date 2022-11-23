@@ -17,6 +17,7 @@ module infamous::infamous_backend_open_box {
      use infamous::infamous_backend_auth;
      use infamous::infamous_weapon_nft;
      use infamous::infamous_weapon_status;
+     use infamous::infamous_accessory_nft;
      
     const EACCOUNT_MUSTBE_AUTHED: u64 = 1;
     const EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT: u64 = 2;
@@ -72,15 +73,29 @@ module infamous::infamous_backend_open_box {
         let token_mint_time = infamous_nft::get_token_mint_time(token_id);
         assert!(timestamp::now_seconds() - token_mint_time >= OPEN_TIME_GAP, error::invalid_argument(EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT));
 
+
         // airdrop weapon
         let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, tier, grade, attributes);
-        let token_data_id = token::create_token_data_id(creator, collection, name);
-       
+        
         // update token bind weapon token name
-        let (_creator, _collection, weapon_token_name, _property_version) = token::get_token_id_fields(&weapon_token_id);
-        infamous_weapon_status::update_token__weapon_token_name(token_id, weapon_token_name);
+        infamous_weapon_status::update_token__weapon_token_id(token_id, weapon_token_id);
+
+
+        // airdrop accessory  accessory: String, kind: String, gender: String, attributes: String,
+        let tattoo_token_id = infamous_accessory_nft::airdrop(manager_addr, tattoo, utf8(b"tattoo"), gender, attributes);
+        let clothing_token_id = infamous_accessory_nft::airdrop(manager_addr, clothing, utf8(b"clothing"), gender, attributes);
+        let face_accessory_token_id = infamous_accessory_nft::airdrop(manager_addr, face_accessory, utf8(b"face-accessory"), gender, attributes);
+        let earring_token_id = infamous_accessory_nft::airdrop(manager_addr, earring, utf8(b"earring"), gender, attributes);
+        let neck_token_id = infamous_accessory_nft::airdrop(manager_addr, neck, utf8(b"neck"), gender, attributes);
+        let mouth_token_id = infamous_accessory_nft::airdrop(manager_addr, mouth, utf8(b"mouth"), gender, attributes);
+        infamous_weapon_status::update_token__accessory_token_ids(token_id, 
+        vector<String>[utf8(b"tattoo"), utf8(b"clothing"), utf8(b"face-accessory"), utf8(b"earring"), utf8(b"neck"), utf8(b"mouth") ],
+        vector<TokenId>[tattoo_token_id, clothing_token_id, face_accessory_token_id, earring_token_id, neck_token_id, mouth_token_id ],
+        );
+       
         
         // update token properties
+        let token_data_id = token::create_token_data_id(creator, collection, name);
         infamous_nft::mutate_token_properties(&manager_signer, token_data_id, background, clothing, earrings, eyebrows, face_accessory, eyes, hair, mouth, neck, tattoo, weapon, grade, gender,);
         update_box_opened(token_id);
     }
