@@ -72,11 +72,13 @@ module infamous::infamous_properties_url_encode_map {
         
         set_property_map(
             user,
-            vector<String>[utf8(b"femalegenderfemale"), utf8(b"femalebackgroundblue"), utf8(b"femaleclothinghoodie"), utf8(b"femaleearringsnull"), utf8(b"femaleeyebrowsextended eyebrowss"), 
+            vector<String>[utf8(b"femalegenderfemale"), utf8(b"femalebackgroundblue"), 
+            utf8(b"femaleclothinghoodie"), utf8(b"femaleclothingaloha shirt 1"), utf8(b"femaleearringsnull"), utf8(b"femaleeyebrowsextended eyebrowss"), 
             utf8(b"femaleface-accessorynull"), utf8(b"femaleeyesblack eyes"), utf8(b"femalehairbob cut 1 (navy blue)"), utf8(b"femalemouthclosed"), 
             utf8(b"femalenecknull"), utf8(b"femaletattoonull"), utf8(b"femaleweapondagger"), 
             utf8(b"femalegradesliver"), utf8(b"femalegradeiron"), utf8(b"femaleweaponkarambit"), utf8(b"femaleweaponrevolver")], 
-            vector<String>[utf8(b"0"), utf8(b"0"), utf8(b"0"), utf8(b"0"), utf8(b"0"), 
+            vector<String>[utf8(b"0"), utf8(b"0"), 
+            utf8(b"0"), utf8(b"1"), utf8(b"0"), utf8(b"0"), 
             utf8(b"0"), utf8(b"0"), utf8(b"0"), utf8(b"0"), 
             utf8(b"0"), utf8(b"0"), utf8(b"0"), 
             utf8(b"0"), utf8(b"1"), utf8(b"2"), utf8(b"3")]

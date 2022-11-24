@@ -32,7 +32,7 @@ export const deployment = {
         infamousLock: "infamous_lock",
         infamousUpgradeLevel: "infamous_upgrade_level",
         infamousWeaponNft: "infamous_weapon_nft",
-        infamousWeaponStatus: "infamous_weapon_status",
+        infamousWeaponStatus: "infamous_link_status",
         infamousWeaponWear: "infamous_weapon_wear",
     },
     devnet: {
@@ -47,7 +47,7 @@ export const deployment = {
         infamousLock: "infamous_lock",
         infamousUpgradeLevel: "infamous_upgrade_level",
         infamousWeaponNft: "infamous_weapon_nft",
-        infamousWeaponStatus: "infamous_weapon_status",
+        infamousWeaponStatus: "infamous_link_status",
         infamousWeaponWear: "infamous_weapon_wear",
     },
 };

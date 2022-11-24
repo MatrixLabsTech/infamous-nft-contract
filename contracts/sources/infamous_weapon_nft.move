@@ -16,7 +16,7 @@ module infamous::infamous_weapon_nft {
     use infamous::infamous_manager_cap;
 
     friend infamous::infamous_backend_open_box;
-    friend infamous::infamous_backend_token_weapon_airdrop_box;
+    friend infamous::infamous_upgrade_level;
     friend infamous::infamous_backend_token_weapon_open_box;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
@@ -55,7 +55,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public(friend) fun airdrop_box(receiver_addr: address, tier: String,): TokenId acquires CollectionInfo {
+    public(friend) fun airdrop_box(receiver_addr: address, tier: String, access: String): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
@@ -70,10 +70,23 @@ module infamous::infamous_weapon_nft {
         let name = infamous_common::append_num(base_token_name, cur);
         let uri = infamous_common::infamous_weapon_token_uri();
 
+        
+        let keys = vector<String>[utf8(b"tier"), ];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&tier),];
+        let types = vector<String>[utf8(b"0x1::string::String"),];
+
+
+        if(!string::is_empty(&access)){
+            keys = vector<String>[utf8(b"tier"), utf8(b"access"), ];
+            values = vector<vector<u8>>[bcs::to_bytes<String>(&tier), bcs::to_bytes<String>(&access), ];
+            types = vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), ];
+        };
+
+
         create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, 
-            vector<String>[ utf8(b"tier"), ], 
-            vector<vector<u8>>[ bcs::to_bytes<String>(&tier), ], 
-            vector<String>[ utf8(b"0x1::string::String"), ],
+            keys, 
+            values, 
+            types,
         );
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 

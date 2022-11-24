@@ -257,6 +257,7 @@ module infamous::infamous_lock {
         use aptos_framework::account; 
         use infamous::infamous_properties_url_encode_map;
         use infamous::infamous_weapon_nft;
+        use infamous::infamous_accessory_nft;
         use std::string::{utf8};
 
         timestamp::set_time_has_started_for_testing(framework);
@@ -268,6 +269,7 @@ module infamous::infamous_lock {
         infamous_manager_cap::initialize(user);
         infamous_nft::initialize(user);
         infamous_weapon_nft::initialize(user);
+        infamous_accessory_nft::initialize(user);
         infamous_properties_url_encode_map::initialize(user);
 
         let receiver_addr = signer::address_of(receiver);

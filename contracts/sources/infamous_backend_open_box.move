@@ -2,7 +2,7 @@
 module infamous::infamous_backend_open_box {
 
      use std::signer;
-     use std::string::{String};
+     use std::string::{String, utf8};
      use std::error;
 
 
@@ -16,7 +16,7 @@ module infamous::infamous_backend_open_box {
      use infamous::infamous_nft;
      use infamous::infamous_backend_auth;
      use infamous::infamous_weapon_nft;
-     use infamous::infamous_weapon_status;
+     use infamous::infamous_link_status;
      use infamous::infamous_accessory_nft;
      
     const EACCOUNT_MUSTBE_AUTHED: u64 = 1;
@@ -78,19 +78,19 @@ module infamous::infamous_backend_open_box {
         let weapon_token_id = infamous_weapon_nft::airdrop(manager_addr, weapon, tier, grade, attributes);
         
         // update token bind weapon token name
-        infamous_weapon_status::update_token__weapon_token_id(token_id, weapon_token_id);
+        infamous_link_status::update_token__weapon_token_id(token_id, weapon_token_id);
 
 
-        // airdrop accessory  accessory: String, kind: String, gender: String, attributes: String,
+        // airdrop accessory
         let tattoo_token_id = infamous_accessory_nft::airdrop(manager_addr, tattoo, utf8(b"tattoo"), gender, attributes);
         let clothing_token_id = infamous_accessory_nft::airdrop(manager_addr, clothing, utf8(b"clothing"), gender, attributes);
         let face_accessory_token_id = infamous_accessory_nft::airdrop(manager_addr, face_accessory, utf8(b"face-accessory"), gender, attributes);
-        let earring_token_id = infamous_accessory_nft::airdrop(manager_addr, earring, utf8(b"earring"), gender, attributes);
+        let earrings_token_id = infamous_accessory_nft::airdrop(manager_addr, earrings, utf8(b"earrings"), gender, attributes);
         let neck_token_id = infamous_accessory_nft::airdrop(manager_addr, neck, utf8(b"neck"), gender, attributes);
         let mouth_token_id = infamous_accessory_nft::airdrop(manager_addr, mouth, utf8(b"mouth"), gender, attributes);
-        infamous_weapon_status::update_token__accessory_token_ids(token_id, 
-        vector<String>[utf8(b"tattoo"), utf8(b"clothing"), utf8(b"face-accessory"), utf8(b"earring"), utf8(b"neck"), utf8(b"mouth") ],
-        vector<TokenId>[tattoo_token_id, clothing_token_id, face_accessory_token_id, earring_token_id, neck_token_id, mouth_token_id ],
+        infamous_link_status::update_token__accessory_token_ids(token_id, 
+        vector<String>[utf8(b"tattoo"), utf8(b"clothing"), utf8(b"face-accessory"), utf8(b"earrings"), utf8(b"neck"), utf8(b"mouth") ],
+        vector<TokenId>[tattoo_token_id, clothing_token_id, face_accessory_token_id, earrings_token_id, neck_token_id, mouth_token_id ],
         );
        
         
@@ -134,6 +134,7 @@ module infamous::infamous_backend_open_box {
         use infamous::infamous_nft;
         use infamous::infamous_properties_url_encode_map;
         use infamous::infamous_weapon_nft;
+        use infamous::infamous_accessory_nft;
         use std::string::{utf8};
 
         timestamp::set_time_has_started_for_testing(framework);
@@ -145,6 +146,7 @@ module infamous::infamous_backend_open_box {
         infamous_manager_cap::initialize(user);
         infamous_nft::initialize(user);
         infamous_weapon_nft::initialize(user);
+        infamous_accessory_nft::initialize(user);
         infamous_properties_url_encode_map::initialize(user);
 
         let receiver_addr = signer::address_of(receiver);

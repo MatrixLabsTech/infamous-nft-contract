@@ -16,6 +16,7 @@ module infamous::infamous_accessory_nft {
     use infamous::infamous_manager_cap;
 
     friend infamous::infamous_backend_open_box;
+    friend infamous::infamous_backend_token_accessory_open_box;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
 
