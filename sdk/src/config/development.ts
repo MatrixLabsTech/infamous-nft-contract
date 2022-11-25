@@ -21,13 +21,14 @@ export interface IDeployment {
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0x0e33dbf3f38e082f35ac560a59a7c44a9663b3af23d9e56f8df14289dc7b71cb",
+        moduleAddress: "0x7daf4788c3df39ddca1403cc4d8caf84a1ee8553b84cd7d3b2f99683df6fff4f",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop_box",
         infamousBackendTokenWeaponOpenBox: "infamous_backend_token_weapon_open_box",
         infamousCommon: "infamous_common",
         infamousManagerCap: "infamous_manager_cap",
+        infamousAccessoryNft: "infamous_accessory_nft",
         infamousNft: "infamous_nft",
         infamousLock: "infamous_lock",
         infamousUpgradeLevel: "infamous_upgrade_level",
@@ -36,13 +37,14 @@ export const deployment = {
         infamousWeaponWear: "infamous_weapon_wear",
     },
     devnet: {
-        moduleAddress: "0x0e33dbf3f38e082f35ac560a59a7c44a9663b3af23d9e56f8df14289dc7b71cb",
+        moduleAddress: "0x7daf4788c3df39ddca1403cc4d8caf84a1ee8553b84cd7d3b2f99683df6fff4f",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponAirdrop: "infamous_backend_token_weapon_airdrop_box",
         infamousBackendTokenWeaponOpenBox: "infamous_backend_token_weapon_open_box",
         infamousCommon: "infamous_common",
         infamousManagerCap: "infamous_manager_cap",
+        infamousAccessoryNft: "infamous_accessory_nft",
         infamousNft: "infamous_nft",
         infamousLock: "infamous_lock",
         infamousUpgradeLevel: "infamous_upgrade_level",

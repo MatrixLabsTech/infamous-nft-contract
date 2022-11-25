@@ -273,19 +273,19 @@ module infamous::infamous_change_accesory {
         infamous_upgrade_level::upgrade(token_index_1_name);
         
         let base_token_name = infamous_common::infamous_accessory_base_token_name();
-        let _accessory_token_1_name = infamous_common::append_num(base_token_name, 1);
+        let accessory_token_1_name = infamous_common::append_num(base_token_name, 2);
 
-        let accessory_token_2_name = infamous_common::append_num(base_token_name, 3);
+        let accessory_token_2_name = infamous_common::append_num(base_token_name, 7);
 
         infamous_backend_token_accessory_open_box::open_box(user, accessory_token_2_name, utf8(b"aloha shirt 1"), utf8(b"clothing"), gender, utf8(b"100"));
 
          change_accessory(receiver, token_index_1_name, accessory_token_2_name);
-        // timestamp::fast_forward_seconds(60);
-        //  change_accessory(receiver, token_index_1_name, accessory_token_1_name);
+        timestamp::fast_forward_seconds(60);
+         change_accessory(receiver, token_index_1_name, accessory_token_1_name);
 
-        // timestamp::fast_forward_seconds(60);
+        timestamp::fast_forward_seconds(60);
          
-        //  change_accessory(receiver, token_index_1_name, accessory_token_2_name);
+         change_accessory(receiver, token_index_1_name, accessory_token_2_name);
 
 
 

@@ -22,6 +22,7 @@ module infamous::infamous_upgrade_level {
     use infamous::infamous_nft;
     use infamous::infamous_common;
     use infamous::infamous_weapon_nft;
+    use infamous::infamous_accessory_nft;
 
     const EEXP_NOT_ENOUGH_TO_UPGRADE: u64 = 1;
     const ETOKEN_IS_FULL_LEVEL: u64 = 2;
@@ -149,7 +150,7 @@ module infamous::infamous_upgrade_level {
         infamous_weapon_nft::airdrop_box(receiver_addr,  utf8(b"Lv 15"), utf8(b"early bird"));
 
         // airdrop early bird accessory
-        infamous_weapon_nft::airdrop_box(receiver_addr,  utf8(b"Lv 15"), utf8(b"early bird"));
+        infamous_accessory_nft::airdrop_box(receiver_addr, utf8(b"early bird"));
 
     }
 

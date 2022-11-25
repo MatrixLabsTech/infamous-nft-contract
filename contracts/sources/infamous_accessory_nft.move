@@ -17,6 +17,7 @@ module infamous::infamous_accessory_nft {
 
     friend infamous::infamous_backend_open_box;
     friend infamous::infamous_backend_token_accessory_open_box;
+    friend infamous::infamous_upgrade_level;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
 
