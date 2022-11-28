@@ -6,6 +6,7 @@ import {
     IDeployment,
     infamousCollectionName,
     weaponCollectionName,
+    accessoryCollectionName,
 } from "./config/development";
 import {IManagerAccountCapability} from "./ManagerAccountCapability";
 import {
@@ -25,12 +26,19 @@ import {
 } from "./CollectionInfo";
 import {decodeString, decodeU64, paramToHex} from "./utils/param";
 import {AptosClient, TokenClient} from "aptos";
-import {DEVNET_REST_SERVICE, TESTNET_REST_SERVICE} from "./consts/networks";
+import {
+    DEVNET_GRAPHQL_SERVICE,
+    DEVNET_REST_SERVICE,
+    TESTNET_GRAPHQL_SERVICE,
+    TESTNET_REST_SERVICE,
+} from "./consts/networks";
 import {ITokenLocks, ITokenLocksData} from "./LockingInfo";
-import {IWearWeaponInfo, WearWeaponEvents, WearWeaponHistoryItem} from "./WearWeaponInfo";
-import {IAirdropInfo, IUpgradeInfo} from "./UpgradeInfo";
+import {ILinkInfo, LinkEvents, LinkHistoryItem} from "./LinkInfo";
+import {IUpgradeInfo} from "./UpgradeInfo";
 import {IOpenBoxStatus} from "./OpenBoxStatus";
 import {localCache} from "./utils/localCache";
+import {TokenQueryData} from "./CollectionQueryInfo";
+import {postData} from "./utils/http";
 export enum AptosNetwork {
     Testnet = "Testnet",
     Mainnet = "Mainnet",
@@ -41,16 +49,21 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
     readClient: AptosClient;
     deployment: IDeployment;
     tokenClient: TokenClient;
-    manager_addr?: string;
+    manager_addr: string;
+    graphyql_url: string;
     constructor(network: AptosNetwork = AptosNetwork.Devnet) {
         if (network === AptosNetwork.Testnet) {
             this.readClient = new AptosClient(TESTNET_REST_SERVICE);
             this.deployment = deployment.testnet;
             this.tokenClient = new TokenClient(this.readClient);
+            this.manager_addr = deployment.testnet.managerAddress;
+            this.graphyql_url = TESTNET_GRAPHQL_SERVICE;
         } else {
             this.readClient = new AptosClient(DEVNET_REST_SERVICE);
             this.deployment = deployment.devnet;
             this.tokenClient = new TokenClient(this.readClient);
+            this.manager_addr = deployment.devnet.managerAddress;
+            this.graphyql_url = DEVNET_GRAPHQL_SERVICE;
         }
     }
     mintTransaction(count: string): ITransaction {
@@ -97,6 +110,14 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             type_arguments: [],
         };
     }
+    changeAccessoryTransaction(tokenName: string, weaponName: string): ITransaction {
+        return {
+            type: "entry_function_payload",
+            function: `${this.deployment.moduleAddress}::${this.deployment.infamousChangeAccessory}::change_accessory`,
+            arguments: [paramToHex(tokenName, "0x1::string::String"), paramToHex(weaponName, "0x1::string::String")],
+            type_arguments: [],
+        };
+    }
 
     async resolveTokenId(tokenName: string): Promise<ITokenId> {
         const managerAddress = await this.getManagerAddress();
@@ -120,6 +141,17 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
                 name: tokenName,
             },
         };
+    }
+
+    async queryTokenOwned(addr: string, offset = 0, limit = 10): Promise<TokenQueryData[]> {
+        const owned = await postData(`${this.graphyql_url}`, {
+            query: 'query CurrentTokens($owner_address: String, $offset: Int, $limit: Int) {\n  current_token_ownerships(\n    order_by: {last_transaction_version: desc}\n    offset: $offset\n  limit: $limit\n   where: {owner_address: {_eq: $owner_address}, amount: {_gt: "0"}, table_type: {_eq: "0x3::token::TokenStore"}}\n  ) {\n    token_data_id_hash\n    name\n    collection_name\n    property_version\n    amount\n    token_properties\n    current_token_data {\n      default_properties\n      creator_address\n      metadata_uri\n      name\n    }\n    owner_address\n  }\n}\n',
+            variables: {owner_address: addr, offset: offset, limit: limit},
+            operationName: "CurrentTokens",
+        });
+
+        console.log(owned);
+        return [];
     }
 
     async isTokenOwner(addr: string, tokenId: ITokenId): Promise<boolean> {
@@ -164,25 +196,25 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         }
     }
 
-    async tokenAirdroped(level: number, tokenId: ITokenId): Promise<ITokenId | undefined> {
+    async tokenAirdroped(level: number, tokenId: ITokenId): Promise<ITokenId[] | undefined> {
         try {
-            const airdropInfo = await this.getAirdropInfo();
-            const info = airdropInfo.data as IAirdropInfo;
-            const token_level_weapon_table = await this.tableItem(
+            const upgradeInfo = await this.getUpgradeInfo();
+            const info = upgradeInfo.data as IUpgradeInfo;
+            const token_level_airdrop_table = await this.tableItem(
                 info.airdroped.handle,
                 `0x3::token::TokenId`,
                 `0x1::table::Table<u64, 0x3::token::TokenId>`,
                 tokenId
             );
 
-            const weaponTokenId = await this.tableItem(
-                token_level_weapon_table.handle,
+            const airdropTokenIds = await this.tableItem(
+                token_level_airdrop_table.handle,
                 `u64`,
-                `0x3::token::TokenId`,
+                `vector<0x3::token::TokenId>`,
                 String(level)
             );
 
-            return weaponTokenId;
+            return airdropTokenIds;
         } catch (e) {
             return undefined;
         }
@@ -208,26 +240,28 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             return false;
         }
     }
+
+    async accessoryIsReveled(tokenId: ITokenId): Promise<boolean> {
+        try {
+            const openBoxStatus = await this.getAccessoryOpenBoxStatus();
+            const info = openBoxStatus.data as IOpenBoxStatus;
+            const reveled = await this.tableItem(info.open_status.handle, `0x3::token::TokenId`, `bool`, tokenId);
+            return reveled;
+        } catch (e) {
+            return false;
+        }
+    }
+
     async tokenWearedWeapon(tokenId: ITokenId): Promise<ITokenId | undefined> {
         try {
-            const tokenWearWeapon = (await this.getTokenWearWeapon()).data as IWearWeaponInfo;
-            const weapoTokenName = await this.tableItem(
-                tokenWearWeapon.token_weapon_table.handle,
+            const tokenLinkInfo = (await this.getTokenLink()).data as ILinkInfo;
+            const weapoTokenId = await this.tableItem(
+                tokenLinkInfo.token_weapon_table.handle,
                 `0x3::token::TokenId`,
-                `0x1::string::String`,
+                `0x3::token::TokenId`,
                 tokenId
             );
-            if (weapoTokenName) {
-                return {
-                    property_version: "0",
-                    token_data_id: {
-                        collection: weaponCollectionName,
-                        creator: this.manager_addr || "",
-                        name: weapoTokenName,
-                    },
-                };
-            }
-            return undefined;
+            return weapoTokenId;
         } catch (e) {
             return undefined;
         }
@@ -283,6 +317,28 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         return await this.tokenData(tokenId);
     }
 
+    async accessoryIdsOwned(addr: string): Promise<ITokenId[]> {
+        try {
+            return await this.doResolveTokenEvents(addr, accessoryCollectionName);
+        } catch (e) {
+            return [];
+        }
+    }
+
+    async accessoryData(accessoryTokenName: string): Promise<TokenData | undefined> {
+        const managerAddress = await this.getManagerAddress();
+        const tokenId: ITokenId = {
+            property_version: "0",
+            token_data_id: {
+                collection: accessoryCollectionName,
+                creator: managerAddress,
+                name: accessoryTokenName,
+            },
+        };
+
+        return await this.tokenData(tokenId);
+    }
+
     async tokenLocked(addr: string): Promise<ITokenId[]> {
         try {
             const lockes = await this.getTokenLocks(addr);
@@ -329,41 +385,33 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         }
     }
 
-    async wearWeaponTotal(tokenId: ITokenId): Promise<WearWeaponEvents | undefined> {
+    async linkTotal(tokenId: ITokenId): Promise<LinkEvents | undefined> {
         try {
-            const tokenWearWeapon = (await this.getTokenWearWeapon()).data as IWearWeaponInfo;
+            const tokenLink = (await this.getTokenLink()).data as ILinkInfo;
             const events = (await this.tableItem(
-                tokenWearWeapon.token_wear_events_table.handle,
+                tokenLink.token_link_events_table.handle,
                 "0x3::token::TokenId",
-                `0x1::event::EventHandle<${this.deployment.moduleAddress}::${this.deployment.infamousWeaponStatus}::WeaponWearEvent>`,
+                `0x1::event::EventHandle<${this.deployment.moduleAddress}::${this.deployment.infamousLinkStatus}::LinkEvent>`,
                 tokenId
-            )) as WearWeaponEvents;
+            )) as LinkEvents;
             return events;
         } catch (e) {
             return undefined;
         }
     }
 
-    async wearWeaponPage(events: WearWeaponEvents, query?: PaginationArgs): Promise<WearWeaponHistoryItem[]> {
+    async linkPage(events: LinkEvents, query?: PaginationArgs): Promise<LinkHistoryItem[]> {
         try {
-            const wearEvents = await this.readClient.getEventsByCreationNumber(
+            const linkEvents = await this.readClient.getEventsByCreationNumber(
                 events.guid.id.addr,
                 events.guid.id.creation_num,
                 query
             );
-            const list = wearEvents.map((e) => e.data as WearWeaponHistoryItem);
+            const list = linkEvents.map((e) => e.data as LinkHistoryItem);
             return list;
         } catch (e) {
             return [];
         }
-    }
-
-    private async getAirdropInfo(): Promise<MoveResource> {
-        const managerAddress = await this.getManagerAddress();
-        return await this.readClient.getAccountResource(
-            managerAddress,
-            `${this.deployment.moduleAddress}::${this.deployment.infamousBackendTokenWeaponAirdrop}::AirdropInfo`
-        );
     }
 
     private async getUpgradeInfo(): Promise<MoveResource> {
@@ -389,11 +437,19 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         );
     }
 
-    private async getTokenWearWeapon(): Promise<MoveResource> {
+    private async getAccessoryOpenBoxStatus(): Promise<MoveResource> {
         const managerAddress = await this.getManagerAddress();
         return await this.readClient.getAccountResource(
             managerAddress,
-            `${this.deployment.moduleAddress}::${this.deployment.infamousWeaponStatus}::TokenWearWeapon`
+            `${this.deployment.moduleAddress}::${this.deployment.infamousBackendTokenAccessoryOpenBox}::OpenBoxStatus`
+        );
+    }
+
+    private async getTokenLink(): Promise<MoveResource> {
+        const managerAddress = await this.getManagerAddress();
+        return await this.readClient.getAccountResource(
+            managerAddress,
+            `${this.deployment.moduleAddress}::${this.deployment.infamousLinkStatus}::TokenLink`
         );
     }
 

@@ -24,9 +24,6 @@ module infamous::infamous_weapon_nft {
     const ACCOUNT_MUSTBE_MANAGER: u64 = 3;
 
 
-    const MAXIMUM: u64 = 10000;
-
-
     struct TokenMintedEvent has drop, store {
         token_receiver_address: address,
         token_id: TokenId,
@@ -45,7 +42,7 @@ module infamous::infamous_weapon_nft {
         let collection_uri = infamous_common::infamous_weapon_collection_uri();
         let description = infamous_common::infamous_weapon_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
-        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, MAXIMUM, vector<bool>[false, true, false]);
+        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, 0, vector<bool>[false, true, false]);
 
         move_to(source, CollectionInfo {
             counter: 0, 

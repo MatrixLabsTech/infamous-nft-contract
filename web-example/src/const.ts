@@ -17,8 +17,6 @@ export const infamousBackendOpenBox = deployment.testnet.infamousBackendOpenBox
 export const infamousBackendAuth = deployment.testnet.infamousBackendAuth
 export const infamousWeaponNft = deployment.testnet.infamousWeaponNft
 export const infamousWeaponWear = deployment.testnet.infamousWeaponWear
-export const infamousBackendTokenWeaponAirdrop =
-  deployment.testnet.infamousBackendTokenWeaponAirdrop
 
 export function getClient(network: AptosNetwork) {
   if (network === AptosNetwork.Devnet) {

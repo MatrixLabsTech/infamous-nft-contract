@@ -23,7 +23,7 @@ module infamous::infamous_backend_open_box {
     const EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT: u64 = 2;
     const EBOX_ALREADY_OPENED: u64 = 3;
 
-    const OPEN_TIME_GAP: u64 = 60;
+    const OPEN_TIME_GAP: u64 = 1;
 
 
     struct OpenBoxStatus has key {

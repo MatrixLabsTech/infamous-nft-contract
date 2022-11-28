@@ -7,12 +7,12 @@ echo "$WORKDIR"
 cd "$WORKDIR"
 
 # 1. remove old account
-rm -rf .aptos
+# rm -rf .aptos
 # 2. init aptos account
-aptos init --assume-yes
+# aptos init --assume-yes
 # 3. faucet
-aptos account fund-with-faucet --account default --amount 1000000000
-aptos account fund-with-faucet --account default --amount 1000000000
+# aptos account fund-with-faucet --account default --amount 1000000000
+# aptos account fund-with-faucet --account default --amount 1000000000
 # 4. unit test contracts
 aptos move test --named-addresses infamous=default
 # 5. compile contractsz

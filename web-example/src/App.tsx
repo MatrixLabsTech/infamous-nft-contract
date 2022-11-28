@@ -30,12 +30,18 @@ function App() {
   }, [address])
 
   const _getCollection = async () => {
-    const client = new InfamousNFTClientImpl(AptosNetwork.Devnet)
-    const tokenId = await client.resolveTokenId('Infamous #1')
+    const client = new InfamousNFTClientImpl(AptosNetwork.Testnet)
+    // const tokenId = await client.resolveTokenId('Infamous #1')
 
-    const airdroped = await client.tokenAirdroped(5, tokenId)
+    // const airdroped = await client.tokenAirdroped(5, tokenId)
 
-    console.log(airdroped)
+    // console.log(airdroped)
+
+    const owned = await await client.queryTokenOwned(
+      '0x57a2e5edeab103d1a7f9377dfeab9b36f78df1cc3b77bcd64872bf74df32c29d'
+    )
+
+    console.log(owned)
 
     // console.log(JSON.stringify(tokenId))
 

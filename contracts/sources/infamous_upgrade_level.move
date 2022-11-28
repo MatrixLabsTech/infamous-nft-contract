@@ -5,6 +5,7 @@ module infamous::infamous_upgrade_level {
     use std::error;
     use std::string::{utf8};
     use std::option::{Self};
+    use std::vector;
     use aptos_std::string::{String};
 
     
@@ -43,7 +44,7 @@ module infamous::infamous_upgrade_level {
     
     struct UpgradeInfo has key {
         token_level: Table<TokenId, u64>,
-        airdroped: Table<TokenId, Table<u64, bool>>,
+        airdroped: Table<TokenId, Table<u64, vector<TokenId>>>,
         token_upgrade_events: EventHandle<TokenUpgradeEvent>,
     }
 
@@ -52,7 +53,7 @@ module infamous::infamous_upgrade_level {
         if(!exists<UpgradeInfo>(addr)) {
             move_to(account, UpgradeInfo {
                 token_level: table::new<TokenId, u64>(),
-                airdroped: table::new<TokenId, Table<u64, bool>>(),
+                airdroped: table::new<TokenId, Table<u64, vector<TokenId>>>(),
                 token_upgrade_events: account::new_event_handle<TokenUpgradeEvent>(account),
             });
         };
@@ -136,21 +137,27 @@ module infamous::infamous_upgrade_level {
             let option_lock_addr = infamous_lock::token_lock_address(token_id);
             assert!(option::is_some(&option_lock_addr), error::invalid_state(ETOKEN_NOT_LOCKED));
             let receiver_addr = option::extract(&mut option_lock_addr);
-            airdrop_level_five(receiver_addr);
-            update_token_airdroped(token_id, 5);
+            let token_ids = airdrop_level_five(receiver_addr);
+            update_token_airdroped(token_id, 5, token_ids);
         };
     }
 
-    fun airdrop_level_five(receiver_addr: address) { 
+    fun airdrop_level_five(receiver_addr: address): vector<TokenId> { 
 
+        let token_ids = vector::empty<TokenId>();
         // airdrop weapon
-        infamous_weapon_nft::airdrop_box(receiver_addr,  utf8(b"Lv 5"), utf8(b""));
+        let weapon_token_id = infamous_weapon_nft::airdrop_box(receiver_addr,  utf8(b"Lv 5"), utf8(b""));
+        vector::push_back<TokenId>(&mut token_ids, weapon_token_id);
 
         // airdrop early bird weapon
-        infamous_weapon_nft::airdrop_box(receiver_addr,  utf8(b"Lv 15"), utf8(b"early bird"));
+        let weapon_early_bird_id = infamous_weapon_nft::airdrop_box(receiver_addr,  utf8(b"Lv 15"), utf8(b"early bird"));
+        vector::push_back<TokenId>(&mut token_ids, weapon_early_bird_id);
 
         // airdrop early bird accessory
-        infamous_accessory_nft::airdrop_box(receiver_addr, utf8(b"early bird"));
+        let accessory_early_bird_id = infamous_accessory_nft::airdrop_box(receiver_addr, utf8(b"early bird"));
+        vector::push_back<TokenId>(&mut token_ids, accessory_early_bird_id);
+
+        token_ids
 
     }
 
@@ -170,7 +177,7 @@ module infamous::infamous_upgrade_level {
 
     
 
-    fun update_token_airdroped(token_id: TokenId, airdrop_level: u64) acquires UpgradeInfo {
+    fun update_token_airdroped(token_id: TokenId, airdrop_level: u64, token_ids: vector<TokenId>) acquires UpgradeInfo {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
 
@@ -178,11 +185,11 @@ module infamous::infamous_upgrade_level {
 
         let airdroped = &mut airdrop_info.airdroped;
         if(!table::contains(airdroped, token_id)) {
-            table::add(airdroped, token_id, table::new<u64, bool>());
+            table::add(airdroped, token_id, table::new<u64, vector<TokenId>>());
         };
         let token_airdroped = table::borrow_mut(airdroped, token_id);
         if(!table::contains(token_airdroped, airdrop_level)) {
-            table::add(token_airdroped, airdrop_level, true);
+            table::add(token_airdroped, airdrop_level, token_ids);
         };
     }
 
