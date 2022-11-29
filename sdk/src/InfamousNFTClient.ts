@@ -35,7 +35,9 @@ export interface InfamousNFTClient {
 
     tokenMintTime(tokenId: ITokenId): Promise<string | undefined>;
 
-    queryTokenOwned(addr: string, offset?: number, limit?: number): Promise<TokenQueryData[]>;
+    queryMyInfamous(addr: string): Promise<TokenQueryData[]>;
+    queryMyStakedInfamous(addr: string): Promise<TokenQueryData[]>;
+    queryMyEquments(addr: string): Promise<TokenQueryData[]>;
 
     // token owned
     tokenOwned(addr: string): Promise<TokenData[]>;

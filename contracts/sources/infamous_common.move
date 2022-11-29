@@ -47,7 +47,11 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/static/weapon_box.png")
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/normal_armorybox.png")
+    }
+
+    public fun infamous_weapon_earlybird_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/earlybird_armorybox.png")
     }
 
     public fun infamous_weapon_description(): String {
@@ -73,8 +77,13 @@ module infamous::infamous_common {
     }
 
     public fun infamous_accessory_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/static/accessory_box.png")
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/normal_accessorybox.png")
     }
+
+    public fun infamous_accessory_earlybird_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/earlybird_accessorybox.png")
+    }
+
 
     public fun infamous_accessory_description(): String {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")

@@ -37,7 +37,7 @@ import {ILinkInfo, LinkEvents, LinkHistoryItem} from "./LinkInfo";
 import {IUpgradeInfo} from "./UpgradeInfo";
 import {IOpenBoxStatus} from "./OpenBoxStatus";
 import {localCache} from "./utils/localCache";
-import {TokenQueryData} from "./CollectionQueryInfo";
+import {QueryTokensResult, TokenQueryData} from "./CollectionQueryInfo";
 import {postData} from "./utils/http";
 export enum AptosNetwork {
     Testnet = "Testnet",
@@ -143,14 +143,36 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         };
     }
 
-    async queryTokenOwned(addr: string, offset = 0, limit = 10): Promise<TokenQueryData[]> {
-        const owned = await postData(`${this.graphyql_url}`, {
-            query: 'query CurrentTokens($owner_address: String, $offset: Int, $limit: Int) {\n  current_token_ownerships(\n    order_by: {last_transaction_version: desc}\n    offset: $offset\n  limit: $limit\n   where: {owner_address: {_eq: $owner_address}, amount: {_gt: "0"}, table_type: {_eq: "0x3::token::TokenStore"}}\n  ) {\n    token_data_id_hash\n    name\n    collection_name\n    property_version\n    amount\n    token_properties\n    current_token_data {\n      default_properties\n      creator_address\n      metadata_uri\n      name\n    }\n    owner_address\n  }\n}\n',
-            variables: {owner_address: addr, offset: offset, limit: limit},
-            operationName: "CurrentTokens",
-        });
+    async queryMyInfamous(addr: string): Promise<TokenQueryData[]> {
+        const owned = (await postData(`${this.graphyql_url}`, {
+            query: "query MyInfamousTokens($owner_address: String, $collection_name: String, $creator: String) {\n  current_token_ownerships(\n    where: {collection_name: {_eq: $collection_name}, creator_address: {_eq: $creator}, owner_address: {_eq: $owner_address}}\n   distinct_on: name\n ) {\n    collection_name\n    creator_address\n    name\n    property_version\n    current_token_data {\n      default_properties\n      metadata_uri\n    }\n  }\n}\n",
+            variables: {
+                owner_address: addr,
+                collection_name: infamousCollectionName,
+                creator: this.deployment.managerAddress,
+            },
+            operationName: "MyInfamousTokens",
+        })) as QueryTokensResult;
 
-        console.log(owned);
+        return owned.data.current_token_ownerships;
+    }
+
+    async queryMyStakedInfamous(addr: string): Promise<TokenQueryData[]> {
+        const tokenLockedIds = await this.tokenLocked(addr);
+        if (tokenLockedIds.length) {
+            const tokenNames = tokenLockedIds.map((tokenId) => tokenId.token_data_id.name);
+            const locked = await postData(`${this.graphyql_url}`, {
+                query: "query MyLockedTokens($collection_name: String, $creator: String, $names: [String]) {\n  current_token_ownerships(\n    where: {collection_name: {_eq: $collection_name}, creator_address: {_eq: $creator}, name: {_in: $names}}\n  distinct_on: name\n ) {\n    collection_name\n    creator_address\n    name\n    property_version\n    current_token_data {\n      default_properties\n      metadata_uri\n    }\n  }\n}\n",
+                variables: {
+                    collection_name: infamousCollectionName,
+                    creator: this.deployment.managerAddress,
+                    names: tokenNames,
+                },
+                operationName: "MyLockedTokens",
+            });
+
+            return locked.data.current_token_ownerships;
+        }
         return [];
     }
 

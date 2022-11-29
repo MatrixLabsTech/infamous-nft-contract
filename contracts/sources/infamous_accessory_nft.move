@@ -67,13 +67,13 @@ module infamous::infamous_accessory_nft {
         let cur = prev_count + 1;
         let name = infamous_common::append_num(base_token_name, cur);
         let uri = infamous_common::infamous_accessory_token_uri();
-
         let keys = vector<String>[];
         let values = vector<vector<u8>>[];
         let types = vector<String>[];
 
 
         if(!string::is_empty(&access)){
+            uri = infamous_common::infamous_accessory_earlybird_token_uri();
             keys = vector<String>[utf8(b"access"), ];
             values = vector<vector<u8>>[bcs::to_bytes<String>(&access), ];
             types = vector<String>[ utf8(b"0x1::string::String"), ];

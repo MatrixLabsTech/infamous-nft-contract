@@ -4,9 +4,10 @@ export const infamousCollectionName = "InfamousNFT";
 export const weaponCollectionName = "InfamousWeaponNFT";
 export const accessoryCollectionName = "InfamousAccessoryNFT";
 
-export const block = "367521300";
+export const block = "368788391";
 export interface IDeployment {
     moduleAddress: string;
+    managerAddress: string;
     infamousBackendAuth: string;
     infamousManagerCap: string;
     infamousWeaponNft: string;
@@ -23,8 +24,8 @@ export interface IDeployment {
 
 export const deployment = {
     testnet: {
-        moduleAddress: "0x57a2e5edeab103d1a7f9377dfeab9b36f78df1cc3b77bcd64872bf74df32c29d",
-        managerAddress: "0xf35833373d94a4713664472f1ad935bf8f79bd1b7fa55b4a4a299aeb2a8a71c7",
+        moduleAddress: "0x0053955eeb3da4043393cae4b8e0d708c04d67ef6991aa5187e3fd76c23086ff",
+        managerAddress: "0x5c493ed5e7c152913fd95ead382639b1ec866f783cb844f610c0be9aceed61aa",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",
         infamousBackendTokenWeaponOpenBox: "infamous_backend_token_weapon_open_box",
@@ -41,7 +42,7 @@ export const deployment = {
         infamousChangeAccessory: "infamous_change_accesory",
     },
     devnet: {
-        moduleAddress: "0x57a2e5edeab103d1a7f9377dfeab9b36f78df1cc3b77bcd64872bf74df32c29d",
+        moduleAddress: "0x0053955eeb3da4043393cae4b8e0d708c04d67ef6991aa5187e3fd76c23086ff",
         managerAddress: "0xe1f557fa40e388ce570920385dab2f96db811070496f901e88466f137d613ef3",
         infamousBackendAuth: "infamous_backend_auth",
         infamousBackendOpenBox: "infamous_backend_open_box",

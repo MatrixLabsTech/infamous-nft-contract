@@ -37,8 +37,8 @@ function App() {
 
     // console.log(airdroped)
 
-    const owned = await await client.queryTokenOwned(
-      '0x57a2e5edeab103d1a7f9377dfeab9b36f78df1cc3b77bcd64872bf74df32c29d'
+    const owned = await await client.queryMyStakedInfamous(
+      '0xf62d21943a1af502a0237c9353eb57c17e90bd4da1f65b729525c1597e8df86e'
     )
 
     console.log(owned)

@@ -36,7 +36,7 @@ async function main() {
       'open_box',
       [],
       [
-        BCS.bcsSerializeStr('Infamous #5'),
+        BCS.bcsSerializeStr('Infamous #6'),
         BCS.bcsSerializeStr(randomProperty(gender, 'background')),
         BCS.bcsSerializeStr(randomProperty(gender, 'clothing')),
         BCS.bcsSerializeStr(randomProperty(gender, 'earrings')),

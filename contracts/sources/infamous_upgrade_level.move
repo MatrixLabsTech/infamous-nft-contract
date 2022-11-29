@@ -36,6 +36,13 @@ module infamous::infamous_upgrade_level {
     const FILVE_LEVEL_AIRDROP: u64 = 5;
 
 
+    struct AirdropEvent has drop, store {
+        receiver_addr: address,
+        token_id: TokenId,
+        airdrop_token_id: TokenId,
+        time: u64,
+    }
+
     struct TokenUpgradeEvent has drop, store {
         token_id: TokenId,
         upgrade_time: u64,
@@ -46,6 +53,7 @@ module infamous::infamous_upgrade_level {
         token_level: Table<TokenId, u64>,
         airdroped: Table<TokenId, Table<u64, vector<TokenId>>>,
         token_upgrade_events: EventHandle<TokenUpgradeEvent>,
+        airdrop_events: EventHandle<AirdropEvent>,
     }
 
     fun init_upgrade_info(account: &signer) {
@@ -55,6 +63,7 @@ module infamous::infamous_upgrade_level {
                 token_level: table::new<TokenId, u64>(),
                 airdroped: table::new<TokenId, Table<u64, vector<TokenId>>>(),
                 token_upgrade_events: account::new_event_handle<TokenUpgradeEvent>(account),
+                airdrop_events: account::new_event_handle<AirdropEvent>(account),
             });
         };
     }
@@ -132,6 +141,8 @@ module infamous::infamous_upgrade_level {
             });
     }
 
+
+
     fun airdrop(token_id: TokenId, new_level: u64) acquires UpgradeInfo {
         if(new_level >= 5 && !is_token__airdroped(token_id, 5)) { // level 5 airdrop
             let option_lock_addr = infamous_lock::token_lock_address(token_id);
@@ -139,8 +150,19 @@ module infamous::infamous_upgrade_level {
             let receiver_addr = option::extract(&mut option_lock_addr);
             let token_ids = airdrop_level_five(receiver_addr);
             update_token_airdroped(token_id, 5, token_ids);
+
+            let manager_signer = infamous_manager_cap::get_manager_signer();
+            let manager_addr = signer::address_of(&manager_signer);
+            let upgrade_info = borrow_global_mut<UpgradeInfo>(manager_addr);
+            let i = 0;
+            while (i < vector::length<TokenId>(&token_ids)) {
+                let airdrop_token_id = *vector::borrow<TokenId>(&token_ids, i);
+                emit_airdrop_event(upgrade_info, receiver_addr, token_id, airdrop_token_id);
+                i = i + 1;
+            };
         };
     }
+
 
     fun airdrop_level_five(receiver_addr: address): vector<TokenId> { 
 
@@ -181,9 +203,9 @@ module infamous::infamous_upgrade_level {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
 
-        let airdrop_info = borrow_global_mut<UpgradeInfo>(manager_addr);
+        let upgrade_info = borrow_global_mut<UpgradeInfo>(manager_addr);
 
-        let airdroped = &mut airdrop_info.airdroped;
+        let airdroped = &mut upgrade_info.airdroped;
         if(!table::contains(airdroped, token_id)) {
             table::add(airdroped, token_id, table::new<u64, vector<TokenId>>());
         };
@@ -191,6 +213,21 @@ module infamous::infamous_upgrade_level {
         if(!table::contains(token_airdroped, airdrop_level)) {
             table::add(token_airdroped, airdrop_level, token_ids);
         };
+
+        
+    }
+
+
+    
+    fun emit_airdrop_event(upgrade_info: &mut UpgradeInfo, receiver_addr: address, token_id: TokenId, airdrop_token_id: TokenId) {
+        event::emit_event<AirdropEvent>(
+           &mut upgrade_info.airdrop_events,
+            AirdropEvent {
+                receiver_addr,
+                token_id,
+                airdrop_token_id,
+                time: timestamp::now_seconds(),
+            });
     }
 
 

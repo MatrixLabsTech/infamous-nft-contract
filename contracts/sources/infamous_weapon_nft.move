@@ -65,15 +65,15 @@ module infamous::infamous_weapon_nft {
         let prev_count = collection_info.counter;
         let cur = prev_count + 1;
         let name = infamous_common::append_num(base_token_name, cur);
-        let uri = infamous_common::infamous_weapon_token_uri();
 
-        
+        let uri = infamous_common::infamous_weapon_token_uri();
         let keys = vector<String>[utf8(b"tier"), ];
         let values = vector<vector<u8>>[bcs::to_bytes<String>(&tier),];
         let types = vector<String>[utf8(b"0x1::string::String"),];
 
 
         if(!string::is_empty(&access)){
+            uri = infamous_common::infamous_weapon_earlybird_token_uri();
             keys = vector<String>[utf8(b"tier"), utf8(b"access"), ];
             values = vector<vector<u8>>[bcs::to_bytes<String>(&tier), bcs::to_bytes<String>(&access), ];
             types = vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), ];
