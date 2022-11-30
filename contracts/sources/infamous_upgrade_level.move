@@ -291,13 +291,19 @@ module infamous::infamous_upgrade_level {
         let weapon = utf8(b"dagger");
         let tier = utf8(b"1");
         let grade = utf8(b"iron");
-        let attributes = utf8(b"iron");
+        let attributes = utf8(b"100");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
-         background, clothing, earrings, eyebrows, 
-         face_accessory, eyes, hair, mouth,
-         neck, tattoo, gender,
+         background, 
+         clothing, attributes, 
+         earrings, attributes, eyebrows, 
+         face_accessory, attributes, 
+         eyes, hair, 
+         mouth, attributes,
+         neck, attributes, 
+         tattoo, attributes, 
+         gender,
          weapon, tier, grade, attributes
          );
 

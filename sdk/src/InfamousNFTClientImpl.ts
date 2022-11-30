@@ -145,7 +145,7 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
 
     async queryMyInfamous(addr: string): Promise<TokenQueryData[]> {
         const owned = (await postData(`${this.graphyql_url}`, {
-            query: "query MyInfamousTokens($owner_address: String, $collection_name: String, $creator: String) {\n  current_token_ownerships(\n    where: {collection_name: {_eq: $collection_name}, creator_address: {_eq: $creator}, owner_address: {_eq: $owner_address}}\n   distinct_on: name\n ) {\n    collection_name\n    creator_address\n    name\n    property_version\n    current_token_data {\n      default_properties\n      metadata_uri\n    }\n  }\n}\n",
+            query: 'query MyInfamousTokens($owner_address: String, $collection_name: String, $creator: String) {\n  current_token_ownerships(\n    where: {collection_name: {_eq: $collection_name}, creator_address: {_eq: $creator}, amount: {_gt: "0"}, owner_address: {_eq: $owner_address}}\n   distinct_on: name\n ) {\n    collection_name\n    creator_address\n    name\n    property_version\n    current_token_data {\n      default_properties\n      metadata_uri\n    }\n  }\n}\n',
             variables: {
                 owner_address: addr,
                 collection_name: infamousCollectionName,
@@ -157,12 +157,12 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
         return owned.data.current_token_ownerships;
     }
 
-    async queryMyStakedInfamous(addr: string): Promise<TokenQueryData[]> {
+    async queryMyLockedInfamous(addr: string): Promise<TokenQueryData[]> {
         const tokenLockedIds = await this.tokenLocked(addr);
         if (tokenLockedIds.length) {
             const tokenNames = tokenLockedIds.map((tokenId) => tokenId.token_data_id.name);
             const locked = await postData(`${this.graphyql_url}`, {
-                query: "query MyLockedTokens($collection_name: String, $creator: String, $names: [String]) {\n  current_token_ownerships(\n    where: {collection_name: {_eq: $collection_name}, creator_address: {_eq: $creator}, name: {_in: $names}}\n  distinct_on: name\n ) {\n    collection_name\n    creator_address\n    name\n    property_version\n    current_token_data {\n      default_properties\n      metadata_uri\n    }\n  }\n}\n",
+                query: 'query MyLockedTokens($collection_name: String, $creator: String, $names: [String]) {\n  current_token_ownerships(\n    where: {collection_name: {_eq: $collection_name}, creator_address: {_eq: $creator}, amount: {_gt: "0"}, name: {_in: $names}}\n  distinct_on: name\n ) {\n    collection_name\n    creator_address\n    name\n    property_version\n    current_token_data {\n      default_properties\n      metadata_uri\n    }\n  }\n}\n',
                 variables: {
                     collection_name: infamousCollectionName,
                     creator: this.deployment.managerAddress,
@@ -174,6 +174,20 @@ export class InfamousNFTClientImpl implements InfamousNFTClient {
             return locked.data.current_token_ownerships;
         }
         return [];
+    }
+
+    async queryMyEquipments(addr: string): Promise<TokenQueryData[]> {
+        const owned = (await postData(`${this.graphyql_url}`, {
+            query: 'query MyEquments($owner_address: String, $collection_name_in: [String], $creator: String) {\n  current_token_ownerships(\n    where: {collection_name: {_in: $collection_name_in}, creator_address: {_eq: $creator}, amount: {_gt: "0"}, owner_address: {_eq: $owner_address}}\n   distinct_on: name\n ) {\n    collection_name\n    creator_address\n    name\n    property_version\n    current_token_data {\n      default_properties\n      metadata_uri\n    }\n  }\n}\n',
+            variables: {
+                owner_address: addr,
+                collection_name_in: [weaponCollectionName, accessoryCollectionName],
+                creator: this.deployment.managerAddress,
+            },
+            operationName: "MyEquments",
+        })) as QueryTokensResult;
+
+        return owned.data.current_token_ownerships;
     }
 
     async isTokenOwner(addr: string, tokenId: ITokenId): Promise<boolean> {

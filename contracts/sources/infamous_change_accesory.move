@@ -6,6 +6,8 @@ module infamous::infamous_change_accesory {
     use std::signer;
     use std::string::{String, utf8};
     use std::option::{Self, Option};
+
+
     
 
 
@@ -19,6 +21,7 @@ module infamous::infamous_change_accesory {
     use infamous::infamous_accessory_nft;
     use infamous::infamous_lock;
     use infamous::infamous_link_status;
+    use infamous::infamous_backend_open_box;
 
 
     const ETOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
@@ -50,6 +53,9 @@ module infamous::infamous_change_accesory {
         let token_id = infamous_nft::resolve_token_id(manager_addr, collection_name, token_name);
         let token_data_id = token::create_token_data_id(manager_addr, collection_name, token_name);
 
+        
+        assert!(infamous_backend_open_box::is_box__opened(token_id), error::invalid_argument(ETOKEN_NOT_REVEALED));
+
         let token_gender = infamous_nft::get_token_gender(token_data_id);
 
     
@@ -72,7 +78,6 @@ module infamous::infamous_change_accesory {
 
             // 3.check has old token
             let old_accessory_token_id = infamous_link_status::get_token__accessory_token_id(token_id, kind);
-            assert!(option::is_some(&old_accessory_token_id), error::invalid_argument(ETOKEN_NOT_REVEALED));
 
             exchange__old_accessory__to__new_accessory(sender, &manager_signer, old_accessory_token_id, new_accessory_token_id);
             
@@ -93,9 +98,6 @@ module infamous::infamous_change_accesory {
             
             // 2.check token revealed
             let old_accessory_token_id = infamous_link_status::get_token__accessory_token_id(token_id, kind);
-            assert!(option::is_some(&old_accessory_token_id), error::invalid_argument(ETOKEN_NOT_REVEALED));
-
-            
 
             // @todo: gender 
             exchange__old_accessory__to__new_accessory(sender, &manager_signer, old_accessory_token_id, new_accessory_token_id);
@@ -155,7 +157,6 @@ module infamous::infamous_change_accesory {
         // 2. lock new accessory to manager
         transfer(sender, manager_signer, new_accessory_token_id);
      }
-
 
      fun transfer(from: &signer, to: &signer, token_id: TokenId) {
         let from_addr = signer::address_of(from);
@@ -247,17 +248,23 @@ module infamous::infamous_change_accesory {
         let neck = utf8(b"null");
         let tattoo = utf8(b"null");
         let gender = utf8(b"female");
-        let accessory = utf8(b"dagger");
+        let weapon = utf8(b"dagger");
         let tier = utf8(b"1");
         let grade = utf8(b"iron");
-        let attributes = utf8(b"iron");
+        let attributes = utf8(b"30");
 
          infamous_backend_open_box::open_box(user,
          token_index_1_name,
-         background, clothing, earrings, eyebrows, 
-         face_accessory, eyes, hair, mouth,
-         neck, tattoo, gender,
-         accessory, tier, grade, attributes
+         background, 
+         clothing, attributes, 
+         earrings, attributes, eyebrows, 
+         face_accessory, attributes, 
+         eyes, hair, 
+         mouth, attributes,
+         neck, attributes, 
+         tattoo, attributes, 
+         gender,
+         weapon, tier, grade, attributes
          );
 
 
@@ -273,19 +280,19 @@ module infamous::infamous_change_accesory {
         infamous_upgrade_level::upgrade(token_index_1_name);
         
         let base_token_name = infamous_common::infamous_accessory_base_token_name();
-        let accessory_token_1_name = infamous_common::append_num(base_token_name, 2);
+        let accessory_token_1_name = infamous_common::append_num(base_token_name, 1);
 
-        let accessory_token_2_name = infamous_common::append_num(base_token_name, 7);
+        let accessory_token_2_name = infamous_common::append_num(base_token_name, 3);
 
         infamous_backend_token_accessory_open_box::open_box(user, accessory_token_2_name, utf8(b"aloha shirt 1"), utf8(b"clothing"), gender, utf8(b"100"));
 
-         change_accessory(receiver, token_index_1_name, accessory_token_2_name);
+        change_accessory(receiver, token_index_1_name, accessory_token_2_name);
         timestamp::fast_forward_seconds(60);
-         change_accessory(receiver, token_index_1_name, accessory_token_1_name);
+        change_accessory(receiver, token_index_1_name, accessory_token_1_name);
 
         timestamp::fast_forward_seconds(60);
          
-         change_accessory(receiver, token_index_1_name, accessory_token_2_name);
+        change_accessory(receiver, token_index_1_name, accessory_token_2_name);
 
 
 

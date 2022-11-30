@@ -86,14 +86,16 @@ module infamous::infamous_weapon_wear {
             // 2.check token revealed
             let old_weapon_token_id = infamous_link_status::get_token__weapon_token_id(token_id);
             assert!(option::is_some(&old_weapon_token_id), error::invalid_argument(ETOKEN_NOT_REVEALED));
+            
 
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_id, new_weapon_token_id);
+
 
             // update token bind weapon
             infamous_link_status::update_token__weapon_token_id(token_id, new_weapon_token_id);
 
             // update token weapon properties
-            let (weapon, grade) = get_weapon__weapon_property(sender_addr, new_weapon_token_id);
+            let (weapon, grade) = get_weapon__weapon_property(manager_addr, new_weapon_token_id);
             infamous_nft::update_token_weapon_properties(token_id, weapon);
             update_token_uri(sender_addr, token_id, weapon, grade);
             infamous_link_status::emit_wear_event(&manager_signer, sender_addr, token_id, new_weapon_token_id, weapon);
@@ -224,11 +226,17 @@ module infamous::infamous_weapon_wear {
         let attributes = utf8(b"iron");
 
          infamous_backend_open_box::open_box(user,
-         token_index_1_name,
-         background, clothing, earrings, eyebrows, 
-         face_accessory, eyes, hair, mouth,
-         neck, tattoo, gender,
-         weapon, tier, grade, attributes
+          token_index_1_name,
+            background, 
+            clothing, attributes, 
+            earrings, attributes, eyebrows, 
+            face_accessory, attributes, 
+            eyes, hair, 
+            mouth, attributes,
+            neck, attributes, 
+            tattoo, attributes, 
+            gender,
+            weapon, tier, grade, attributes
          );
 
 
@@ -259,6 +267,9 @@ module infamous::infamous_weapon_wear {
          wear_weapon(receiver, token_index_1_name, weapon_token_1_name);
 
         timestamp::fast_forward_seconds(60);
+
+        
+        infamous_lock::unlock_infamous_nft(receiver, token_index_1_name);
          
          wear_weapon(receiver, token_index_1_name, weapon_token_2_name);
 
