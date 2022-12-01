@@ -30,12 +30,8 @@ module infamous::infamous_common {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs.")
     }
 
-    public fun infamous_weapon_key(): String {
-        string::utf8(b"weapon")
-    }
-
     public fun infamous_weapon_collection_name(): String {
-        string::utf8(b"InfamousEquipmentNFT")
+        string::utf8(b"InfamousWeaponNFT")
     }
 
     public fun infamous_weapon_collection_uri(): String {
@@ -43,19 +39,53 @@ module infamous::infamous_common {
     }
 
     public fun infamous_weapon_base_token_name(): String {
-        string::utf8(b"Equipment #")
+        string::utf8(b"Infamous Weapon #")
     }
-
     
     public fun infamous_weapon_base_token_uri(): String {
         string::utf8(b"https://media.nft.infamousnft.xyz/media/weapon/")
     }
 
     public fun infamous_weapon_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/static/weapon_box.png")
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/normal_armorybox.png")
+    }
+
+    public fun infamous_weapon_earlybird_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/earlybird_armorybox.png")
     }
 
     public fun infamous_weapon_description(): String {
+        string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
+    }
+
+
+
+    public fun infamous_accessory_collection_name(): String {
+        string::utf8(b"InfamousAccessoryNFT")
+    }
+
+    public fun infamous_accessory_collection_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/accessory-collection.png")
+    }
+
+    public fun infamous_accessory_base_token_name(): String {
+        string::utf8(b"Infamous Accessory #")
+    }
+    
+    public fun infamous_accessory_base_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/media/accessory/")
+    }
+
+    public fun infamous_accessory_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/normal_accessorybox.png")
+    }
+
+    public fun infamous_accessory_earlybird_token_uri(): String {
+        string::utf8(b"https://media.nft.infamousnft.xyz/static/earlybird_accessorybox.png")
+    }
+
+
+    public fun infamous_accessory_description(): String {
         string::utf8(b"Infamous (NFMS) is the first gamified dynamic NFT project being built on the Aptos blockchain. Powered by MatrixLabs")
     }
 
@@ -109,37 +139,6 @@ module infamous::infamous_common {
         }
     }
 
-    // fun address_string(input: address): string::String {
-    //     let bytes = bcs::to_bytes<address>(&input);
-    //     let i = 0;
-    //     let result = vector::empty<u8>();
-    //     while (i < vector::length<u8>(&bytes)) {
-    //         vector::append(&mut result, u8_hex_string_u8(*vector::borrow<u8>(&bytes, i)));
-    //         i = i + 1;
-    //     };
-    //     string::utf8(result)
-    // }
-
-    // fun u8_hex_string_u8(input: u8): vector<u8> {
-    //     let result = vector::empty<u8>();
-    //     vector::push_back(&mut result, u4_hex_string_u8(input / 16));
-    //     vector::push_back(&mut result, u4_hex_string_u8(input % 16));
-    //     //string::utf8(result)
-    //     result
-    // }
-
-    // fun u4_hex_string_u8(input: u8): u8 {
-    //     if (input<=9) (48 + input) // 0 - 9 => ASCII 48 to 57
-    //     else (87 + input) //10 - 15 => ASCII 65 to 70
-    // }
-
-    // public fun string_hash_string(value: String): String {
-    //     let bytes = bcs::to_bytes<String>(&value);
-    //     vector::remove(&mut bytes, 0); // has a length before
-    //     let hashed = hash::sha3_256(bytes);
-    //     let addr = from_bcs::to_address(hashed);
-    //     address_string(addr)
-    // }
 
     public fun escape_whitespace(value: String): String {
         let bytes = string::bytes(&value);

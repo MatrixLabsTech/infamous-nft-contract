@@ -12,7 +12,6 @@ module infamous::infamous_nft {
 
     use aptos_std::table::{Self, Table};
 
-    use aptos_token::property_map;
     use aptos_token::token::{Self, TokenId, TokenDataId};
 
     use infamous::infamous_common;
@@ -21,6 +20,7 @@ module infamous::infamous_nft {
 
     friend infamous::infamous_backend_open_box;
     friend infamous::infamous_weapon_wear;
+    friend infamous::infamous_change_accesory;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
     const EMINT_COUNT_OUT_OF_PER_MAX: u64 = 2;
@@ -158,7 +158,7 @@ module infamous::infamous_nft {
      }
 
       
-    public(friend) fun update_token_weapon_properties(owner_addr: address, token_id: TokenId, weapon: String, grade: String) acquires CollectionInfo {
+    public(friend) fun update_token_weapon_properties(token_id: TokenId, weapon: String) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
         let token_data_id = token::create_token_data_id(creator, collection, name);
@@ -170,35 +170,26 @@ module infamous::infamous_nft {
         token_data_id,
         keys, values, types
         );
-        
-        let token_id = resolve_token_id(creator, collection, name);
-        let properties = &token::get_property_map(owner_addr, token_id);
-        update_token_uri_with_properties(token_data_id,
-        property_map::read_string(properties, &utf8(b"background")),
-        property_map::read_string(properties, &utf8(b"clothing")),
-        property_map::read_string(properties, &utf8(b"earrings")),
-        property_map::read_string(properties, &utf8(b"eyebrows")),
-        property_map::read_string(properties, &utf8(b"face-accessory")),
-        property_map::read_string(properties, &utf8(b"eyes")),
-        property_map::read_string(properties, &utf8(b"hair")),
-        property_map::read_string(properties, &utf8(b"mouth")),
-        property_map::read_string(properties, &utf8(b"neck")),
-        property_map::read_string(properties, &utf8(b"tattoo")),
-        weapon, 
-        grade,
-        get_token_gender(token_data_id));
     }
 
-     
-     public fun get_token_gender(token_data_id: TokenDataId): String acquires CollectionInfo {
-        let source_addr = @infamous;
-        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
-        let gender_table = &borrow_global<CollectionInfo>(source_addr).gender_table;
-        *table::borrow(gender_table, token_data_id)
-     }
-     
+    
+      
+    public(friend) fun update_token_accessory_properties(token_id: TokenId, accessory: String, kind: String) {
+        let manager_signer = infamous_manager_cap::get_manager_signer();
+        let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
+        let token_data_id = token::create_token_data_id(creator, collection, name);
+        // get weapon weapon
+        let keys = vector<String>[kind,];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&accessory),];
+        let types = vector<String>[utf8(b"0x1::string::String"),];
+        token::mutate_tokendata_property(&manager_signer,
+        token_data_id,
+        keys, values, types
+        );
+    }
 
-     fun update_token_uri_with_properties(token_data_id: TokenDataId,
+    
+     public(friend) fun update_token_uri_with_properties(token_data_id: TokenDataId,
         background: String, clothing: String, earrings: String, eyebrows: String,
         face_accessory: String, eyes: String, hair: String,  
         mouth: String, neck: String, tattoo: String, 
@@ -238,6 +229,18 @@ module infamous::infamous_nft {
         token::mutate_tokendata_uri(&creator, token_data_id, base_uri);
 
      }
+
+    
+
+     
+     public fun get_token_gender(token_data_id: TokenDataId): String acquires CollectionInfo {
+        let source_addr = @infamous;
+        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
+        let gender_table = &borrow_global<CollectionInfo>(source_addr).gender_table;
+        *table::borrow(gender_table, token_data_id)
+     }
+     
+
 
      fun resolve_property_value_encode(gender: String, value_key: String, value: String): String {
         let key = utf8(b"");

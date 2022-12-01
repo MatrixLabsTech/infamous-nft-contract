@@ -15,11 +15,13 @@ module infamous::infamous_manager_cap {
     friend infamous::infamous_properties_url_encode_map;
 
     friend infamous::infamous_weapon_nft;
-    friend infamous::infamous_weapon_status;
+    friend infamous::infamous_link_status;
 
     friend infamous::infamous_weapon_wear;
-    friend infamous::infamous_backend_token_weapon_airdrop_box;
+    friend infamous::infamous_change_accesory;
+    friend infamous::infamous_accessory_nft;
     friend infamous::infamous_backend_token_weapon_open_box;
+    friend infamous::infamous_backend_token_accessory_open_box;
 
     const EMANAGER_ACCOUNT_INFO_NOT_PUBLISHED: u64 = 1;
 

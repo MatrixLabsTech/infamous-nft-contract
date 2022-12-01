@@ -6,7 +6,6 @@ import {
   getClient,
   infamousBackendAuth,
   infamousBackendOpenBox,
-  infamousBackendTokenWeaponAirdrop,
   infamousNft,
   infamousLock,
   infamousUpgradeLevel,
@@ -85,7 +84,6 @@ export function Writer(props: WriterProps) {
               moduleName === infamousUpgradeLevel ||
               moduleName === infamousBackendOpenBox ||
               moduleName === infamousBackendAuth ||
-              moduleName === infamousBackendTokenWeaponAirdrop ||
               moduleName === infamousWeaponWear ||
               moduleName === 'infamous_properties_url_encode_map'
             )

@@ -1,5 +1,5 @@
-/// This module provides Infamous Weapon Token manager.
-module infamous::infamous_weapon_nft {
+/// This module provides Infamous Accessory Token manager.
+module infamous::infamous_accessory_nft {
 
     use std::bcs;
     use std::signer;
@@ -16,12 +16,13 @@ module infamous::infamous_weapon_nft {
     use infamous::infamous_manager_cap;
 
     friend infamous::infamous_backend_open_box;
+    friend infamous::infamous_backend_token_accessory_open_box;
     friend infamous::infamous_upgrade_level;
-    friend infamous::infamous_backend_token_weapon_open_box;
 
     const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
-    const ACCOUNT_MUSTBE_AUTHED: u64 = 2;
-    const ACCOUNT_MUSTBE_MANAGER: u64 = 3;
+
+
+    const MAXIMUM: u64 = 0;
 
 
     struct TokenMintedEvent has drop, store {
@@ -38,11 +39,11 @@ module infamous::infamous_weapon_nft {
 
 
     fun init_module(source: &signer) {
-        let collection_name = infamous_common::infamous_weapon_collection_name();
-        let collection_uri = infamous_common::infamous_weapon_collection_uri();
-        let description = infamous_common::infamous_weapon_description();
+        let collection_name = infamous_common::infamous_accessory_collection_name();
+        let collection_uri = infamous_common::infamous_accessory_collection_uri();
+        let description = infamous_common::infamous_accessory_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
-        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, 0, vector<bool>[false, true, false]);
+        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, MAXIMUM, vector<bool>[false, true, false]);
 
         move_to(source, CollectionInfo {
             counter: 0, 
@@ -52,39 +53,33 @@ module infamous::infamous_weapon_nft {
        
     }
 
-    public(friend) fun airdrop_box(receiver_addr: address, tier: String, access: String): TokenId acquires CollectionInfo {
+    public(friend) fun airdrop_box(receiver_addr: address, access: String): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
 
         // token infos
-        let collection_name = infamous_common::infamous_weapon_collection_name();
-        let base_token_name = infamous_common::infamous_weapon_base_token_name();
+        let collection_name = infamous_common::infamous_accessory_collection_name();
+        let base_token_name = infamous_common::infamous_accessory_base_token_name();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
         let prev_count = collection_info.counter;
         let cur = prev_count + 1;
         let name = infamous_common::append_num(base_token_name, cur);
-
-        let uri = infamous_common::infamous_weapon_token_uri();
-        let keys = vector<String>[utf8(b"tier"), ];
-        let values = vector<vector<u8>>[bcs::to_bytes<String>(&tier),];
-        let types = vector<String>[utf8(b"0x1::string::String"),];
+        let uri = infamous_common::infamous_accessory_token_uri();
+        let keys = vector<String>[];
+        let values = vector<vector<u8>>[];
+        let types = vector<String>[];
 
 
         if(!string::is_empty(&access)){
-            uri = infamous_common::infamous_weapon_earlybird_token_uri();
-            keys = vector<String>[utf8(b"tier"), utf8(b"access"), ];
-            values = vector<vector<u8>>[bcs::to_bytes<String>(&tier), bcs::to_bytes<String>(&access), ];
-            types = vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), ];
+            uri = infamous_common::infamous_accessory_earlybird_token_uri();
+            keys = vector<String>[utf8(b"access"), ];
+            values = vector<vector<u8>>[bcs::to_bytes<String>(&access), ];
+            types = vector<String>[ utf8(b"0x1::string::String"), ];
         };
 
-
-        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, 
-            keys, 
-            values, 
-            types,
-        );
+        create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, keys, values, types, );
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
 
         // change CollectionInfo status
@@ -93,29 +88,28 @@ module infamous::infamous_weapon_nft {
         resolve_token_id(manager_addr, collection_name, name)
     }
 
-    public(friend) fun airdrop(receiver_addr: address, weapon: String, tier: String, grade: String, attributes: String,): TokenId acquires CollectionInfo {
+    public(friend) fun airdrop(receiver_addr: address, accessory: String, kind: String, gender: String, attributes: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
 
         // token infos
-        let collection_name = infamous_common::infamous_weapon_collection_name();
-        let base_token_name = infamous_common::infamous_weapon_base_token_name();
+        let collection_name = infamous_common::infamous_accessory_collection_name();
+        let base_token_name = infamous_common::infamous_accessory_base_token_name();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
         let prev_count = collection_info.counter;
         let cur = prev_count + 1;
         let name = infamous_common::append_num(base_token_name, cur);
-        let base_uri = infamous_common::infamous_weapon_base_token_uri();
+        let base_uri = infamous_common::infamous_accessory_base_token_uri();
         let uri = base_uri;
-        let image = infamous::infamous_common::escape_whitespace(weapon);
+        let image = infamous::infamous_common::escape_whitespace(accessory);
         string::append(&mut uri, image);
-        string::append(&mut uri, grade);
         string::append(&mut uri, utf8(b".png"));
 
         create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, 
-        vector<String>[ utf8(b"name"), utf8(b"tier"), utf8(b"grade"), utf8(b"attributes") ], 
-        vector<vector<u8>>[bcs::to_bytes<String>(&weapon), bcs::to_bytes<String>(&tier), bcs::to_bytes<String>(&grade), bcs::to_bytes<String>(&attributes)], 
+        vector<String>[ utf8(b"name"), utf8(b"kind"), utf8(b"gender"), utf8(b"attributes") ], 
+        vector<vector<u8>>[bcs::to_bytes<String>(&accessory), bcs::to_bytes<String>(&kind), bcs::to_bytes<String>(&gender), bcs::to_bytes<String>(&attributes)], 
         vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")],
         );
         emit_minted_event(collection_info, receiver_addr, manager_addr, collection_name, name);
@@ -128,21 +122,20 @@ module infamous::infamous_weapon_nft {
 
     public(friend) fun mutate_token_properties(creator: &signer, 
         token_data_id: TokenDataId, 
-        name: String, grade: String, attributes: String,) {
-        let keys = vector<String>[utf8(b"name"), utf8(b"grade"), utf8(b"attributes"), ];
-        let values = vector<vector<u8>>[bcs::to_bytes<String>(&name), bcs::to_bytes<String>(&grade), bcs::to_bytes<String>(&attributes), ];
-        let types = vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")];
+        name: String, kind: String, gender: String, attributes: String,) {
+        let keys = vector<String>[utf8(b"name"), utf8(b"kind"), utf8(b"gender"), utf8(b"attributes") ];
+        let values = vector<vector<u8>>[bcs::to_bytes<String>(&name), bcs::to_bytes<String>(&kind), bcs::to_bytes<String>(&gender), bcs::to_bytes<String>(&attributes)];
+        let types = vector<String>[ utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String"), utf8(b"0x1::string::String")];
 
         token::mutate_tokendata_property(creator,
         token_data_id,
         keys, values, types
         );
 
-        let base_uri = infamous_common::infamous_weapon_base_token_uri();
+        let base_uri = infamous_common::infamous_accessory_base_token_uri();
         let uri = base_uri;
         let image = infamous::infamous_common::escape_whitespace(name);
         string::append(&mut uri, image);
-        string::append(&mut uri, grade);
         string::append(&mut uri, utf8(b".png"));
         
         token::mutate_tokendata_uri(creator, token_data_id, uri);
@@ -172,7 +165,7 @@ module infamous::infamous_weapon_nft {
         let balance = 1;
         let maximum = 1;
         let minter_addr = signer::address_of(minter);
-        let description = infamous_common::infamous_weapon_description();
+        let description = infamous_common::infamous_accessory_description();
         token::create_token_script(minter, collection_name, token_name, description, balance,
         maximum,
         token_uri,
@@ -236,18 +229,18 @@ module infamous::infamous_weapon_nft {
 
 
 
-        airdrop(receiver_addr, utf8(b"knif"), utf8(b"3"), utf8(b"normal knif"), utf8(b"3"));
+        airdrop(receiver_addr, utf8(b"blue"), utf8(b"background"), utf8(b"female"), utf8(b"3"));
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
-        let collection_name = infamous_common::infamous_weapon_collection_name();
+        let collection_name = infamous_common::infamous_accessory_collection_name();
 
-        let base_token_name = infamous_common::infamous_weapon_base_token_name();
+        let base_token_name = infamous_common::infamous_accessory_base_token_name();
         let token_index_1_name = infamous_common::append_num(base_token_name, 1);
         assert!(token::balance_of(receiver_addr, resolve_token_id(manager_addr, collection_name, token_index_1_name)) == 1, 1);
 
         
-        airdrop(receiver_addr, utf8(b"knif"), utf8(b"3"), utf8(b"normal knif"), utf8(b"3"));
+        airdrop(receiver_addr, utf8(b"blue"), utf8(b"background"), utf8(b"female"), utf8(b"3"));
 
     }
 

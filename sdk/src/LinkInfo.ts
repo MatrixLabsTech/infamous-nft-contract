@@ -1,15 +1,18 @@
 import {ITokenId} from "./CollectionInfo";
 
-export interface IWearWeaponInfo {
+export interface ILinkInfo {
+    token_accessory_table: {
+        handle: string;
+    };
     token_weapon_table: {
         handle: string;
     };
-    token_wear_events_table: {
+    token_link_events_table: {
         handle: string;
     };
 }
 
-export interface WearWeaponEvents {
+export interface LinkEvents {
     counter: string;
     guid: {
         id: {
@@ -19,7 +22,7 @@ export interface WearWeaponEvents {
     };
 }
 
-export interface WearWeaponEvent {
+export interface LinkEvent {
     guid: {
         creation_number: string;
         account_address: string;
@@ -27,13 +30,14 @@ export interface WearWeaponEvent {
     sequence_number: string;
     type: string;
     version: string;
-    data: WearWeaponHistoryItem;
+    data: LinkHistoryItem;
 }
 
-export interface WearWeaponHistoryItem {
+export interface LinkHistoryItem {
     operator: string;
+    type: string;
     time: string;
     token_id: ITokenId;
-    weapon_name: string;
-    weapon_token_id: ITokenId;
+    change_token_id: ITokenId;
+    name: string;
 }
