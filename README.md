@@ -14,16 +14,20 @@ Infamous (NFMS) is the first gamified dynamic NFT project being built on the Apt
 
 - contracts
   - sources
+    - infamous_accessory_nft.move
     - infamous_backend_auth.move
     - infamous_backend_open_box.move
-    - infamous_backend_token_weapon_airdrop.move
+    - infamous_backend_token_accessory_open_box.move
+    - infamous_backend_token_weapon_open_box.move
+    - infamous_change_accesory.move
     - infamous_common.move
+    - infamous_link_status.move
+    - infamous_lock.move
     - infamous_manager_cap.move
     - infamous_nft.move
-    - infamous_stake.move
+    - infamous_properties_url_encode_map.move
     - infamous_upgrade_level.move
     - infamous_weapon_nft.move
-    - infamous_weapon_status.move
     - infamous_weapon_wear.move
 
 ## 🔨 How to Use
