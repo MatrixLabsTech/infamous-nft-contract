@@ -50,7 +50,7 @@ yarn
 
 ```bash
 cd contracts
-yarn aptos-init
+aptos init
 ```
 
 2. fund this account by running this command:
@@ -61,7 +61,7 @@ yarn faucet
 
 ### Step 4: Compile & Deploy contracts
 
-- check the default account in `contracts/.aptos/config.yml`, then conpile and deploy.
+- check the default account in `contracts/.aptos/config.yml`, then compile and deploy.
 
 ```
 yarn compile

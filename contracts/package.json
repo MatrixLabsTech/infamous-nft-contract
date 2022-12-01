@@ -17,7 +17,7 @@
     "faucet": "aptos account fund-with-faucet --account default --amount 1000000000",
     "compile": "aptos move compile --named-addresses infamous=default",
     "test": "aptos move test --named-addresses infamous=default",
-    "aptos-move-publish": "aptos move publish --named-addresses infamous=default --assume-yes",
+    "aptos-move-publish": "aptos move publish --named-addresses infamous=default --assume-yes --override-size-check",
     "account-list": "aptos account list",
     "rotate": "ts-node scripts/rotate_account_test.ts"
   },
