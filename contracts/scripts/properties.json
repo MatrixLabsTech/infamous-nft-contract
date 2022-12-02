@@ -134,13 +134,12 @@
       "cyberpunk glasses": "C",
       "sunglasses 4": "D",
       "lip print": "E",
-      "black mask": "F",
-      "scar 1": "G",
-      "scar 2": "H",
-      "monocle": "I",
-      "green sunglasses": "J",
-      "cyberpunk glasses (early bird)": "K",
-      "cyberware (early bird)": "L"
+      "scar 1": "F",
+      "scar 2": "G",
+      "monocle": "H",
+      "green sunglasses": "I",
+      "cyberpunk glasses (early bird)": "J",
+      "cyberware (early bird)": "K"
     },
     "hair": {
       "null": "0",
@@ -203,7 +202,7 @@
       "poker": "D",
       "teeth mask": "E",
       "smoke mask": "F",
-      "neck gaiter": "G",
+      "black mask": "G",
       "clown mask": "H",
       "skull mask": "I"
     },

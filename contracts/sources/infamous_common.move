@@ -4,7 +4,6 @@ module infamous::infamous_common {
     use std::string::{Self, String};
     use std::vector;
 
-
     public fun infamous_collection_name(): String {
         string::utf8(b"InfamousNFT")
     }
@@ -23,7 +22,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_base_token_uri(): String {
-        string::utf8(b"https://media-test.nft.infamousnft.xyz/test/origin/")
+        string::utf8(b"https://beta.pfp.infamousnft.xyz/origin/")
     }
 
     public fun infamous_description(): String {
@@ -43,7 +42,7 @@ module infamous::infamous_common {
     }
     
     public fun infamous_weapon_base_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/media/weapon/")
+        string::utf8(b"https://media.nft.infamousnft.xyz/media/weapon/origin/")
     }
 
     public fun infamous_weapon_token_uri(): String {
@@ -73,7 +72,7 @@ module infamous::infamous_common {
     }
     
     public fun infamous_accessory_base_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/media/accessory/")
+        string::utf8(b"https://media.nft.infamousnft.xyz/media/accessory/origin/")
     }
 
     public fun infamous_accessory_token_uri(): String {
@@ -139,7 +138,7 @@ module infamous::infamous_common {
         }
     }
 
-
+    /// escape the string, replace ` ` with `-`
     public fun escape_whitespace(value: String): String {
         let bytes = string::bytes(&value);
         let i = 0;

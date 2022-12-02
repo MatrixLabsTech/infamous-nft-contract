@@ -136,6 +136,7 @@ module infamous::infamous_accessory_nft {
         let uri = base_uri;
         let image = infamous::infamous_common::escape_whitespace(name);
         string::append(&mut uri, image);
+        string::append(&mut uri, gender);
         string::append(&mut uri, utf8(b".png"));
         
         token::mutate_tokendata_uri(creator, token_data_id, uri);

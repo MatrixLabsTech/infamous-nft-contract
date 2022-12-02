@@ -1,4 +1,4 @@
-/// This module provides Infamous Weapon Token binding functions.
+/// This module provides Infamous Accessory Token binding functions.
 module infamous::infamous_change_accesory {
 
 
@@ -36,7 +36,7 @@ module infamous::infamous_change_accesory {
     
 
 
-    /// wear accessory called by accessory owner
+    /// change accessory called by accessory owner
     public entry fun change_accessory(sender: &signer, token_name: String, accessory_name: String) {
         let sender_addr = signer::address_of(sender);
 
@@ -117,7 +117,7 @@ module infamous::infamous_change_accesory {
         
     }
 
-    
+    /// update token uri with token properties
     fun update_token_uri(manager_addr: address, owner_addr: address, token_id: TokenId, token_data_id: TokenDataId, gender: String) {
         
 
