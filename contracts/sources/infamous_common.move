@@ -1,4 +1,4 @@
-/// This module provides the common tools convert tools for all modules.
+/// This module provides the common configs of ndt collection and common tools to manage string/u64 things.
 module infamous::infamous_common {
 
     use std::string::{Self, String};
@@ -95,7 +95,7 @@ module infamous::infamous_common {
         str
     }
 
-
+    /// helper to convert u64 to string
     public fun u64_string(value: u64): String{
         if (value == 0) {
             return string::utf8(b"0")
@@ -109,6 +109,7 @@ module infamous::infamous_common {
         string::utf8(buffer)
     }
 
+    /// helper to convert u128 to string
     public fun u128_to_string(value: u128): String {
         if (value == 0) {
             return string::utf8(b"0")
@@ -122,8 +123,6 @@ module infamous::infamous_common {
         string::utf8(buffer)
     }
 
- 
-    
     /// Helper to remove an element from a vector.
     public fun remove_element<E: drop>(v: &mut vector<E>, x: &E) {
         let (found, index) = vector::index_of(v, x);
@@ -132,6 +131,7 @@ module infamous::infamous_common {
         }
     }
 
+    /// Helper to add an element to a vector.
     public fun add_element<E: drop>(v: &mut vector<E>, x: E) {
         if (!vector::contains(v, &x)) {
             vector::push_back(v, x)
