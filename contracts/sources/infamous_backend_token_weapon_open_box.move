@@ -1,42 +1,31 @@
 /// This module provides weapon open box.
+/// InfamousBackendTokenWeaponOpenBox used to mutate weapon nft's property by authed account 
 module infamous::infamous_backend_token_weapon_open_box {
 
     use std::signer;
     use std::error;
     use std::string::{ String};
-
-    
-
-    
     use aptos_std::table::{Self, Table};
-
     use aptos_token::token::{Self, TokenId};
-
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
     use infamous::infamous_backend_auth;
     use infamous::infamous_weapon_nft;
 
+    //
+    // Errors
+    //
+    /// Error when some fun need backend authed, but called with no authed account.
     const EACCOUNT_MUSTBE_AUTHED: u64 = 1;
+    /// Error when call open_box multi times
     const EWEAPON_BOX_ALREADY_OPENED: u64 = 2;
 
     struct OpenBoxStatus has key {
+        // store the token open status
         open_status: Table<TokenId, bool>
     }
-    
-    fun initialize_open_box_status(account: &signer) {
-        let account_addr = signer::address_of(account);
-        if(!exists<OpenBoxStatus>(account_addr)) {
-            move_to(
-                account,
-                OpenBoxStatus {
-                    open_status: table::new<TokenId, bool>(),
-                }
-            );
-        }
-    }
 
-
+    /// open weapon box, mutate infamous weapon nft with certain properties.
     public entry fun open_box(sender: &signer, weapon_token_name: String, name: String, grade: String, attributes: String,) acquires OpenBoxStatus {
 
         let sender_addr = signer::address_of(sender);
@@ -61,7 +50,7 @@ module infamous::infamous_backend_token_weapon_open_box {
         update_box_opened(token_id);
     }
 
-     
+    /// check box opened
     public fun is_box__opened(token_id: TokenId): bool acquires OpenBoxStatus { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -73,7 +62,7 @@ module infamous::infamous_backend_token_weapon_open_box {
         box_opend
     }
 
-     
+    /// update infamous weapon token open status 
     fun update_box_opened(token_id: TokenId) acquires OpenBoxStatus { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -86,6 +75,18 @@ module infamous::infamous_backend_token_weapon_open_box {
         };
     }
 
+    /// init openboxstatus store to account
+    fun initialize_open_box_status(account: &signer) {
+        let account_addr = signer::address_of(account);
+        if(!exists<OpenBoxStatus>(account_addr)) {
+            move_to(
+                account,
+                OpenBoxStatus {
+                    open_status: table::new<TokenId, bool>(),
+                }
+            );
+        }
+    }
 
     
 

@@ -1,7 +1,7 @@
 /// This module provides Infamous Accessory Token manager.
-/// InfamouszAccessoryNft is a control of accessory nft's creation/mint
+/// InfamousAccessoryNft is a control of accessory nft's creation/mint
 /// It controls the accessory nft airdrop/max/properties
-/// It provider the token name generate 
+/// It provide the token name generate 
 module infamous::infamous_accessory_nft {
 
     use std::bcs;
@@ -14,30 +14,15 @@ module infamous::infamous_accessory_nft {
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
 
-    //
-    // Friends
-    // 
-
-    /// In `infamous_backend_open_box module`, when `open_box` happend, need to call `airdrop` in this module.
     friend infamous::infamous_backend_open_box;
-    /// In `infamous_backend_token_accessory_open_box` module, when `open_box` happend, need to call `airdrop_box` in this module.
     friend infamous::infamous_backend_token_accessory_open_box;
-    /// In `infamous_upgrade_level` module, when `upgrade` happend, sometimes it will call `airdrop_box` in this module.
     friend infamous::infamous_upgrade_level;
 
     //
     // Constants
     // 
-
     /// The maximal number of accessory collection, `0` means there are no limit size of the collection
     const MAXIMUM: u64 = 0;
-
-    //
-    // Errors
-    //
-    /// Error when collection store not initalized
-    const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
-
 
 
     struct TokenMintedEvent has drop, store {
@@ -179,7 +164,7 @@ module infamous::infamous_accessory_nft {
         }
     }
 
-    ///
+    /// create token data then transfer to receiver
     fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, 
     collection_name: String, 
     token_name: String, 
@@ -209,7 +194,7 @@ module infamous::infamous_accessory_nft {
         }
     }
 
-
+    /// emit minted event
     fun emit_minted_event(collection_info: &mut CollectionInfo, receiver_addr: address, creator_addr: address, collection_name: String, token_name: String) {
         event::emit_event<TokenMintedEvent>(
             &mut collection_info.token_minted_events,
@@ -224,7 +209,6 @@ module infamous::infamous_accessory_nft {
     public fun initialize(user: &signer) {
         init_module(user);
     }
-
 
     #[test(user = @infamous, receiver = @0xBB, minter = @0xCC, framework = @0x1,)]
     public fun airdrop_test(user: &signer, receiver: &signer, minter: &signer, framework: &signer) acquires CollectionInfo {

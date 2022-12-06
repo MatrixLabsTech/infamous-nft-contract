@@ -163,15 +163,5 @@ module infamous::infamous_common {
         assert!(after_str == result, 1);
 
     }
-
-
-    // #[test()]
-    // public fun hash_test() {
-
-    //     let before_str = string::utf8(b"bluehoodienullextended eyebrowssnullblack eyesbob cut 1 (navy blue)closednullnulldagger");
-    //     let hashed_string = string_hash_string(before_str);
-    //     let aaaaa_str = string::utf8(b"39ab0876c530f0e2e54efc3a1a789547fb5afd8545c44626cb892d60cc4b8a20");
-    //     assert!(hashed_string == aaaaa_str, 1);
-    // }
   
 }

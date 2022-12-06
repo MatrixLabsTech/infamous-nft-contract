@@ -1,4 +1,5 @@
 /// This module provides the lock of Infamous Token.
+/// InfamousLock used to lock infamous nft and store lock time, and store used time
 module infamous::infamous_lock {
 
     use std::error;
@@ -6,13 +7,9 @@ module infamous::infamous_lock {
     use std::vector;
     use std::option::{Self, Option};
     use std::string::{String};
-
     use aptos_std::table::{Self, Table};
-
     use aptos_framework::timestamp;
-
     use aptos_token::token::{Self, TokenId};
-
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
     use infamous::infamous_backend_auth;
@@ -21,15 +18,24 @@ module infamous::infamous_lock {
 
     friend infamous::infamous_upgrade_level;
 
-
-
+    //
+    // Errors
+    //
+    /// Error when infamous token not opened.
     const ETOKEN_NOT_OPENED:u64 = 1;
+    /// Error when lock token not owned by sender.
     const ETOKEN_NOT_OWNED_BY_SENDER: u64 = 2;
+    /// Error when LockInfo store not initalized.
     const ELOCK_INFO_NOT_PUBLISHED: u64 = 3;
+    /// Error when called un_lock when token is not Locked.
     const ETOKEN_NOT_LOCKED: u64 = 4;
+    /// Error when call lock when token is already loaked.
     const ETOKEN_ALREADY_LOCKED: u64 = 5;
+    /// Error when take time to use not enough.
     const ELOCK_TIME_NOT_ENOUGH: u64 = 6;
+    /// Error when unlock_by_admin was called by not authed account.
     const EACCOUNT_MUSTBE_AUTHED: u64 = 7;
+    /// Error when unlock token not owned by sender
     const ETOKEN_NOT_LOCKED_BY_THIS_ACCOUNT: u64 = 8;
     
     
@@ -37,24 +43,30 @@ module infamous::infamous_lock {
 
     
     struct LockingTime has store, drop {
+        // lock start time
         start: u64,
+        // take used time
         lock_time_used: u64,
     }
 
     // store in lokcer account
     struct TokenLocks has key {
-        locking: vector<TokenId>, // @todo change to locking
+        // user locking tokenIds
+        locking: vector<TokenId>,
     }
 
 
     // store in manager account
     struct TokenLocksData has key {
+        // all locking tokenIds
         locking_tokens: vector<TokenId>,
+        // locking tokenId address map
         locking_token_address: Table<TokenId, address>,
+        // locking tokenIs LockingTime map
         locking_time: Table<TokenId, LockingTime>,
     }
 
-
+    /// lock infamous nft, record time, transfer to manager addr and record token lockes
     public entry fun lock_infamous_nft(sender: &signer, name: String,) acquires TokenLocks, TokenLocksData {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -76,6 +88,7 @@ module infamous::infamous_lock {
         
     }
 
+    // unlock 
     public entry fun unlock_infamous_nft(sender: &signer, name: String,) acquires TokenLocks, TokenLocksData {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -96,6 +109,7 @@ module infamous::infamous_lock {
         token::direct_transfer(&manager_signer, sender, token_id, 1);
     }
 
+    // unlock by admin, called by authed account to auto unlock nfts
     public entry fun unlock_infamous_nft_admin(sender: &signer, name: String,) acquires TokenLocks, TokenLocksData {
         
         let sender_addr = signer::address_of(sender);
@@ -118,18 +132,7 @@ module infamous::infamous_lock {
         token::transfer(&manager_signer, token_id, locker_addr, 1);
     }
 
-
-    public fun get_all_locks(): vector<TokenId> acquires TokenLocksData  {
-        let manager_signer = infamous_manager_cap::get_manager_signer();
-        let manager_addr = signer::address_of(&manager_signer);
-        if(exists<TokenLocksData>(manager_addr)) {
-            let locks_data = borrow_global<TokenLocksData>(manager_addr);
-            locks_data.locking_tokens
-        } else {
-            vector<TokenId>[]
-        }
-    }
-
+    /// get token locked address
     public fun token_lock_address(token_id: TokenId): Option<address> acquires TokenLocksData {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -142,6 +145,7 @@ module infamous::infamous_lock {
         locker_addr
     }
 
+    /// get token locked time
     public fun get_available_time(token_id: TokenId): u64 acquires TokenLocksData {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -153,6 +157,7 @@ module infamous::infamous_lock {
         avaliable
     }
 
+    /// use lock time
     public(friend) fun take_times_to_use(token_id: TokenId, seconds: u64) acquires TokenLocksData {
         let available_time = get_available_time(token_id);
         assert!(available_time >= seconds, error::invalid_argument(ELOCK_TIME_NOT_ENOUGH));
@@ -166,7 +171,7 @@ module infamous::infamous_lock {
         lock_time.lock_time_used = lock_time.lock_time_used + seconds;
     }
 
-
+    /// remove locked token
     fun remove_token_locks(sender_addr: address, token_id: TokenId) acquires TokenLocks {
         assert!(exists<TokenLocks>(sender_addr), error::not_found(ETOKEN_NOT_LOCKED));
 
@@ -176,7 +181,7 @@ module infamous::infamous_lock {
 
     }
 
-
+    
     fun remove_token_locks_data(manager_addr: address, token_id: TokenId) acquires TokenLocksData {
         assert!(exists<TokenLocksData>(manager_addr), error::not_found(ETOKEN_NOT_LOCKED));
 
