@@ -1,4 +1,5 @@
 /// This module provides level info and the upgrade of Infamous Token.
+/// It record the token level, and upgrade operator
 module infamous::infamous_upgrade_level {
     
     use std::signer;
@@ -7,17 +8,11 @@ module infamous::infamous_upgrade_level {
     use std::option::{Self};
     use std::vector;
     use aptos_std::string::{String};
-
-    
     use aptos_std::table::{Self, Table};
-
     use aptos_token::token::{TokenId};
-
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
     use aptos_framework::timestamp;
-
-    
     use infamous::infamous_manager_cap;
     use infamous::infamous_lock;
     use infamous::infamous_nft;
@@ -25,14 +20,22 @@ module infamous::infamous_upgrade_level {
     use infamous::infamous_weapon_nft;
     use infamous::infamous_accessory_nft;
 
+    //
+    // Errors
+    //
+    /// Error when not enough time to upgrade
     const EEXP_NOT_ENOUGH_TO_UPGRADE: u64 = 1;
+    /// Error when the level retch 5
     const ETOKEN_IS_FULL_LEVEL: u64 = 2;
+    /// Error when the token is not locked
     const ETOKEN_NOT_LOCKED: u64 = 3;
 
     
+    //
+    // Contants
+    //
     const FULL_LEVEL: u64 = 5;
     const EACH_LEVEL_EXP_OF_PRESALE: u64 = 60;
-
     const FILVE_LEVEL_AIRDROP: u64 = 5;
 
 

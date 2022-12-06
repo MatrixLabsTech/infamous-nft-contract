@@ -1,28 +1,32 @@
+/// This module provides the Infamous Properties  url encode map config.
+/// Config the properties code map, used when set the infamous token uri
 module infamous::infamous_properties_url_encode_map {
 
     use std::signer;
     use std::error;
     use std::string::{String };
     use std::vector;
-
-
     use aptos_std::table::{Self, Table};
-
-
     use infamous::infamous_manager_cap;
     use infamous::infamous_backend_auth;
 
-
+    //
+    // Errors
+    //
+    /// Error when set config length not equal.
     const ELENGTH_NOT_EQUAL: u64 = 1;
+    /// Error when set config called by not authed account.
     const EACCOUNT_MUSTBE_AUTHED: u64 = 2;
+    /// Error when the property not set.
     const EPROPORTY_URL_ENCODE_NOT_SET: u64 = 3;
 
 
     struct PropertyValueUrlMap has key {
+        // properties map [gender][type][value] -> code :(femaleclothinghoodie -> 0)
         properties: Table<String, String>
     }
 
-
+    /// set property map, called by authed account when deployed contract
     public entry fun set_property_map(sender: &signer, 
     property_values: vector<String>, 
     property_url_encodes: vector<String>) acquires PropertyValueUrlMap {
@@ -33,7 +37,6 @@ module infamous::infamous_properties_url_encode_map {
         let property_encode_len = vector::length<String>(&property_url_encodes);
 
         assert!(property_values_len == property_encode_len, error::invalid_argument(ELENGTH_NOT_EQUAL));
-
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -57,6 +60,7 @@ module infamous::infamous_properties_url_encode_map {
         }
     }
 
+    /// get property value code
     public fun get_property_value_encode(property_value: String): String acquires PropertyValueUrlMap {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);

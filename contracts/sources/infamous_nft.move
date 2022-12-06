@@ -119,18 +119,19 @@ module infamous::infamous_nft {
     }
 
     
-    ///
+    /// resolve token_id, cause of all token are unique, so the property_version always be 0
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
 
+    /// get token minted time
     public fun get_token_mint_time(token_id: TokenId): u64 acquires CollectionInfo {
         let source_addr = @infamous;
         let token_mint_time_table = &borrow_global<CollectionInfo>(source_addr).token_mint_time_table;
         *table::borrow(token_mint_time_table, token_id)
      }
 
-     
+     /// mutate token properties by friend  module
      public(friend) fun mutate_token_properties(creator: &signer, 
         token_data_id: TokenDataId, 
         background: String, clothing: String, earrings: String, eyebrows: String,
@@ -155,16 +156,12 @@ module infamous::infamous_nft {
         token_data_id,
         keys, values, types
         );
-
         set_token_gender(token_data_id, gender);
-
         update_token_uri_with_properties(token_data_id, background, clothing, earrings, eyebrows, face_accessory, eyes, hair, mouth, neck, tattoo, weapon, grade, gender,);
-
-
 
      }
 
-      
+    /// mutate weapon property by friend module
     public(friend) fun update_token_weapon_properties(token_id: TokenId, weapon: String) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
@@ -179,8 +176,7 @@ module infamous::infamous_nft {
         );
     }
 
-    
-      
+    /// mutate accessory property by friend module
     public(friend) fun update_token_accessory_properties(token_id: TokenId, accessory: String, kind: String) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
@@ -195,7 +191,7 @@ module infamous::infamous_nft {
         );
     }
 
-    
+    /// mutate token uri
      public(friend) fun update_token_uri_with_properties(token_data_id: TokenDataId,
         background: String, clothing: String, earrings: String, eyebrows: String,
         face_accessory: String, eyes: String, hair: String,  
@@ -237,9 +233,7 @@ module infamous::infamous_nft {
 
      }
 
-    
-
-     
+    /// get token gender
      public fun get_token_gender(token_data_id: TokenDataId): String acquires CollectionInfo {
         let source_addr = @infamous;
         let gender_table = &borrow_global<CollectionInfo>(source_addr).gender_table;
@@ -248,13 +242,13 @@ module infamous::infamous_nft {
      
 
 
-     fun resolve_property_value_encode(gender: String, value_key: String, value: String): String {
-        let key = utf8(b"");
-        string::append(&mut key, gender);
-        string::append(&mut key, value_key);
-        string::append(&mut key, value);
-        infamous_properties_url_encode_map::get_property_value_encode(key)
-     }
+    fun resolve_property_value_encode(gender: String, value_key: String, value: String): String {
+    let key = utf8(b"");
+    string::append(&mut key, gender);
+    string::append(&mut key, value_key);
+    string::append(&mut key, value);
+    infamous_properties_url_encode_map::get_property_value_encode(key)
+    }
 
     fun set_token_gender(token_data_id: TokenDataId, gender: String) acquires CollectionInfo {
         let source_addr = @infamous;
@@ -262,9 +256,6 @@ module infamous::infamous_nft {
         table::add(gender_table_mut, token_data_id, gender);
      }
      
-     
-    
-
 
     fun minted_count(table_info: &Table<address, u64>, owner: address): u64 {
         if (table::contains(table_info, owner)) {
@@ -288,7 +279,6 @@ module infamous::infamous_nft {
         0,
         vector<bool>[true, true, true, true, true],
         vector<String>[], vector<vector<u8>>[], vector<String>[],);
-
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);
         token::direct_transfer(minter, receiver, token_id, balance);
         token_id
