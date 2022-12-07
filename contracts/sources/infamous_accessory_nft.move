@@ -18,11 +18,6 @@ module infamous::infamous_accessory_nft {
     friend infamous::infamous_backend_token_accessory_open_box;
     friend infamous::infamous_upgrade_level;
 
-    //
-    // Constants
-    // 
-    /// The maximal number of accessory collection, `0` means there are no limit size of the collection
-    const MAXIMUM: u64 = 0;
 
 
     struct TokenMintedEvent has drop, store {
@@ -47,7 +42,7 @@ module infamous::infamous_accessory_nft {
         let collection_uri = infamous_common::infamous_accessory_collection_uri();
         let description = infamous_common::infamous_accessory_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
-        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, MAXIMUM, vector<bool>[false, true, false]);
+        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, 0, vector<bool>[false, true, false]);
 
         // inital CollectionInfo
         move_to(source, CollectionInfo {

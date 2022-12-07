@@ -1,4 +1,5 @@
 /// This module provides Infamous Weapon Token binding functions.
+/// InfamousWeaponWear used to represent change infamous weapon property & bind weapon nft to infamous nft
 module infamous::infamous_weapon_wear {
 
 
@@ -6,13 +7,8 @@ module infamous::infamous_weapon_wear {
     use std::signer;
     use std::string::{String, utf8};
     use std::option::{Self, Option};
-    
-
-
-
     use aptos_token::token::{Self, TokenId};
     use aptos_token::property_map;
-
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
     use infamous::infamous_nft;
@@ -20,12 +16,20 @@ module infamous::infamous_weapon_wear {
     use infamous::infamous_lock;
     use infamous::infamous_link_status;
 
-
+    //
+    // Errors
+    //
+    /// Error when then infamous token not owned by sender.
     const ETOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
+    /// Error when then weapon token not owned by sender.
     const EWEAPON_NOT_OWNED_BY_SENDER: u64 = 2;
+    /// Error when old weapon missed (never happen)
     const EOLD_WEAPON_MISSED: u64 = 3;
+    /// Error when weapon not opened
     const EWEAPON_BOX_NOT_OPENED: u64 = 4;
+    /// Error when token not opened
     const ETOKEN_NOT_REVEALED: u64 = 5;
+    /// Error when locked token missed (never happen)
     const ETOKEN_LOCKED_MISSED: u64 = 6;
     
     
@@ -57,7 +61,6 @@ module infamous::infamous_weapon_wear {
             // 1. check the manager is the owner
             assert!(token::balance_of(manager_addr, token_id) == 1, error::invalid_state(ETOKEN_LOCKED_MISSED));
         
-
             // 2.check token lockd by sender or called by manager self
             let lockd_addr = option::extract(&mut option_lock_addr);
             assert!(sender_addr == lockd_addr, error::invalid_argument(ETOKEN_NOT_OWNED_BY_SENDER));
@@ -87,9 +90,7 @@ module infamous::infamous_weapon_wear {
             let old_weapon_token_id = infamous_link_status::get_token__weapon_token_id(token_id);
             assert!(option::is_some(&old_weapon_token_id), error::invalid_argument(ETOKEN_NOT_REVEALED));
             
-
             exchange__old_weapon__to__new_weapon(sender, &manager_signer, old_weapon_token_id, new_weapon_token_id);
-
 
             // update token bind weapon
             infamous_link_status::update_token__weapon_token_id(token_id, new_weapon_token_id);
@@ -106,6 +107,7 @@ module infamous::infamous_weapon_wear {
         
     }
 
+    /// update token uri with token properties
     fun update_token_uri(owner_addr: address, token_id: TokenId, weapon: String, grade: String) {
         let properties = &token::get_property_map(owner_addr, token_id);
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
@@ -126,7 +128,7 @@ module infamous::infamous_weapon_wear {
         infamous_nft::get_token_gender(token_data_id));
     }
 
-
+    /// transfer back old weapon and transfer new weapon to manager account
      fun exchange__old_weapon__to__new_weapon(sender: &signer, manager_signer: &signer, old_weapon_token_id: Option<TokenId>, new_weapon_token_id: TokenId) {
         let manager_addr = signer::address_of(manager_signer);
 
@@ -152,7 +154,7 @@ module infamous::infamous_weapon_wear {
      }
      
     
-   
+    /// get weapon name grade
     fun get_weapon__weapon_property(owner: address, weapon_token_id: TokenId): (String, String) { 
         let properties = token::get_property_map(owner, weapon_token_id);
         let name_key = &utf8(b"name");

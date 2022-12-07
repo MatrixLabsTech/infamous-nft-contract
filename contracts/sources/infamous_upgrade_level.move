@@ -40,39 +40,38 @@ module infamous::infamous_upgrade_level {
 
 
     struct AirdropEvent has drop, store {
+        // airdrop receiver addr
         receiver_addr: address,
+        // airdroped for infamous tokenId
         token_id: TokenId,
+        // airdroped tokenId
         airdrop_token_id: TokenId,
+        // airdrop time
         time: u64,
     }
 
     struct TokenUpgradeEvent has drop, store {
+        // upgrade tokenId
         token_id: TokenId,
+        // upgrade time
         upgrade_time: u64,
+        //  upgrade level
         level: u64,
     }
     
     struct UpgradeInfo has key {
+        // token level map
         token_level: Table<TokenId, u64>,
+        // airdroped award tokenId
         airdroped: Table<TokenId, Table<u64, vector<TokenId>>>,
+        // upgrade events
         token_upgrade_events: EventHandle<TokenUpgradeEvent>,
+        // airdrop events
         airdrop_events: EventHandle<AirdropEvent>,
     }
 
-    fun init_upgrade_info(account: &signer) {
-        let addr = signer::address_of(account);
-        if(!exists<UpgradeInfo>(addr)) {
-            move_to(account, UpgradeInfo {
-                token_level: table::new<TokenId, u64>(),
-                airdroped: table::new<TokenId, Table<u64, vector<TokenId>>>(),
-                token_upgrade_events: account::new_event_handle<TokenUpgradeEvent>(account),
-                airdrop_events: account::new_event_handle<AirdropEvent>(account),
-            });
-        };
-    }
-
-
-    // upgrade when under lock
+    // (1~5 upgrade), when full level -> do airdrop
+    // name: infamous token name, eg: `infamous #1`
     public entry fun upgrade(name: String) acquires UpgradeInfo {
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
@@ -95,15 +94,13 @@ module infamous::infamous_upgrade_level {
             new_level = FULL_LEVEL;
         };
         let need_exp = (new_level - cur_level) * EACH_LEVEL_EXP_OF_PRESALE;
-
         infamous_lock::take_times_to_use(token_id, need_exp);
-
         update_level(token_id, new_level);
 
         airdrop(token_id, new_level);
     }
 
-
+    
     public fun get_token_level(token_id: TokenId): u64 acquires UpgradeInfo { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -143,8 +140,6 @@ module infamous::infamous_upgrade_level {
                 level,
             });
     }
-
-
 
     fun airdrop(token_id: TokenId, new_level: u64) acquires UpgradeInfo {
         if(new_level >= 5 && !is_token__airdroped(token_id, 5)) { // level 5 airdrop
@@ -232,6 +227,20 @@ module infamous::infamous_upgrade_level {
                 time: timestamp::now_seconds(),
             });
     }
+
+
+    fun init_upgrade_info(account: &signer) {
+        let addr = signer::address_of(account);
+        if(!exists<UpgradeInfo>(addr)) {
+            move_to(account, UpgradeInfo {
+                token_level: table::new<TokenId, u64>(),
+                airdroped: table::new<TokenId, Table<u64, vector<TokenId>>>(),
+                token_upgrade_events: account::new_event_handle<TokenUpgradeEvent>(account),
+                airdrop_events: account::new_event_handle<AirdropEvent>(account),
+            });
+        };
+    }
+
 
 
     
