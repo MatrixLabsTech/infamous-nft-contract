@@ -1,4 +1,5 @@
 /// This module provides Infamous Token binding status. (for resolve cycle dependency)
+/// InfamousLinkStatus store binding status and emit events
 module infamous::infamous_link_status {
 
     use std::signer;
@@ -6,51 +7,67 @@ module infamous::infamous_link_status {
     use std::string::{Self, String, utf8};
     use std::option::{Self, Option};
     use std::vector;
-    
     use aptos_std::table::{Self, Table};
-
-
     use aptos_framework::account;
     use aptos_framework::timestamp;
     use aptos_framework::event::{Self, EventHandle};
-
     use aptos_token::token::{TokenId};
-
     use infamous::infamous_manager_cap;
 
     friend infamous::infamous_backend_open_box;
     friend infamous::infamous_weapon_wear;
     friend infamous::infamous_change_accesory;
 
+    //
+    // Errors
+    //
+    /// Error when wear weapon multiple times in one day
     const EWEAR_WEAPON_ONLY_CANBE_CALLED_ONECE_ADAY: u64 = 1;
+    /// Error when change accessory multiple times in one day
     const ECHANGE_ACCESSORY_ONLY_CANBE_CALLED_ONECE_ADAY: u64 = 2;
 
+    //
+    // Constants
+    //
+    /// wear wrapon gap&change accessory gap second
     const CHANGE_GAP: u64 = 60;
 
 
     struct LinkEvent has drop, store, copy {
+        // operator addresss
         operator: address,
+        // operate type: change equip/change accessory
         type: String,
+        // infamous nft tokenId
         token_id: TokenId,
+        // bind tokenId
         change_token_id: TokenId,
+        // bind operate name
         name: String,
+        // bind time
         time: u64,
     }
 
 
     // store in manager account
     struct TokenLink has key {
+        // token accessory nft table
         token_accessory_table: Table<TokenId, Table<String, TokenId>>,
+        // token weapon nft table
         token_weapon_table: Table<TokenId, TokenId>,
 
+        // token weapon nft last wear time table
         tokon_wear_weapon_time_table: Table<TokenId, u64>,
+        // token accessory nft last change time table
         tokon_change_accessory_time_table: Table<TokenId, u64>,
 
+        // link events group by tokenId, used by frountend(history)
         token_link_events_table: Table<TokenId, EventHandle<LinkEvent>>,
+        // all link events
         token_link_events: EventHandle<LinkEvent>,
     }
 
-    
+    /// get token linked weapon tokenId
     public fun get_token__weapon_token_id(token_id: TokenId): Option<TokenId> acquires TokenLink { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -65,7 +82,7 @@ module infamous::infamous_link_status {
         cur_weapon
     }
 
-    
+    // update token linked weapon tokenId
     public(friend) fun update_token__weapon_token_id(token_id: TokenId, weapon_token_id: TokenId) acquires TokenLink { 
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
@@ -91,7 +108,7 @@ module infamous::infamous_link_status {
         
     }
 
-    
+    /// get token linked accessory tokenId
     public fun get_token__accessory_token_id(token_id: TokenId, kind: String): Option<TokenId> acquires TokenLink { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -109,7 +126,7 @@ module infamous::infamous_link_status {
         cur_accessory
     }
 
-    
+    // update token linked accessory tokenIds
     public(friend) fun update_token__accessory_token_ids(token_id: TokenId, kinds: vector<String>, token_ids: vector<TokenId>) acquires TokenLink { 
 
         let manager_signer = infamous_manager_cap::get_manager_signer();
@@ -150,7 +167,7 @@ module infamous::infamous_link_status {
     }
 
 
-    
+    /// emit weapon wear events
     public(friend) fun emit_wear_event(account: &signer, owner: address, token_id: TokenId, weapon_token_id: TokenId, weapon_name: String) acquires TokenLink {
         let account_addr = signer::address_of(account);
         let token_link_events_table_mut = &mut borrow_global_mut<TokenLink>(account_addr).token_link_events_table;
@@ -184,6 +201,8 @@ module infamous::infamous_link_status {
             });
     }
     
+
+    /// emit accessory change events
     public(friend) fun emit_change_accessory_event(account: &signer, owner: address, token_id: TokenId, accessory_token_id: TokenId, kind: String, accessory_name: String) acquires TokenLink {
         let account_addr = signer::address_of(account);
         let token_link_events_table_mut = &mut borrow_global_mut<TokenLink>(account_addr).token_link_events_table;
@@ -222,7 +241,7 @@ module infamous::infamous_link_status {
     }
 
     
-    
+    /// initial token link store to account
     fun initialize_token_link(account: &signer) {
         let account_addr = signer::address_of(account);
         if(!exists<TokenLink>(account_addr)) {

@@ -1,17 +1,16 @@
 /// This module provides Infamous Accessory Token manager.
+/// InfamousAccessoryNft is a control of accessory nft's creation/mint
+/// It controls the accessory nft airdrop/max/properties
+/// It provide the token name generate 
 module infamous::infamous_accessory_nft {
 
     use std::bcs;
     use std::signer;
     use std::string::{Self, String, utf8};
-
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
-
     use aptos_std::table::{Self, Table};
-
     use aptos_token::token::{Self, TokenId, TokenDataId};
-
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
 
@@ -19,32 +18,33 @@ module infamous::infamous_accessory_nft {
     friend infamous::infamous_backend_token_accessory_open_box;
     friend infamous::infamous_upgrade_level;
 
-    const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
-
-
-    const MAXIMUM: u64 = 0;
 
 
     struct TokenMintedEvent has drop, store {
+        // Minted token receiver address.
         token_receiver_address: address,
+        // Minted token id.
         token_id: TokenId,
     }
 
 
-    // the collection mint infos
     struct CollectionInfo has key {
+        // Current index of minted token
         counter: u64,
+        // Minted Events
         token_minted_events: EventHandle<TokenMintedEvent>,
     }
 
-
+    /// Create accessory collection and initalize collection info
     fun init_module(source: &signer) {
+        // create accessory collection
         let collection_name = infamous_common::infamous_accessory_collection_name();
         let collection_uri = infamous_common::infamous_accessory_collection_uri();
         let description = infamous_common::infamous_accessory_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
-        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, MAXIMUM, vector<bool>[false, true, false]);
+        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, 0, vector<bool>[false, true, false]);
 
+        // inital CollectionInfo
         move_to(source, CollectionInfo {
             counter: 0, 
             token_minted_events: account::new_event_handle<TokenMintedEvent>(&manager_signer),
@@ -53,12 +53,14 @@ module infamous::infamous_accessory_nft {
        
     }
 
+    // Airdrop box(which means there are no properties) of accessory.
     public(friend) fun airdrop_box(receiver_addr: address, access: String): TokenId acquires CollectionInfo {
 
+        // get CollectionInfo
         let source_addr = @infamous;
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
 
-        // token infos
+        // get token data
         let collection_name = infamous_common::infamous_accessory_collection_name();
         let base_token_name = infamous_common::infamous_accessory_base_token_name();
         let manager_signer = infamous_manager_cap::get_manager_signer();
@@ -70,8 +72,6 @@ module infamous::infamous_accessory_nft {
         let keys = vector<String>[];
         let values = vector<vector<u8>>[];
         let types = vector<String>[];
-
-
         if(!string::is_empty(&access)){
             uri = infamous_common::infamous_accessory_earlybird_token_uri();
             keys = vector<String>[utf8(b"access"), ];
@@ -88,6 +88,7 @@ module infamous::infamous_accessory_nft {
         resolve_token_id(manager_addr, collection_name, name)
     }
 
+    /// Airdrop accessory nft(contains properties).
     public(friend) fun airdrop(receiver_addr: address, accessory: String, kind: String, gender: String, attributes: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
@@ -105,6 +106,7 @@ module infamous::infamous_accessory_nft {
         let uri = base_uri;
         let image = infamous::infamous_common::escape_whitespace(accessory);
         string::append(&mut uri, image);
+        string::append(&mut uri, gender);
         string::append(&mut uri, utf8(b".png"));
 
         create_token_and_transfer_to_receiver(&manager_signer, receiver_addr, collection_name, name, uri, 
@@ -120,6 +122,7 @@ module infamous::infamous_accessory_nft {
         resolve_token_id(manager_addr, collection_name, name)
     }
 
+    /// provide mutate properties functions to friend module
     public(friend) fun mutate_token_properties(creator: &signer, 
         token_data_id: TokenDataId, 
         name: String, kind: String, gender: String, attributes: String,) {
@@ -136,16 +139,18 @@ module infamous::infamous_accessory_nft {
         let uri = base_uri;
         let image = infamous::infamous_common::escape_whitespace(name);
         string::append(&mut uri, image);
+        string::append(&mut uri, gender);
         string::append(&mut uri, utf8(b".png"));
         
         token::mutate_tokendata_uri(creator, token_data_id, uri);
      }
 
-
+    /// provide tokenId resolver to other modules, cause of never change token properties, property_version alawys be `0`
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
 
+    /// retrive the minted count of CollectionInfo
     fun minted_count(table_info: &Table<address, u64>, owner: address): u64 {
         if (table::contains(table_info, owner)) {
             *table::borrow(table_info, owner)
@@ -153,7 +158,8 @@ module infamous::infamous_accessory_nft {
             0
         }
     }
-    
+
+    /// create token data then transfer to receiver
     fun create_token_and_transfer_to_receiver(minter: &signer, receiver_addr: address, 
     collection_name: String, 
     token_name: String, 
@@ -183,7 +189,7 @@ module infamous::infamous_accessory_nft {
         }
     }
 
-
+    /// emit minted event
     fun emit_minted_event(collection_info: &mut CollectionInfo, receiver_addr: address, creator_addr: address, collection_name: String, token_name: String) {
         event::emit_event<TokenMintedEvent>(
             &mut collection_info.token_minted_events,
@@ -198,7 +204,6 @@ module infamous::infamous_accessory_nft {
     public fun initialize(user: &signer) {
         init_module(user);
     }
-
 
     #[test(user = @infamous, receiver = @0xBB, minter = @0xCC, framework = @0x1,)]
     public fun airdrop_test(user: &signer, receiver: &signer, minter: &signer, framework: &signer) acquires CollectionInfo {

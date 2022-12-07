@@ -1,17 +1,16 @@
 /// This module provides Infamous Weapon Token manager.
+/// InfamousAccessoryNft is a control of weapon nft's creation/mint
+/// It controls the weapon nft airdrop/max/properties
+/// It provide the token name generate 
 module infamous::infamous_weapon_nft {
 
     use std::bcs;
     use std::signer;
     use std::string::{Self, String, utf8};
-
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
-
     use aptos_std::table::{Self, Table};
-
     use aptos_token::token::{Self, TokenId, TokenDataId};
-
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
 
@@ -19,31 +18,33 @@ module infamous::infamous_weapon_nft {
     friend infamous::infamous_upgrade_level;
     friend infamous::infamous_backend_token_weapon_open_box;
 
-    const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
-    const ACCOUNT_MUSTBE_AUTHED: u64 = 2;
-    const ACCOUNT_MUSTBE_MANAGER: u64 = 3;
-
 
     struct TokenMintedEvent has drop, store {
+        // Minted token receiver address.
         token_receiver_address: address,
+        // Minted token id.
         token_id: TokenId,
     }
 
 
     // the collection mint infos
     struct CollectionInfo has key {
+        // Current index of minted token
         counter: u64,
+        // Minted Events
         token_minted_events: EventHandle<TokenMintedEvent>,
     }
 
-
+    /// Create weapon collection and initalize collection info
     fun init_module(source: &signer) {
+        // create accessory collection
         let collection_name = infamous_common::infamous_weapon_collection_name();
         let collection_uri = infamous_common::infamous_weapon_collection_uri();
         let description = infamous_common::infamous_weapon_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
         token::create_collection_script(&manager_signer, collection_name, description, collection_uri, 0, vector<bool>[false, true, false]);
 
+        // inital CollectionInfo
         move_to(source, CollectionInfo {
             counter: 0, 
             token_minted_events: account::new_event_handle<TokenMintedEvent>(&manager_signer),
@@ -52,6 +53,7 @@ module infamous::infamous_weapon_nft {
        
     }
 
+    // Airdrop box(which means there are no properties) of weapon.
     public(friend) fun airdrop_box(receiver_addr: address, tier: String, access: String): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
@@ -93,6 +95,7 @@ module infamous::infamous_weapon_nft {
         resolve_token_id(manager_addr, collection_name, name)
     }
 
+    /// Airdrop weapon nft(contains properties).
     public(friend) fun airdrop(receiver_addr: address, weapon: String, tier: String, grade: String, attributes: String,): TokenId acquires CollectionInfo {
 
         let source_addr = @infamous;
@@ -126,6 +129,8 @@ module infamous::infamous_weapon_nft {
         resolve_token_id(manager_addr, collection_name, name)
     }
 
+    
+    /// provide mutate properties functions to friend module
     public(friend) fun mutate_token_properties(creator: &signer, 
         token_data_id: TokenDataId, 
         name: String, grade: String, attributes: String,) {
@@ -148,11 +153,13 @@ module infamous::infamous_weapon_nft {
         token::mutate_tokendata_uri(creator, token_data_id, uri);
      }
 
-
+    
+    /// provide tokenId resolver to other modules, cause of never change token properties, property_version alawys be `0`
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
 
+    /// retrive the minted count of CollectionInfo
     fun minted_count(table_info: &Table<address, u64>, owner: address): u64 {
         if (table::contains(table_info, owner)) {
             *table::borrow(table_info, owner)

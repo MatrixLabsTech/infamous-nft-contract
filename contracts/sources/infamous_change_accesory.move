@@ -1,4 +1,5 @@
-/// This module provides Infamous Weapon Token binding functions.
+/// This module provides Infamous Accessory Token binding functions.
+/// InfamousChangeAccessory used to change infamous accessory property & bind accessory nft to infamous nft
 module infamous::infamous_change_accesory {
 
 
@@ -6,15 +7,8 @@ module infamous::infamous_change_accesory {
     use std::signer;
     use std::string::{String, utf8};
     use std::option::{Self, Option};
-
-
-    
-
-
-
     use aptos_token::token::{Self, TokenId, TokenDataId};
     use aptos_token::property_map;
-
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
     use infamous::infamous_nft;
@@ -23,20 +17,30 @@ module infamous::infamous_change_accesory {
     use infamous::infamous_link_status;
     use infamous::infamous_backend_open_box;
 
-
+    //
+    // Errors
+    //
+    /// Error when then infamous token not owned by sender.
     const ETOKEN_NOT_OWNED_BY_SENDER: u64 = 1;
+    /// Error when then accessory token not owned by sender.
     const EACCESSORY_NOT_OWNED_BY_SENDER: u64 = 2;
+    /// Error when old accessory missed (never happen)
     const EOLD_ACCESSORY_MISSED: u64 = 3;
+    /// Error when accessory not opened
     const EACCESSORY_BOX_NOT_OPENED: u64 = 4;
+    /// Error when token not opened
     const ETOKEN_NOT_REVEALED: u64 = 5;
+    /// Error when locked token missed (never happen)
     const ETOKEN_LOCKED_MISSED: u64 = 6;
+    /// Error when weared weapon not opened (never happen)
     const EWEAPON_BOX_NOT_OPENED: u64 = 7;
+    /// Error when accessory gender not same as token gender
     const EACCESSORY_GENDER_ERROR: u64 = 8;
     
     
 
 
-    /// wear accessory called by accessory owner
+    /// change accessory called by accessory owner
     public entry fun change_accessory(sender: &signer, token_name: String, accessory_name: String) {
         let sender_addr = signer::address_of(sender);
 
@@ -117,7 +121,7 @@ module infamous::infamous_change_accesory {
         
     }
 
-    
+    /// update token uri with token properties
     fun update_token_uri(manager_addr: address, owner_addr: address, token_id: TokenId, token_data_id: TokenDataId, gender: String) {
         
 
@@ -142,7 +146,7 @@ module infamous::infamous_change_accesory {
         gender);
     }
 
-
+    /// transfer old accessory to lock addr, and transfer back old accessory back
      fun exchange__old_accessory__to__new_accessory(sender: &signer, manager_signer: &signer, old_accessory_token_id: Option<TokenId>, new_accessory_token_id: TokenId) {
         let manager_addr = signer::address_of(manager_signer);
 
@@ -158,6 +162,7 @@ module infamous::infamous_change_accesory {
         transfer(sender, manager_signer, new_accessory_token_id);
      }
 
+    /// call token direct transfer
      fun transfer(from: &signer, to: &signer, token_id: TokenId) {
         let from_addr = signer::address_of(from);
         let to_addr = signer::address_of(to);
@@ -167,7 +172,7 @@ module infamous::infamous_change_accesory {
      }
      
     
-   
+    /// get accessory token property
     fun get_accessory__accessory_property(owner: address, accessory_token_id: TokenId): (String, String, String) { 
         let properties = token::get_property_map(owner, accessory_token_id);
         let name_key = &utf8(b"name");
@@ -180,6 +185,7 @@ module infamous::infamous_change_accesory {
         (name, kind, gender)
     }
 
+    /// get weapon token property
     fun get_weapon__weapon_property(owner: address, weapon_token_id: TokenId): (String, String) { 
         let properties = token::get_property_map(owner, weapon_token_id);
         let name_key = &utf8(b"name");
@@ -193,7 +199,6 @@ module infamous::infamous_change_accesory {
 
 
     
-       
     #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
     public fun wear_accessory_test(user: &signer, receiver: &signer, framework: &signer) { 
 

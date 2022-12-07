@@ -1,19 +1,18 @@
 /// This module provides the Infamous Token manager.
+/// InfamousNft is a control of infamous nft's creation/mint
+/// It controls the infamous nft's mint/max/properties
+/// It provide the token name generate 
 module infamous::infamous_nft {
 
     use std::bcs;
     use std::signer;
     use std::error;
     use std::string::{Self, String, utf8 };
-    
     use aptos_framework::timestamp;
     use aptos_framework::account;
     use aptos_framework::event::{Self, EventHandle};
-
     use aptos_std::table::{Self, Table};
-
     use aptos_token::token::{Self, TokenId, TokenDataId};
-
     use infamous::infamous_common;
     use infamous::infamous_manager_cap;
     use infamous::infamous_properties_url_encode_map;
@@ -22,13 +21,22 @@ module infamous::infamous_nft {
     friend infamous::infamous_weapon_wear;
     friend infamous::infamous_change_accesory;
 
-    const ECOLLECTION_NOT_PUBLISHED: u64 = 1;
+    //
+    // Errors
+    //
+    /// Error when one account mint out of per max
     const EMINT_COUNT_OUT_OF_PER_MAX: u64 = 2;
+    /// Error when account mint out of total
     const EMINT_COUNT_OUT_OF_MAX: u64 = 3;
 
 
+    //
+    // Contants
+    //
+    /// max number of tokens can be minted by each account
     const PER_MAX: u64 = 10;
-    const MAXIMUM: u64 = 1000;
+    /// the total nft amount
+    const MAXIMUM: u64 = 10000;
 
 
     struct TokenMintedEvent has drop, store {
@@ -46,13 +54,13 @@ module infamous::infamous_nft {
         gender_table: Table<TokenDataId, String>,
     }
 
-
+    ///  create infamous nft collection when init madule
     fun init_module(source: &signer) {
         let collection_name = infamous_common::infamous_collection_name();
         let collection_uri = infamous_common::infamous_collection_uri();
         let description = infamous_common::infamous_description();
         let manager_signer = infamous_manager_cap::get_manager_signer();
-        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, MAXIMUM, vector<bool>[false, true, false]);
+        token::create_collection_script(&manager_signer, collection_name, description, collection_uri, 0, vector<bool>[true, true, true]);
 
         move_to(source, CollectionInfo {
             counter: 0, 
@@ -65,14 +73,13 @@ module infamous::infamous_nft {
        
     }
 
-    
+    /// mint nft, called by any account
     public entry fun mint(receiver: &signer, count: u64) acquires CollectionInfo {
         // check per max
         assert!(count <= PER_MAX, error::out_of_range(EMINT_COUNT_OUT_OF_PER_MAX));
 
         // check max
         let source_addr = @infamous;
-        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
         let collection_info = borrow_global_mut<CollectionInfo>(source_addr);
         assert!(collection_info.counter + count <= MAXIMUM, error::out_of_range(EMINT_COUNT_OUT_OF_MAX));
 
@@ -112,18 +119,19 @@ module infamous::infamous_nft {
     }
 
     
+    /// resolve token_id, cause of all token are unique, so the property_version always be 0
     public fun resolve_token_id(creator_addr: address, collection_name: String, token_name: String): TokenId {
         token::create_token_id_raw(creator_addr, collection_name, token_name, 0)
     }
 
+    /// get token minted time
     public fun get_token_mint_time(token_id: TokenId): u64 acquires CollectionInfo {
         let source_addr = @infamous;
-        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
         let token_mint_time_table = &borrow_global<CollectionInfo>(source_addr).token_mint_time_table;
         *table::borrow(token_mint_time_table, token_id)
      }
 
-     
+     /// mutate token properties by friend  module
      public(friend) fun mutate_token_properties(creator: &signer, 
         token_data_id: TokenDataId, 
         background: String, clothing: String, earrings: String, eyebrows: String,
@@ -148,16 +156,12 @@ module infamous::infamous_nft {
         token_data_id,
         keys, values, types
         );
-
         set_token_gender(token_data_id, gender);
-
         update_token_uri_with_properties(token_data_id, background, clothing, earrings, eyebrows, face_accessory, eyes, hair, mouth, neck, tattoo, weapon, grade, gender,);
-
-
 
      }
 
-      
+    /// mutate weapon property by friend module
     public(friend) fun update_token_weapon_properties(token_id: TokenId, weapon: String) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
@@ -172,8 +176,7 @@ module infamous::infamous_nft {
         );
     }
 
-    
-      
+    /// mutate accessory property by friend module
     public(friend) fun update_token_accessory_properties(token_id: TokenId, accessory: String, kind: String) {
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let (creator, collection, name, _property_version) = token::get_token_id_fields(&token_id);
@@ -188,7 +191,7 @@ module infamous::infamous_nft {
         );
     }
 
-    
+    /// mutate token uri
      public(friend) fun update_token_uri_with_properties(token_data_id: TokenDataId,
         background: String, clothing: String, earrings: String, eyebrows: String,
         face_accessory: String, eyes: String, hair: String,  
@@ -230,36 +233,29 @@ module infamous::infamous_nft {
 
      }
 
-    
-
-     
+    /// get token gender
      public fun get_token_gender(token_data_id: TokenDataId): String acquires CollectionInfo {
         let source_addr = @infamous;
-        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
         let gender_table = &borrow_global<CollectionInfo>(source_addr).gender_table;
         *table::borrow(gender_table, token_data_id)
      }
      
 
 
-     fun resolve_property_value_encode(gender: String, value_key: String, value: String): String {
-        let key = utf8(b"");
-        string::append(&mut key, gender);
-        string::append(&mut key, value_key);
-        string::append(&mut key, value);
-        infamous_properties_url_encode_map::get_property_value_encode(key)
-     }
+    fun resolve_property_value_encode(gender: String, value_key: String, value: String): String {
+    let key = utf8(b"");
+    string::append(&mut key, gender);
+    string::append(&mut key, value_key);
+    string::append(&mut key, value);
+    infamous_properties_url_encode_map::get_property_value_encode(key)
+    }
 
     fun set_token_gender(token_data_id: TokenDataId, gender: String) acquires CollectionInfo {
         let source_addr = @infamous;
-        assert!(exists<CollectionInfo>(source_addr), error::not_found(ECOLLECTION_NOT_PUBLISHED));
         let gender_table_mut = &mut borrow_global_mut<CollectionInfo>(source_addr).gender_table;
         table::add(gender_table_mut, token_data_id, gender);
      }
      
-     
-    
-
 
     fun minted_count(table_info: &Table<address, u64>, owner: address): u64 {
         if (table::contains(table_info, owner)) {
@@ -283,7 +279,6 @@ module infamous::infamous_nft {
         0,
         vector<bool>[true, true, true, true, true],
         vector<String>[], vector<vector<u8>>[], vector<String>[],);
-
         let token_id = resolve_token_id(minter_addr, collection_name, token_name);
         token::direct_transfer(minter, receiver, token_id, balance);
         token_id

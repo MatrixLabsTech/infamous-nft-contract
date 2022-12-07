@@ -1,11 +1,10 @@
 /// This module provides an resource account capability for all modules.
+/// It create an resource account for shared use(by friend module)
 module infamous::infamous_manager_cap {
 
-    use std::error;
     use std::string;
     use aptos_framework::account::{Self, SignerCapability};
     use aptos_framework::timestamp;
-
     use infamous::infamous_common;
 
     friend infamous::infamous_nft;
@@ -13,21 +12,18 @@ module infamous::infamous_manager_cap {
     friend infamous::infamous_upgrade_level;
     friend infamous::infamous_backend_open_box;
     friend infamous::infamous_properties_url_encode_map;
-
     friend infamous::infamous_weapon_nft;
     friend infamous::infamous_link_status;
-
     friend infamous::infamous_weapon_wear;
     friend infamous::infamous_change_accesory;
     friend infamous::infamous_accessory_nft;
     friend infamous::infamous_backend_token_weapon_open_box;
     friend infamous::infamous_backend_token_accessory_open_box;
 
-    const EMANAGER_ACCOUNT_INFO_NOT_PUBLISHED: u64 = 1;
-
     struct ManagerAccountCapability has key { signer_cap: SignerCapability }
 
 
+    /// create a resource account in init_module
     fun init_module(source: &signer) {
         let registry_seed = infamous_common::u128_to_string((timestamp::now_microseconds() as u128));
         string::append(&mut registry_seed, string::utf8(b"registry_seed"));
@@ -37,10 +33,9 @@ module infamous::infamous_manager_cap {
         });
     }
 
-
+    // get resource account by friend module
     public(friend) fun get_manager_signer(): signer acquires ManagerAccountCapability {
         let source_addr = @infamous;
-        assert!(exists<ManagerAccountCapability>(source_addr), error::not_found(EMANAGER_ACCOUNT_INFO_NOT_PUBLISHED));
         let manager_account_capability = borrow_global<ManagerAccountCapability>(source_addr);
         account::create_signer_with_capability(&manager_account_capability.signer_cap)
     }

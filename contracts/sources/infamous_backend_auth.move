@@ -1,21 +1,27 @@
 /// This module provides the auth control for backend auth.
+/// InfamousBackendAuth is a store of auth data
+/// It stores an array of user address to module owner's store
+/// It provide the add/remove of address, and the check fun
 module infamous::infamous_backend_auth {
 
     use std::error;
     use std::signer;
     use std::vector;
-
-
     use infamous::infamous_common;
 
+    //
+    // Errors
+    //
+    /// Error when called by user that not module owner    
     const ESETACCOUNT_MUSTBE_MODULE_OWNER: u64 = 1;
 
-    /// origin address 1 -> n the address of account who can call the update
     struct CapabilityState has key {
+        // module owner delegate address
         store: vector<address>,
     }
 
 
+    /// add an address to store
     public entry fun delegate(origin: &signer, addr: address) acquires CapabilityState {
         let source_addr = @infamous;
         let origin_addr = signer::address_of(origin);
@@ -27,6 +33,7 @@ module infamous::infamous_backend_auth {
         infamous_common::add_element(&mut borrow_global_mut<CapabilityState>(origin_addr).store, addr);
     }
 
+    /// remove address from store
     public entry fun revoke(origin: &signer, addr: address) acquires CapabilityState {
         let source_addr = @infamous;
         let origin_addr = signer::address_of(origin);
@@ -36,6 +43,7 @@ module infamous::infamous_backend_auth {
         };
     }
 
+    /// check is an address in store
     public fun has_capability(addr: address): bool acquires CapabilityState {
         let source_addr = @infamous;
         let has_flag = false;
@@ -61,14 +69,9 @@ module infamous::infamous_backend_auth {
 
 
         assert!(!has_capability(user_addr), 1);
-
         delegate(source, user_addr);
-
         assert!(has_capability(user_addr), 1);
-
         revoke(source, user_addr);
-
-        
         assert!(!has_capability(user_addr), 1);
 
 

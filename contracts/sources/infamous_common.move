@@ -1,9 +1,8 @@
-/// This module provides the common tools convert tools for all modules.
+/// This module provides the common configs of ndt collection and common tools to manage string/u64 things.
 module infamous::infamous_common {
 
     use std::string::{Self, String};
     use std::vector;
-
 
     public fun infamous_collection_name(): String {
         string::utf8(b"InfamousNFT")
@@ -23,7 +22,7 @@ module infamous::infamous_common {
     }
 
     public fun infamous_base_token_uri(): String {
-        string::utf8(b"https://media-test.nft.infamousnft.xyz/test/origin/")
+        string::utf8(b"https://beta.pfp.infamousnft.xyz/origin/")
     }
 
     public fun infamous_description(): String {
@@ -43,7 +42,7 @@ module infamous::infamous_common {
     }
     
     public fun infamous_weapon_base_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/media/weapon/")
+        string::utf8(b"https://media.nft.infamousnft.xyz/media/weapon/origin/")
     }
 
     public fun infamous_weapon_token_uri(): String {
@@ -73,7 +72,7 @@ module infamous::infamous_common {
     }
     
     public fun infamous_accessory_base_token_uri(): String {
-        string::utf8(b"https://media.nft.infamousnft.xyz/media/accessory/")
+        string::utf8(b"https://media.nft.infamousnft.xyz/media/accessory/origin/")
     }
 
     public fun infamous_accessory_token_uri(): String {
@@ -96,7 +95,7 @@ module infamous::infamous_common {
         str
     }
 
-
+    /// helper to convert u64 to string
     public fun u64_string(value: u64): String{
         if (value == 0) {
             return string::utf8(b"0")
@@ -110,6 +109,7 @@ module infamous::infamous_common {
         string::utf8(buffer)
     }
 
+    /// helper to convert u128 to string
     public fun u128_to_string(value: u128): String {
         if (value == 0) {
             return string::utf8(b"0")
@@ -123,8 +123,6 @@ module infamous::infamous_common {
         string::utf8(buffer)
     }
 
- 
-    
     /// Helper to remove an element from a vector.
     public fun remove_element<E: drop>(v: &mut vector<E>, x: &E) {
         let (found, index) = vector::index_of(v, x);
@@ -133,13 +131,14 @@ module infamous::infamous_common {
         }
     }
 
+    /// Helper to add an element to a vector.
     public fun add_element<E: drop>(v: &mut vector<E>, x: E) {
         if (!vector::contains(v, &x)) {
             vector::push_back(v, x)
         }
     }
 
-
+    /// escape the string, replace ` ` with `-`
     public fun escape_whitespace(value: String): String {
         let bytes = string::bytes(&value);
         let i = 0;
@@ -164,15 +163,5 @@ module infamous::infamous_common {
         assert!(after_str == result, 1);
 
     }
-
-
-    // #[test()]
-    // public fun hash_test() {
-
-    //     let before_str = string::utf8(b"bluehoodienullextended eyebrowssnullblack eyesbob cut 1 (navy blue)closednullnulldagger");
-    //     let hashed_string = string_hash_string(before_str);
-    //     let aaaaa_str = string::utf8(b"39ab0876c530f0e2e54efc3a1a789547fb5afd8545c44626cb892d60cc4b8a20");
-    //     assert!(hashed_string == aaaaa_str, 1);
-    // }
   
 }

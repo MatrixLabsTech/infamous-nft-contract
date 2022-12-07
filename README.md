@@ -74,3 +74,5 @@ yarn aptos-move-publish
 [website](https://infamous-game-beta.whitematrix.workers.dev)
 
 [github](https://github.com/MatrixLabsTech/infamous-nft-contract)
+
+[requirements](https://whitematrix.atlassian.net/wiki/spaces/NFMS/pages/191004736/Infamous+GamePlay+Presale+v1.1)

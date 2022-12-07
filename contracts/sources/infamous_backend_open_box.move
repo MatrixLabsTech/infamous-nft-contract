@@ -1,49 +1,44 @@
 /// This module provides open box -> change the properties of Token.
+/// InfamousBackendOpenBox used to mutate infamous nft's property by authed account 
 module infamous::infamous_backend_open_box {
 
-     use std::signer;
-     use std::string::{String, utf8};
-     use std::error;
-     use std::vector;
-
-
-     use aptos_framework::timestamp;
-     use aptos_std::table::{Self, Table};
+    use std::signer;
+    use std::string::{String, utf8};
+    use std::error;
+    use std::vector;
+    use aptos_framework::timestamp;
+    use aptos_std::table::{Self, Table};
+    use aptos_token::token::{Self, TokenId};
+    use infamous::infamous_common;
+    use infamous::infamous_manager_cap;
+    use infamous::infamous_nft;
+    use infamous::infamous_backend_auth;
+    use infamous::infamous_weapon_nft;
+    use infamous::infamous_link_status;
+    use infamous::infamous_accessory_nft;
      
-     use aptos_token::token::{Self, TokenId};
-
-     use infamous::infamous_common;
-     use infamous::infamous_manager_cap;
-     use infamous::infamous_nft;
-     use infamous::infamous_backend_auth;
-     use infamous::infamous_weapon_nft;
-     use infamous::infamous_link_status;
-     use infamous::infamous_accessory_nft;
-     
+    //
+    // Contants
+    //
+    /// second after minted 
+    const OPEN_TIME_GAP: u64 = 1;
+    
+    //
+    // Errors
+    //
+    /// Error when some fun need backend authed, but called with no authed account.
     const EACCOUNT_MUSTBE_AUTHED: u64 = 1;
+    /// Error when call open_box in five days after minted
     const EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT: u64 = 2;
+    /// Error when call open_box multi times
     const EBOX_ALREADY_OPENED: u64 = 3;
 
-    const OPEN_TIME_GAP: u64 = 1;
-
-
     struct OpenBoxStatus has key {
+        // store the token open status
         open_status: Table<TokenId, bool>
     }
 
-    fun initialize_open_box_status(account: &signer) {
-        let account_addr = signer::address_of(account);
-        if(!exists<OpenBoxStatus>(account_addr)) {
-            move_to(
-                account,
-                OpenBoxStatus {
-                    open_status: table::new<TokenId, bool>(),
-                }
-            );
-        }
-    }
-
-
+    /// open box, mutate infamous nft with certain properties. airdrop weapon. airdrop accessory.
     public entry fun open_box(sender: &signer,
         name: String,
         background: String, 
@@ -104,7 +99,7 @@ module infamous::infamous_backend_open_box {
         update_box_opened(token_id);
     }
 
-     
+    /// check box opened
     public fun is_box__opened(token_id: TokenId): bool acquires OpenBoxStatus { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -116,7 +111,7 @@ module infamous::infamous_backend_open_box {
         box_opend
     }
 
-
+    /// airdrop need accessory
     fun airdrop_accessory(
         accessory_kinds: &mut vector<String>,
         accessory_values: &mut vector<TokenId>,
@@ -168,6 +163,7 @@ module infamous::infamous_backend_open_box {
         };
     }
      
+    /// update infamous token open status
     fun update_box_opened(token_id: TokenId) acquires OpenBoxStatus { 
         let manager_signer = infamous_manager_cap::get_manager_signer();
         let manager_addr = signer::address_of(&manager_signer);
@@ -180,7 +176,20 @@ module infamous::infamous_backend_open_box {
         };
     }
 
-       
+    /// init openboxstatus store to account
+    fun initialize_open_box_status(account: &signer) {
+        let account_addr = signer::address_of(account);
+        if(!exists<OpenBoxStatus>(account_addr)) {
+            move_to(
+                account,
+                OpenBoxStatus {
+                    open_status: table::new<TokenId, bool>(),
+                }
+            );
+        }
+    }
+
+
     #[test(framework = @0x1, user = @infamous, receiver = @0xBB)]
     public fun open_box_test(user: &signer, receiver: &signer, framework: &signer) acquires OpenBoxStatus { 
 
