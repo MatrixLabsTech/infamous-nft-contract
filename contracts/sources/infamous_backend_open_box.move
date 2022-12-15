@@ -16,12 +16,6 @@ module infamous::infamous_backend_open_box {
     use infamous::infamous_weapon_nft;
     use infamous::infamous_link_status;
     use infamous::infamous_accessory_nft;
-     
-    //
-    // Contants
-    //
-    /// second after minted 
-    const OPEN_TIME_GAP: u64 = 1;
     
     //
     // Errors
@@ -32,6 +26,17 @@ module infamous::infamous_backend_open_box {
     const EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT: u64 = 2;
     /// Error when call open_box multi times
     const EBOX_ALREADY_OPENED: u64 = 3;
+
+
+
+     
+    //
+    // Contants
+    //
+    // open time after minted (second)
+    /// @Todo change to 432000(5 days) when prod
+    const OPEN_TIME_GAP_FIVE_DAYS: u64 = 1;
+
 
     struct OpenBoxStatus has key {
         // store the token open status
@@ -70,9 +75,9 @@ module infamous::infamous_backend_open_box {
         // assert!(token::balance_of(owner_addr, token_id) == 1, error::invalid_argument(TOKEN_NOT_OWNED_BY_OWNER_ADDR));
         assert!(!is_box__opened(token_id), error::invalid_state(EBOX_ALREADY_OPENED));
 
-        // check now - mint time > 180s
+        // check now - mint time > five days
         let token_mint_time = infamous_nft::get_token_mint_time(token_id);
-        assert!(timestamp::now_seconds() - token_mint_time >= OPEN_TIME_GAP, error::invalid_argument(EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT));
+        assert!(timestamp::now_seconds() - token_mint_time >= OPEN_TIME_GAP_FIVE_DAYS, error::invalid_argument(EOPEN_MUST_BE_FIVE_DAYS_AFTER_MINT));
 
 
         // airdrop weapon

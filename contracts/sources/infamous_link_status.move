@@ -18,6 +18,8 @@ module infamous::infamous_link_status {
     friend infamous::infamous_weapon_wear;
     friend infamous::infamous_change_accesory;
 
+
+
     //
     // Errors
     //
@@ -26,12 +28,13 @@ module infamous::infamous_link_status {
     /// Error when change accessory multiple times in one day
     const ECHANGE_ACCESSORY_ONLY_CANBE_CALLED_ONECE_ADAY: u64 = 2;
 
+
     //
     // Constants
     //
     /// wear wrapon gap&change accessory gap second
-    const CHANGE_GAP: u64 = 60;
-
+    /// @Todo change to 86400(1 day) when prod
+    const CHANGE_GAP_ONE_DAY: u64 = 60;
 
     struct LinkEvent has drop, store, copy {
         // operator addresss
@@ -95,7 +98,7 @@ module infamous::infamous_link_status {
         let now = timestamp::now_seconds();
         if(table::contains(tokon_wear_weapon_time_table, token_id)) {
             let last_time = *table::borrow(tokon_wear_weapon_time_table, token_id);
-            assert!(now - last_time >= CHANGE_GAP, error::aborted(EWEAR_WEAPON_ONLY_CANBE_CALLED_ONECE_ADAY));
+            assert!(now - last_time >= CHANGE_GAP_ONE_DAY, error::aborted(EWEAR_WEAPON_ONLY_CANBE_CALLED_ONECE_ADAY));
             table::remove(tokon_wear_weapon_time_table, token_id);
         };
         table::add(tokon_wear_weapon_time_table, token_id, now);
@@ -139,7 +142,7 @@ module infamous::infamous_link_status {
         let now = timestamp::now_seconds();
         if(table::contains(tokon_change_accessory_time_table, token_id)) {
             let last_time = *table::borrow(tokon_change_accessory_time_table, token_id);
-            assert!(now - last_time >= CHANGE_GAP, error::aborted(ECHANGE_ACCESSORY_ONLY_CANBE_CALLED_ONECE_ADAY));
+            assert!(now - last_time >= CHANGE_GAP_ONE_DAY, error::aborted(ECHANGE_ACCESSORY_ONLY_CANBE_CALLED_ONECE_ADAY));
             table::remove(tokon_change_accessory_time_table, token_id);
         };
         table::add(tokon_change_accessory_time_table, token_id, now);

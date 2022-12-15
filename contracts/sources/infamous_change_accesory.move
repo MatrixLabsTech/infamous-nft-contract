@@ -103,7 +103,6 @@ module infamous::infamous_change_accesory {
             // 2.check token revealed
             let old_accessory_token_id = infamous_link_status::get_token__accessory_token_id(token_id, kind);
 
-            // @todo: gender 
             exchange__old_accessory__to__new_accessory(sender, &manager_signer, old_accessory_token_id, new_accessory_token_id);
 
             // update token bind accessory

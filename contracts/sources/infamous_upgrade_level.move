@@ -35,8 +35,10 @@ module infamous::infamous_upgrade_level {
     // Contants
     //
     const FULL_LEVEL: u64 = 5;
-    const EACH_LEVEL_EXP_OF_PRESALE: u64 = 60;
     const FILVE_LEVEL_AIRDROP: u64 = 5;
+    // each level need locked seconds, 
+    // @Todo change to 86400(1 day) when prod
+    const EACH_LEVEL_EXP_OF_PRESALE: u64 = 60;
 
 
     struct AirdropEvent has drop, store {
