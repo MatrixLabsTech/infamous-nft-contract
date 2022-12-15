@@ -25,9 +25,9 @@ module infamous::infamous_nft {
     // Errors
     //
     /// Error when one account mint out of per max
-    const EMINT_COUNT_OUT_OF_PER_MAX: u64 = 2;
+    const EMINT_COUNT_OUT_OF_PER_MAX: u64 = 1;
     /// Error when account mint out of total
-    const EMINT_COUNT_OUT_OF_MAX: u64 = 3;
+    const EMINT_COUNT_OUT_OF_MAX: u64 = 2;
 
 
     //
